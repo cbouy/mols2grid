@@ -68,11 +68,12 @@
       listObj.add({{ data }})
       {% if tooltip %}
       // tooltips
+      $.fn.tooltip.Constructor.Default.whiteList.span = ['style']
       listObj.on("updated", function (list) {
         $(function () {
             $('.molgrid-tooltip[data-toggle="popover"]').popover({
-              placement: "bottom",
-              trigger: "click hover",
+              placement: {{ tooltip_placement }},
+              trigger: {{ tooltip_trigger }},
               html: true,
             })
         })

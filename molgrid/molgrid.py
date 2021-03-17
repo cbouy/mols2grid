@@ -1,10 +1,11 @@
+import warnings
 from base64 import b64encode
 from html import escape
-import warnings
+import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import Draw
 from jinja2 import Environment, PackageLoader
-from .utils import requires
+from .utils import requires, tooltip_formatter
 try:
     from IPython.display import HTML
 except ModuleNotFoundError:
@@ -20,7 +21,7 @@ env = Environment(loader=PackageLoader('molgrid', 'templates'),
 
 class MolGrid:
     """Class that handles drawing molecules, rendering the HTML document and
-    saving or displaying it
+    saving or displaying it in a notebook
     """
     def __init__(self, df, kind="pages", smiles_col="SMILES",
         draw_function=None, coordGen=True, useSVG=True, **kwargs):
@@ -56,14 +57,45 @@ class MolGrid:
         else:
             self.draw_function = self.draw_mol
         self.useSVG = useSVG
-        if kind not in ["pages", "table"]:
-            raise ValueError(f"kind={kind!r} not supported. "
-                             "Use one of 'pages' or 'table'")
         self.kind = kind
         dataframe = df.copy()
         dataframe["img"] = dataframe[smiles_col].apply(self.smi_to_img,
                                                        **kwargs)
-        self._dataframe = dataframe
+        self.dataframe = dataframe
+    
+    @classmethod
+    def from_sdf(cls, sdf_file, mapping=None, **kwargs):
+        """Create the internal dataframe directly from an SDFile
+        
+        Parameters
+        ----------
+        sdf_file : str
+            Path to the SDF file
+        mapping : dict or None
+            Rename fields/columns of the SDFile
+        kwargs : object
+            Other arguments passed on initialization
+        """
+        df = pd.DataFrame([{"SMILES": Chem.MolToSmiles(mol), **mol.GetPropsAsDict()}
+                           for mol in Chem.SDMolSupplier(sdf_file) if mol])
+        if mapping:
+            df.rename(columns=mapping, inplace=True)
+        return cls(df, **kwargs)
+
+    @property
+    def kind(self):
+        """Kind of grid displayed, one of:
+            - pages
+            - table
+        """
+        return self._kind
+
+    @kind.setter
+    def kind(self, value):
+        if value not in ["pages", "table"]:
+            raise ValueError(f"kind={value!r} not supported. "
+                             "Use one of 'pages' or 'table'")
+        self._kind = value
 
     def draw_mol(self, mol, size=(160, 120), **kwargs):
         """Draw a molecule
@@ -80,7 +112,7 @@ class MolGrid:
         
         Notes
         -----
-        The list of supported MolDrawOptions attributes are displayed in
+        The list of supported MolDrawOptions attributes are available in
         https://www.rdkit.org/docs/source/rdkit.Chem.Draw.rdMolDraw2D.html#rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions
         """
         if self.useSVG:
@@ -120,6 +152,7 @@ class MolGrid:
                  border="1px solid #cccccc", gap=0,
                  fontsize="12pt", fontfamily="'DejaVu', sans-serif",
                  textalign="center", tooltip_fmt="<strong>{key}</strong>: {value}",
+                 tooltip_trigger="click hover", tooltip_placement="bottom",
                  hover_color="#e7e7e7", style=None):
         """Returns the HTML document for the "pages" template
         
@@ -135,6 +168,10 @@ class MolGrid:
             image of a cell. Use `None` for no tooltip.
         tooltip_fmt : str
             Format string of each key/value pair in the tooltip
+        tooltip_trigger : str
+            Sequence of triggers for the tooltip: (click, hover, focus)
+        tooltip_placement : str
+            Position of the tooltip: auto, top, bottom, left, right
         cell_width : int
             Max width of each cell, in pixels
         n_cols : int
@@ -162,7 +199,7 @@ class MolGrid:
             if you want to color the text corresponding to the "Solubility"
             column in your dataframe.
         """
-        df = self._dataframe.copy()
+        df = self.dataframe.copy()
         if subset is None:
             subset = df.columns.tolist()
             subset = [subset.pop(subset.index("img"))] + subset
@@ -187,9 +224,8 @@ class MolGrid:
             column_map[col] = f"data-{col}"
             
         if tooltip:
-            df["molgrid-tooltip"] = df.apply(lambda s: "<br>".join(tooltip_fmt.format(key=k, value=v)
-                                             for k, v in s[tooltip].to_dict().items()),
-                                             axis=1)
+            df["molgrid-tooltip"] = df.apply(tooltip_formatter, axis=1,
+                                             args=(tooltip, tooltip_fmt, style))
             final_columns = final_columns + ["molgrid-tooltip"]
             value_names = (value_names[:-1] +
                            ", {attr: 'data-content', name: 'molgrid-tooltip'}]")
@@ -218,15 +254,18 @@ class MolGrid:
             item_repr = repr(item),
             value_names = value_names,
             tooltip = tooltip,
+            tooltip_trigger = repr(tooltip_trigger),
+            tooltip_placement = repr(tooltip_placement),
             n_items_per_page = n_rows * n_cols,
             data = df.to_dict("records"),
         )
         return template.render(**template_kwargs)
     
-    def to_table(self, subset=None, tooltip=None, n_cols=5,
+    def to_table(self, subset=None, tooltip=None, n_cols=6,
                  cell_width=160, border="1px solid #cccccc", gap=0,
                  fontsize="12pt", fontfamily="'DejaVu', sans-serif",
                  textalign="center", tooltip_fmt="<strong>{key}</strong>: {value}",
+                 tooltip_trigger="click hover", tooltip_placement="bottom",
                  hover_color="#e7e7e7", style=None):
         """Returns the HTML document for the "table" template
         
@@ -242,6 +281,10 @@ class MolGrid:
             image of a cell. Use `None` for no tooltip.
         tooltip_fmt : str
             Format string of each key/value pair in the tooltip
+        tooltip_trigger : str
+            Sequence of triggers for the tooltip: (click, hover, focus)
+        tooltip_placement : str
+            Position of the tooltip: auto, top, bottom, left, right
         n_cols : int
             Number of columns in the table
         cell_width : int
@@ -269,14 +312,32 @@ class MolGrid:
         """
         tr = []
         data = []
-        df = self._dataframe
+        df = self.dataframe
+
+        if subset is None:
+            subset = df.columns.tolist()
+            subset = [subset.pop(subset.index("img"))] + subset
+        if style is None:
+            style = {}
+
         for i, row in df.iterrows():
             ncell = i + 1
             nrow, ncol = divmod(i, n_cols)
             td = [f'<td class="col-{ncol}>"']
             div = [f'<div class="cell-{i}">']
             for col in subset:
-                div.append(f'<div class="data data-{col}">{row[col]}</div>')
+                v = row[col]
+                if col == "img" and tooltip:
+                    popover = tooltip_formatter(row, tooltip, tooltip_fmt, style)
+                    item = (f'<div class="data data-{col} molgrid-tooltip" data-toggle="popover" '
+                            f'data-content="{escape(popover)}">{v}</div>')
+                else:
+                    func = style.get(col)
+                    if func:
+                        item = f'<div class="data data-{col}" style="{func(v)}">{v}</div>'
+                    else:
+                        item = f'<div class="data data-{col}">{v}</div>'
+                div.append(item)
             div.append("</div>")
             td.append("\n".join(div))
             td.append("</td>")
@@ -298,6 +359,9 @@ class MolGrid:
             fontsize = fontsize,
             gap = gap,
             hover_color = hover_color,
+            tooltip = tooltip,
+            tooltip_trigger = repr(tooltip_trigger),
+            tooltip_placement = repr(tooltip_placement),
             data = "\n".join(data),
         )
         return template.render(**template_kwargs)

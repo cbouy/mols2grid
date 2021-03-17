@@ -52,5 +52,16 @@
         {{ data }}
       </tbody>
     </table>
+    {% if tooltip %}
+    <script>
+      // tooltips
+      $.fn.tooltip.Constructor.Default.whiteList.span = ['style']
+      $('.molgrid-tooltip[data-toggle="popover"]').popover({
+        placement: {{ tooltip_placement }},
+        trigger: {{ tooltip_trigger }},
+        html: true,
+      })
+    </script>
+    {% endif %}
   </body>
 </html>
