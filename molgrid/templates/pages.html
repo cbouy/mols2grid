@@ -1,0 +1,84 @@
+<html>
+  <meta charset="utf-8">
+  <head>
+    <style>
+      #molgrid.gridcontainer {
+        display: block;
+        padding-left: 1em;
+        max-width: {{ width }}px;
+        width: {{ width }}px;
+      }
+      #molgrid .cell {
+        border: {{ border }};
+        text-align: {{ textalign }};
+        vertical-align: top;
+        max-width: {{ cell_width }}px;
+        width: {{ cell_width }}px;
+        font-family: {{ fontfamily }};
+        font-size: {{ fontsize }};
+        padding: 0;
+        margin: {{ gap }};
+        float: left;
+      }
+      #molgrid .cell:hover {
+        background-color: {{ hover_color }};
+      }
+      #molgrid .cell img {
+        max-width: {{ cell_width }}px;
+        width: {{ cell_width }}px;
+        height: auto;
+        padding: 0;
+      }
+      #molgrid .data {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        display: block;
+      }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <div id="molgrid" class="gridcontainer">
+      <div class="row">
+        <div class="list">{{ item }}</div>
+        <div class="w-100"></div>
+        <ul class="pagination pt-3 pl-3"></ul>
+      </div>
+    </div>
+    <script>
+      // pages
+      var listObj = new List('molgrid',
+        {
+          valueNames: {{ value_names }},
+          item: {{ item_repr }},
+          page: {{ n_items_per_page }},
+          pagination: {
+            name: "pagination",
+            item: '<li class="page-item"><a class="page page-link" href="#" onclick="event.preventDefault()"></a></li>',
+            innerWindow: 1,
+            outerWindow: 1,
+          }
+        }
+      );
+      listObj.remove("molgrid-id", "0")
+      listObj.add({{ data }})
+      {% if tooltip %}
+      // tooltips
+      listObj.on("updated", function (list) {
+        $(function () {
+            $('.molgrid-tooltip[data-toggle="popover"]').popover({
+              placement: "bottom",
+              trigger: "click hover",
+              html: true,
+            })
+        })
+      });
+      listObj.update();
+      {% endif %}
+    </script>
+  </body>
+</html>
