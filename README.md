@@ -1,17 +1,17 @@
-# molgrid
+# mol2grid
 
-molgrid is a Python chemical viewer for 2D structures of small molecules, based on RDKit.
+mol2grid is a Python chemical viewer for 2D structures of small molecules, based on RDKit.
 
-![Demo showing molgrid's integration in a Jupyter notebook](demo.png)
+![Demo showing mol2grid's integration in a Jupyter notebook](demo.png)
 
 ## Installation
 
-molgrid was developped for Python 3.6+ and requires rdkit, pandas and jinja2 as dependencies.
+mol2grid was developped for Python 3.6+ and requires rdkit, pandas and jinja2 as dependencies.
 
-To install molgrid from a clean conda environment:
+To install mol2grid from a clean conda environment:
 ```shell
 conda install -c conda-forge rdkit
-pip install git+https://github.com/cbouy/molgrid.git
+pip install git+https://github.com/cbouy/mol2grid.git
 ```
 
 ## Usage
@@ -23,7 +23,7 @@ You can setup the grid from various inputs:
 * or an **SDF file**:
 
 ```python
-from molgrid import MolGrid
+from mol2grid import MolGrid
 
 # pandas
 mg = MolGrid(df)
@@ -35,7 +35,7 @@ mg = MolGrid.from_mols([Chem.MolFromSmiles(smi) for smi in smiles])
 mg = MolGrid.from_sdf("/path/to/molecules.sdf")
 ```
 
-This first step sets up the internal dataframe that will be used by molgrid (which you can access and sort/rename with `mg.dataframe`) and creates the drawings of each molecule.
+This first step sets up the internal dataframe that will be used by mol2grid (which you can access and sort/rename with `mg.dataframe`) and creates the drawings of each molecule.
 Here, you can set up how the drawings should look:
 
   * useSVG: use SVG images (default) or PNG

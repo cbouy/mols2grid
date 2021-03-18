@@ -1,1 +1,0 @@
-from .molgrid import MolGrid
