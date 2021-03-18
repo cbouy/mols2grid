@@ -23,7 +23,7 @@ class MolGrid:
     """Class that handles drawing molecules, rendering the HTML document and
     saving or displaying it in a notebook
     """
-    def __init__(self, df, kind="pages", smiles_col="SMILES",
+    def __init__(self, df, smiles_col="SMILES",
         draw_function=None, coordGen=True, useSVG=True, **kwargs):
         """
         Parameters
@@ -31,13 +31,6 @@ class MolGrid:
         df : pandas.DataFrame
             Dataframe containing a SMILES column and some other information 
             about each molecule
-        kind : str
-            Kind of grid to draw:
-                * "table" is a very simple table where all molecules are
-                  displayed on the document, the main usecase is printing to
-                  PDF or on paper.
-                * "pages" is a more interactive version that splits the
-                  original data into several pages.
         smiles_col : str
             Name of the SMILES column in the dataframe
         draw_function : callable or None
@@ -57,45 +50,66 @@ class MolGrid:
         else:
             self.draw_function = self.draw_mol
         self.useSVG = useSVG
-        self.kind = kind
         dataframe = df.copy()
         dataframe["img"] = dataframe[smiles_col].apply(self.smi_to_img,
                                                        **kwargs)
         self.dataframe = dataframe
-    
+
+    @classmethod
+    def from_mols(cls, mols, mapping=None, **kwargs):
+        """Set up the dataframe used by molgrid directly from a list of RDKit
+        molecules.
+        
+        Parameters
+        ----------
+        mols : list
+            List of RDKit molecules
+        mapping : dict or None
+            Rename the properties stored in the molecule
+        kwargs : object
+            Other arguments passed on initialization
+        """
+        df = pd.DataFrame([{"SMILES": Chem.MolToSmiles(mol),
+                            **mol.GetPropsAsDict()}
+                           for mol in mols if mol])
+        if mapping:
+            df.rename(columns=mapping, inplace=True)
+        return cls(df, **kwargs)
+
     @classmethod
     def from_sdf(cls, sdf_file, mapping=None, **kwargs):
-        """Create the internal dataframe directly from an SDFile
+        """Set up the dataframe used by molgrid directly from an SDFile
         
         Parameters
         ----------
         sdf_file : str
             Path to the SDF file
         mapping : dict or None
-            Rename fields/columns of the SDFile
+            Rename fields of the SDFile
         kwargs : object
             Other arguments passed on initialization
         """
-        df = pd.DataFrame([{"SMILES": Chem.MolToSmiles(mol), **mol.GetPropsAsDict()}
+        df = pd.DataFrame([{"SMILES": Chem.MolToSmiles(mol),
+                            **mol.GetPropsAsDict()}
                            for mol in Chem.SDMolSupplier(sdf_file) if mol])
         if mapping:
             df.rename(columns=mapping, inplace=True)
         return cls(df, **kwargs)
 
     @property
-    def kind(self):
+    def template(self):
         """Kind of grid displayed, one of:
             - pages
             - table
         """
-        return self._kind
+        return self._template
 
-    @kind.setter
-    def kind(self, value):
+    @template.setter
+    def template(self, value):
         if value not in ["pages", "table"]:
-            raise ValueError(f"kind={value!r} not supported. "
+            raise ValueError(f"template={value!r} not supported. "
                              "Use one of 'pages' or 'table'")
-        self._kind = value
+        self._template = value
 
     def draw_mol(self, mol, size=(160, 120), **kwargs):
         """Draw a molecule
@@ -142,10 +156,22 @@ class MolGrid:
         mol = Chem.MolFromSmiles(smi)
         return self.mol_to_img(mol, **kwargs)
     
-    def render(self, **kwargs):
+    def render(self, template="pages", **kwargs):
         """Returns the HTML document corresponding to the "pages" or "table"
-        template. See `to_pages` and `to_table` for the list of arguments"""
-        return getattr(self, f"to_{self.kind}")(**kwargs)
+        template. See `to_pages` and `to_table` for the list of arguments
+        
+        Parameters
+        ----------
+        template : str
+            Kind of grid to draw:
+                * "table" is a very simple table where all molecules are
+                  displayed on the document, the main usecase is printing to
+                  PDF or on paper.
+                * "pages" is a more interactive version that splits the
+                  original data into several pages.
+        """
+        self.template = template
+        return getattr(self, f"to_{self.template}")(**kwargs)
     
     def to_pages(self, subset=None, tooltip=None,
                  cell_width=160, n_cols=5, n_rows=3,
@@ -193,7 +219,7 @@ class MolGrid:
         style : dict or None
             CSS styling applied to each item in a cell. The dict must follow a
             `key: function` structure where the key must correspond to one of
-            the columns in `subset`. The function takes the item's value as
+            the columns in `subset` or `tooltip`. The function takes the item's value as
             input, and outputs a valid CSS styling, for example
             `style={"Solubility": lambda x: "color: red" if x < -5 else "color: black"}`
             if you want to color the text corresponding to the "Solubility"
@@ -304,7 +330,7 @@ class MolGrid:
         style : dict or None
             CSS styling applied to each item in a cell. The dict must follow a
             `key: function` structure where the key must correspond to one of
-            the columns in `subset`. The function takes the item's value as
+            the columns in `subset` or `tooltip`. The function takes the item's value as
             input, and outputs a valid CSS styling, for example
             `style={"Solubility": lambda x: "color: red" if x < -5 else "color: black"}`
             if you want to color the text corresponding to the "Solubility"
@@ -367,7 +393,7 @@ class MolGrid:
         return template.render(**template_kwargs)
 
     @requires("IPython.display")
-    def display(self, output=None, width="100%", height=600, **kwargs):
+    def display(self, width="100%", height=600, **kwargs):
         """Render and display the grid in a Jupyter notebook"""
         code = self.render(**kwargs)
         iframe = ('<iframe class="molgrid-iframe" width={width} '
