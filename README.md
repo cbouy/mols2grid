@@ -11,7 +11,7 @@ mols2grid was developped for Python 3.6+ and requires rdkit, pandas and jinja2 a
 To install mols2grid from a clean conda environment:
 ```shell
 conda install -c conda-forge rdkit
-pip install git+https://github.com/cbouy/mols2grid.git
+pip install mols2grid
 ```
 
 ## Usage
