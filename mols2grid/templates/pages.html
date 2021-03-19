@@ -2,13 +2,13 @@
   <meta charset="utf-8">
   <head>
     <style>
-      #molgrid.gridcontainer {
+      #mols2grid.gridcontainer {
         display: block;
         padding-left: 1em;
         max-width: {{ width }}px;
         width: {{ width }}px;
       }
-      #molgrid .cell {
+      #mols2grid .cell {
         border: {{ border }};
         text-align: {{ textalign }};
         vertical-align: top;
@@ -20,16 +20,16 @@
         margin: {{ gap }};
         float: left;
       }
-      #molgrid .cell:hover {
+      #mols2grid .cell:hover {
         background-color: {{ hover_color }};
       }
-      #molgrid .cell img {
+      #mols2grid .cell img {
         max-width: {{ cell_width }}px;
         width: {{ cell_width }}px;
         height: auto;
         padding: 0;
       }
-      #molgrid .data {
+      #mols2grid .data {
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
@@ -42,7 +42,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
   </head>
   <body>
-    <div id="molgrid" class="gridcontainer">
+    <div id="mols2grid" class="gridcontainer">
       <div class="row">
         <div class="list">{{ item }}</div>
         <div class="w-100"></div>
@@ -51,7 +51,7 @@
     </div>
     <script>
       // pages
-      var listObj = new List('molgrid',
+      var listObj = new List('mols2grid',
         {
           valueNames: {{ value_names }},
           item: {{ item_repr }},
@@ -64,14 +64,14 @@
           }
         }
       );
-      listObj.remove("molgrid-id", "0")
+      listObj.remove("mols2grid-id", "0")
       listObj.add({{ data }})
       {% if tooltip %}
       // tooltips
       $.fn.tooltip.Constructor.Default.whiteList.span = ['style']
       listObj.on("updated", function (list) {
         $(function () {
-            $('.molgrid-tooltip[data-toggle="popover"]').popover({
+            $('.mols2grid-tooltip[data-toggle="popover"]').popover({
               placement: {{ tooltip_placement }},
               trigger: {{ tooltip_trigger }},
               html: true,

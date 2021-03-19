@@ -1,10 +1,11 @@
 import warnings
 from base64 import b64encode
 from html import escape
+from pathlib import Path
 import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import Draw
-from jinja2 import Environment, PackageLoader
+from jinja2 import Environment, FileSystemLoader
 from .utils import requires, tooltip_formatter
 try:
     from IPython.display import HTML
@@ -15,7 +16,7 @@ else:
                             "Consider using IPython.display.IFrame instead")
 
 
-env = Environment(loader=PackageLoader('mol2grid', 'templates'),
+env = Environment(loader=FileSystemLoader(Path(__file__).parent / 'templates'),
                   autoescape=False)
 
 
@@ -57,7 +58,7 @@ class MolGrid:
 
     @classmethod
     def from_mols(cls, mols, mapping=None, **kwargs):
-        """Set up the dataframe used by molgrid directly from a list of RDKit
+        """Set up the dataframe used by mols2grid directly from a list of RDKit
         molecules.
         
         Parameters
@@ -78,7 +79,7 @@ class MolGrid:
 
     @classmethod
     def from_sdf(cls, sdf_file, mapping=None, **kwargs):
-        """Set up the dataframe used by molgrid directly from an SDFile
+        """Set up the dataframe used by mols2grid directly from an SDFile
         
         Parameters
         ----------
@@ -234,12 +235,12 @@ class MolGrid:
         columns = [f"data-{col}" for col in subset]
         width = n_cols * (cell_width + 2 * (gap + 2))
         content = []
-        final_columns = ["molgrid-id"] + subset
+        final_columns = ["mols2grid-id"] + subset
         column_map = {}
-        value_names = "[{data: ['molgrid-id']}, " + str(columns)[1:]
+        value_names = "[{data: ['mols2grid-id']}, " + str(columns)[1:]
         for col in subset:
             if col == "img" and tooltip:
-                s = (f'<div class="data data-{col} molgrid-tooltip" '
+                s = (f'<div class="data data-{col} mols2grid-tooltip" '
                      'data-toggle="popover" data-content="foo"></div>')  
             else:
                 if style.get(col):
@@ -250,11 +251,11 @@ class MolGrid:
             column_map[col] = f"data-{col}"
             
         if tooltip:
-            df["molgrid-tooltip"] = df.apply(tooltip_formatter, axis=1,
+            df["mols2grid-tooltip"] = df.apply(tooltip_formatter, axis=1,
                                              args=(tooltip, tooltip_fmt, style))
-            final_columns = final_columns + ["molgrid-tooltip"]
+            final_columns = final_columns + ["mols2grid-tooltip"]
             value_names = (value_names[:-1] +
-                           ", {attr: 'data-content', name: 'molgrid-tooltip'}]")
+                           ", {attr: 'data-content', name: 'mols2grid-tooltip'}]")
             
         for col, func in style.items():
             name = f"style-{col}"
@@ -262,8 +263,8 @@ class MolGrid:
             final_columns.append(name)
             value_names = value_names[:-1] + f", {{ attr: 'style', name: {name!r} }}]"
         
-        item = f'<div class="cell" data-molgrid-id="0">{"".join(content)}</div>'
-        df["molgrid-id"] = [str(i) for i in range(len(df))]
+        item = f'<div class="cell" data-mols2grid-id="0">{"".join(content)}</div>'
+        df["mols2grid-id"] = [str(i) for i in range(len(df))]
         df = df[final_columns].rename(columns=column_map)
         
         template = env.get_template('pages.html')
@@ -355,7 +356,7 @@ class MolGrid:
                 v = row[col]
                 if col == "img" and tooltip:
                     popover = tooltip_formatter(row, tooltip, tooltip_fmt, style)
-                    item = (f'<div class="data data-{col} molgrid-tooltip" data-toggle="popover" '
+                    item = (f'<div class="data data-{col} mols2grid-tooltip" data-toggle="popover" '
                             f'data-content="{escape(popover)}">{v}</div>')
                 else:
                     func = style.get(col)
@@ -396,7 +397,7 @@ class MolGrid:
     def display(self, width="100%", height=600, **kwargs):
         """Render and display the grid in a Jupyter notebook"""
         code = self.render(**kwargs)
-        iframe = ('<iframe class="molgrid-iframe" width={width} '
+        iframe = ('<iframe class="mols2grid-iframe" width={width} '
                   'height="{height}" frameborder="0" srcdoc="{code}"></iframe>')
         return HTML(iframe.format(width=width, height=height,
                                   code=escape(code)))

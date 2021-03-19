@@ -16,5 +16,5 @@ def get_version(rel_path):
         raise RuntimeError("Unable to find version string.")
 
 setup(
-    version=get_version("mol2grid/_version.py")
+    version=get_version("mols2grid/_version.py")
 )

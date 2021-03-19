@@ -2,13 +2,13 @@
   <meta charset="utf-8">
   <head>
     <style>
-      #molgrid table {
+      #mols2grid table {
         border-collapse: collapse;
       }
-      #molgrid table, tr, td {
+      #mols2grid table, tr, td {
         border: none;
       }
-      #molgrid td {
+      #mols2grid td {
         border: {{ border }};
         text-align: {{ textalign }};
         vertical-align: top;
@@ -19,26 +19,26 @@
         margin: 0;
         padding: 0;
       }
-      #molgrid td div {
+      #mols2grid td div {
         padding: 0;
         margin: {{ gap }};
       }
-      #molgrid td div img {
+      #mols2grid td div img {
         max-width: {{ cell_width }}px;
         width: {{ cell_width }}px;
         height: auto;
         padding: 0;
       }
-      #molgrid td:hover {
+      #mols2grid td:hover {
         background-color: {{ hover_color }};
       }
-      #molgrid .data {
+      #mols2grid .data {
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
         display: block;
       }
-      #molgrid tr {
+      #mols2grid tr {
         page-break-inside: avoid !important;
       }
     </style>
@@ -47,7 +47,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
   </head>
   <body>
-    <table id="molgrid">
+    <table id="mols2grid">
       <tbody>
         {{ data }}
       </tbody>
@@ -56,7 +56,7 @@
     <script>
       // tooltips
       $.fn.tooltip.Constructor.Default.whiteList.span = ['style']
-      $('.molgrid-tooltip[data-toggle="popover"]').popover({
+      $('.mols2grid-tooltip[data-toggle="popover"]').popover({
         placement: {{ tooltip_placement }},
         trigger: {{ tooltip_trigger }},
         html: true,
