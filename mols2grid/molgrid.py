@@ -24,8 +24,8 @@ class MolGrid:
     """Class that handles drawing molecules, rendering the HTML document and
     saving or displaying it in a notebook
     """
-    def __init__(self, df, smiles_col="SMILES",
-        draw_function=None, coordGen=True, useSVG=True, **kwargs):
+    def __init__(self, df, smiles_col="SMILES", coordGen=True, useSVG=True,
+        **kwargs):
         """
         Parameters
         ----------
@@ -34,9 +34,6 @@ class MolGrid:
             about each molecule
         smiles_col : str
             Name of the SMILES column in the dataframe
-        draw_function : callable or None
-            A function that takes an RDKit molecule as argument. See 
-            MolGrid.draw_mol (used by default) for an example.
         coordGen : bool
             Sets whether or not the CoordGen library should be preferred to the
             RDKit depiction library
@@ -46,10 +43,6 @@ class MolGrid:
             Arguments passed to the drawing function
         """
         Draw.rdDepictor.SetPreferCoordGen(coordGen)
-        if callable(draw_function):
-            self.draw_function = draw_function
-        else:
-            self.draw_function = self.draw_mol
         self.useSVG = useSVG
         dataframe = df.copy()
         dataframe["img"] = dataframe[smiles_col].apply(self.smi_to_img,
@@ -145,7 +138,7 @@ class MolGrid:
     def mol_to_img(self, mol, **kwargs):
         """Convert an RDKit mol to an HTML img tag containing a drawing of the
         molecule"""
-        img = self.draw_function(mol, **kwargs)
+        img = self.draw_mol(mol, **kwargs)
         if self.useSVG:
             return img
         data = b64encode(img).decode()
