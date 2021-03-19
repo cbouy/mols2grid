@@ -1,4 +1,4 @@
-# mols2grid
+# 👀 mols2grid
 
 [![Pypi Version](https://img.shields.io/pypi/v/mols2grid.svg)](https://pypi.python.org/pypi/mols2grid)
 [![Build status](https://github.com/cbouy/mols2grid/workflows/build/badge.svg)](https://github.com/cbouy/mols2grid/actions/workflows/build.yml)
@@ -7,7 +7,9 @@ mols2grid is a Python chemical viewer for 2D structures of small molecules, base
 
 ![Demo showing mols2grid's integration in a Jupyter notebook](https://raw.githubusercontent.com/cbouy/mols2grid/master/demo.png)
 
-## Installation
+➡️ Check the demo notebook [here](https://nbviewer.jupyter.org/github/cbouy/molgrid/blob/master/demo.ipynb)
+
+## Installation ℹ️
 ---
 
 mols2grid was developped for Python 3.6+ and requires rdkit, pandas and jinja2 as dependencies.
@@ -18,7 +20,7 @@ conda install -c conda-forge rdkit
 pip install mols2grid
 ```
 
-## Usage
+## Usage 📜
 ---
 
 You can setup the grid from various inputs:
