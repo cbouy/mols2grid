@@ -103,7 +103,8 @@ The `pages` template comes with additional parameters:
 
 * `n_rows=3` : int  
     Number of rows per page
-    
+
+Please note that the search bar doesn't allow for substructure searching with SMARTS patterns, it only performs a simple text search.
 
 ## License
 ---
