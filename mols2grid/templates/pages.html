@@ -45,8 +45,15 @@
     <div id="mols2grid" class="gridcontainer">
       <div class="row">
         <div class="list">{{ item }}</div>
-        <div class="w-100"></div>
-        <ul class="pagination pt-3 pl-3"></ul>
+      </div>
+      <div class="row">
+        <ul class="pagination pt-3 pl-3 col"></ul>
+        <div class="input-group float-right col-4 py-3 mr-3">
+          <input type="text" id="searchbar" class="form-control" placeholder="Search" aria-label="Search" aria-describedby="basic-addon1">
+          <div class="input-group-append">
+            <button id="searchbtn" class="btn btn-light disabled" type="button">🔎</button>
+          </div>
+        </div>
       </div>
     </div>
     <script>
@@ -66,16 +73,25 @@
       );
       listObj.remove("mols2grid-id", "0")
       listObj.add({{ data }})
+      // search bar
+      $('#mols2grid #searchbar').on("keyup", function(e) {
+        var query = e.target.value;
+        listObj.search(query);
+      });
       {% if tooltip %}
       // tooltips
       $.fn.tooltip.Constructor.Default.whiteList.span = ['style']
       listObj.on("updated", function (list) {
         $(function () {
-            $('.mols2grid-tooltip[data-toggle="popover"]').popover({
-              placement: {{ tooltip_placement }},
-              trigger: {{ tooltip_trigger }},
-              html: true,
-            })
+          // hide previous popovers
+          $('#mols2grid a.page-link').click(function() {
+            $('.mols2grid-tooltip[data-toggle="popover"]').popover('hide')
+          });
+          $('.mols2grid-tooltip[data-toggle="popover"]').popover({
+            placement: {{ tooltip_placement }},
+            trigger: {{ tooltip_trigger }},
+            html: true,
+          })
         })
       });
       listObj.update();
