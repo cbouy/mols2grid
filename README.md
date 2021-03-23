@@ -23,40 +23,46 @@ pip install mols2grid
 ## Usage 📜
 ---
 
-You can setup the grid from various inputs:
-* a pandas **DataFrame** (with a SMILES column),
-* a list of **RDKit molecules** (with properties accessible through the `mol.GetPropsAsDict()` method),
-* or an **SDF file**:
-
 ```python
-from mols2grid import MolGrid
+import mols2grid
 
-# pandas
-mg = MolGrid(df)
-
-# List of molecules
-mg = MolGrid.from_mols([Chem.MolFromSmiles(smi) for smi in smiles])
-
-# SDF
-mg = MolGrid.from_sdf("/path/to/molecules.sdf")
+mols2grid.display("path/to/molecules.sdf",
+                  # RDKit's MolDrawOptions parameters
+                  fixedBondLength=25,
+                  # rename fields for the output document
+                  mapping={"SOL": "Solubility",
+                           "SOL_classification": "Class",
+                           "NAME": "Name"},
+                  # set what's displayed on the grid
+                  subset=["ID", "img", "Solubility"],
+                  # set what's displayed on the tooltips
+                  tooltip=["Name", "smiles", "Class", "Solubility"],
+                  # style for the grid labels and tooltips
+                  style={"Solubility": lambda x: "color: red" if x < -3 else "color: black"})
 ```
 
-This first step sets up the internal dataframe that will be used by mols2grid (which you can access and sort/rename with `mg.dataframe`) and creates the drawings of each molecule.
-Here, you can set up how the drawings should look:
+#### Input parameters
 
-  * `useSVG=True`: use SVG images or PNG
-  * `coordGen=True`: use the coordGen library instead of the RDKit one to depict the molecules in 2D
-  * `size=(160, 120)`: size of each image
-  * and all the arguments available in RDKit's [MolDrawOptions](https://www.rdkit.org/docs/source/rdkit.Chem.Draw.rdMolDraw2D.html#rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions), like `addStereoAnnotation=True`.
-  * Additionally, if you're using the `from_mols` and `from_sdf` classmethods, you can rename the property fields using the `mapping={"old_name": "new_name"}` parameter.
+You can setup the grid from various inputs:
+* a pandas **DataFrame** (with a column of SMILES, controlled by the `smiles_col="SMILES"` parameter),
+* a list of **RDKit molecules** (with properties accessible through the `mol.GetPropsAsDict()` method),
+* or an **SDF file**
 
-Two columns are automatically added to the `mg.dataframe` after this operation: `img` and `SMILES`. If a `SMILES` column already existed in your molecules' properties or SDF file, it will not be overwritten.
+You can also rename each field of your input with the `mapping` parameter. Please note that 2 fields are automatically added regardless of your input: `SMILES` and `img`. If a "SMILES" field already exists, it will not be overwritten.
 
-You can then call the `mg.display` or `mg.save` methods to render and display/save the HTML document.
+#### Parameters for the drawing of each molecule
+
+* `useSVG=True`: use SVG images or PNG
+* `coordGen=True`: use the coordGen library instead of the RDKit one to depict the molecules in 2D
+* `size=(160, 120)`: size of each image
+* and all the arguments available in RDKit's [MolDrawOptions](https://www.rdkit.org/docs/source/rdkit.Chem.Draw.rdMolDraw2D.html#rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions), like `addStereoAnnotation=True`
+
+
+#### Parameters for the grid
   
-You can control which template is used through the `template` argument:
-  * `template="pages"` (default) which is displayed above. It integrates nicely with notebooks
-  * `template="table"`, which displays the full list of molecules (no pages). Useful if you ever need to print the full list of molecules on paper (or print to PDF)
+You can control the general look of the document through the `template` argument:
+* `template="pages"` (default) which is displayed above. It integrates nicely with Jupyter notebooks
+* `template="table"`, which displays the full list of molecules (no pages). Useful if you ever need to print the full list of molecules on paper (or print to PDF)
 
 Both templates can be configured with the same parameters (a lot of which are [CSS](https://www.w3schools.com/cssref/) declarations):
 
@@ -90,7 +96,7 @@ Both templates can be configured with the same parameters (a lot of which are [C
     CSS styling applied to each item in a cell. The dict must follow a `key: function` structure where the key must correspond to one of the columns in `subset` or `tooltip`. The function takes the item's value as input, and outputs a valid CSS styling. For example, if you want to color the text corresponding to the "Solubility"
     column in your dataframe:
     ```python
-    style={"Solubility": lambda x: "color: red" if x < -5 else "color: black"}
+    style={"Solubility": lambda x: "color: red" if x < -3 else "color: black"}
     ```
 
 The `pages` template comes with additional parameters:
