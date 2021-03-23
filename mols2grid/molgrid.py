@@ -25,7 +25,7 @@ class MolGrid:
     saving or displaying it in a notebook
     """
     def __init__(self, df, smiles_col="SMILES", coordGen=True, useSVG=True,
-        **kwargs):
+        mapping=None, **kwargs):
         """
         Parameters
         ----------
@@ -39,55 +39,51 @@ class MolGrid:
             RDKit depiction library
         useSVG : bool
             Use SVG instead of PNG
+        mapping : dict or None
+            Rename the properties/fields stored in the molecule
         kwargs : object
-            Arguments passed to the drawing function
+            Arguments passed to the `draw_mol` method
         """
         Draw.rdDepictor.SetPreferCoordGen(coordGen)
         self.useSVG = useSVG
         dataframe = df.copy()
+        if mapping:
+            dataframe.rename(columns=mapping, inplace=True)
         dataframe["img"] = dataframe[smiles_col].apply(self.smi_to_img,
                                                        **kwargs)
         self.dataframe = dataframe
 
     @classmethod
-    def from_mols(cls, mols, mapping=None, **kwargs):
+    def from_mols(cls, mols, **kwargs):
         """Set up the dataframe used by mols2grid directly from a list of RDKit
-        molecules.
+        molecules
         
         Parameters
         ----------
         mols : list
             List of RDKit molecules
-        mapping : dict or None
-            Rename the properties stored in the molecule
         kwargs : object
             Other arguments passed on initialization
         """
         df = pd.DataFrame([{"SMILES": Chem.MolToSmiles(mol),
                             **mol.GetPropsAsDict()}
                            for mol in mols if mol])
-        if mapping:
-            df.rename(columns=mapping, inplace=True)
         return cls(df, **kwargs)
 
     @classmethod
-    def from_sdf(cls, sdf_file, mapping=None, **kwargs):
+    def from_sdf(cls, sdf_file, **kwargs):
         """Set up the dataframe used by mols2grid directly from an SDFile
         
         Parameters
         ----------
         sdf_file : str
             Path to the SDF file
-        mapping : dict or None
-            Rename fields of the SDFile
         kwargs : object
             Other arguments passed on initialization
         """
         df = pd.DataFrame([{"SMILES": Chem.MolToSmiles(mol),
                             **mol.GetPropsAsDict()}
                            for mol in Chem.SDMolSupplier(sdf_file) if mol])
-        if mapping:
-            df.rename(columns=mapping, inplace=True)
         return cls(df, **kwargs)
 
     @property
