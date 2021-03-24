@@ -25,7 +25,7 @@ class MolGrid:
     saving or displaying it in a notebook
     """
     def __init__(self, df, smiles_col="SMILES", coordGen=True, useSVG=True,
-        mapping=None, **kwargs):
+        mapping=None, mdl_col=None, **kwargs):
         """
         Parameters
         ----------
@@ -41,6 +41,9 @@ class MolGrid:
             Use SVG instead of PNG
         mapping : dict or None
             Rename the properties/fields stored in the molecule
+        mdl_col : str or None
+            Name of a Mol block column if available, 2D-coords from this will
+            be used for depiction
         kwargs : object
             Arguments passed to the `draw_mol` method
         """
@@ -49,8 +52,12 @@ class MolGrid:
         dataframe = df.copy()
         if mapping:
             dataframe.rename(columns=mapping, inplace=True)
-        dataframe["img"] = dataframe[smiles_col].apply(self.smi_to_img,
-                                                       **kwargs)
+        if mdl_col is not None:
+            dataframe["img"] = dataframe[mdl_col].apply(self.mdl_to_img,
+                                                        **kwargs)
+        else:
+            dataframe["img"] = dataframe[smiles_col].apply(self.smi_to_img,
+                                                        **kwargs)
         self.dataframe = dataframe
 
     @classmethod
@@ -145,7 +152,13 @@ class MolGrid:
         the molecule"""
         mol = Chem.MolFromSmiles(smi)
         return self.mol_to_img(mol, **kwargs)
-    
+
+    def mdl_to_img(self, mdl, **kwargs):
+        """Convert a string with MDL Mol block to an HTML img tag containing
+        a drawing of the molecule"""
+        mol = Chem.MolFromMolBlock(mdl)
+        return self.mol_to_img(mol, **kwargs)
+
     def render(self, template="pages", **kwargs):
         """Returns the HTML document corresponding to the "pages" or "table"
         template. See `to_pages` and `to_table` for the list of arguments
