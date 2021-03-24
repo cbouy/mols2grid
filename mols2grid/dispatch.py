@@ -22,7 +22,7 @@ def _prepare_kwargs(kwargs, kind):
         kwargs.pop(key)
     if kind == "display":
         render_kwargs = {"width": kwargs.pop("width", "100%"),
-                         "height": kwargs.pop("height", 600),
+                         "height": kwargs.pop("height", None),
                          **render_kwargs}
     elif kind == "save":
         render_kwargs = {"output": kwargs.pop("output"),
@@ -57,6 +57,11 @@ def display(arg, **kwargs):
         Rename the properties in the final document
     template : str ("pages")
         One of {pages, table}
+    width : str ("100%)
+        Width of the frame displayed in the notebook
+    height : int or None (None)
+        Height of the frame displayed in the notebook. Use None for an
+        automatic guess
     subset: list (None)
         Columns to be displayed in each cell of the grid. Each column's value
         will be displayed from top to bottom in the same order given here.
@@ -71,8 +76,6 @@ def display(arg, **kwargs):
         Sequence of triggers for the tooltip: {click, hover, focus}
     tooltip_placement : str ("bottom")
         Position of the tooltip: {auto, top, bottom, left, right}
-    cell_width: int (160)
-        Max width of each cell, in pixels
     n_cols : int (5)
         Number of columns per page
     n_rows` : int (3)

@@ -77,8 +77,6 @@ Both templates can be configured with the same parameters (a lot of which are [C
     Sequence of triggers for the tooltip: (click, hover, focus)
 * `tooltip_placement="bottom"`: str  
     Position of the tooltip: auto, top, bottom, left, right
-* `cell_width=160`: int  
-    Max width of each cell, in pixels
 * `n_cols=5`: int  
     Number of columns per page
 * `border="1px solid #cccccc"`: str  
@@ -106,6 +104,12 @@ The `pages` template comes with additional parameters:
     Number of rows per page
 
 Please note that the search bar doesn't allow for substructure searching with SMARTS patterns, it only performs a simple text search.
+
+#### Output parameters
+
+You can either:
+* save the grid with `mols2grid.save(output_path, ...)`. The file that is generated is a standalone HTML document that should work with most web browsers.
+* display it directly in a Jupyter notebook with `mols2grid.display(...)` (optionnal argument: `width="100%"`, `height=None`)
 
 ## License
 ---

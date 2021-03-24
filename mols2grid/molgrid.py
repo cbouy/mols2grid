@@ -3,6 +3,7 @@ from base64 import b64encode
 from html import escape
 from pathlib import Path
 from copy import deepcopy
+from math import ceil
 import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import Draw
@@ -64,6 +65,7 @@ class MolGrid:
         dataframe["mols2grid-id"] = list(range(len(dataframe)))
         self.dataframe = dataframe
         self.mol_col = mol_col
+        self.img_size = kwargs.get("size", (160, 120))
 
     @classmethod
     def from_mols(cls, mols, **kwargs):
@@ -209,8 +211,6 @@ class MolGrid:
             Sequence of triggers for the tooltip: (click, hover, focus)
         tooltip_placement : str
             Position of the tooltip: auto, top, bottom, left, right
-        cell_width : int
-            Max width of each cell, in pixels
         n_cols : int
             Number of columns per page
         n_rows : int
@@ -237,6 +237,7 @@ class MolGrid:
             column in your dataframe.
         """
         df = self.dataframe.drop(columns=self.mol_col).copy()
+        cell_width = self.img_size[0]
         if subset is None:
             subset = df.columns.tolist()
             subset = [subset.pop(subset.index("img"))] + subset
@@ -323,8 +324,6 @@ class MolGrid:
             Position of the tooltip: auto, top, bottom, left, right
         n_cols : int
             Number of columns in the table
-        cell_width : int
-            Max width of each cell, in pixels
         border : str
             Styling of the border around each cell (CSS)
         gap : int or str
@@ -349,6 +348,7 @@ class MolGrid:
         tr = []
         data = []
         df = self.dataframe.drop(columns=self.mol_col)
+        cell_width = self.img_size[0]
 
         if subset is None:
             subset = df.columns.tolist()
@@ -403,9 +403,21 @@ class MolGrid:
         return template.render(**template_kwargs)
 
     @requires("IPython.display")
-    def display(self, width="100%", height=600, **kwargs):
+    def display(self, width="100%", height=None, **kwargs):
         """Render and display the grid in a Jupyter notebook"""
         code = self.render(**kwargs)
+        if not height:
+            n_cols = kwargs.get("n_cols", 5)
+            tot_rows = ceil(self.dataframe.shape[0] / n_cols)
+            n_rows = min([kwargs.get("n_rows", 3), tot_rows])
+            img_height = self.img_size[1]
+            gap = kwargs.get("gap", 0)
+            border = 1
+            fontsize = 12
+            n_txt_fields = len(kwargs.get("subset", self.dataframe.columns)) - 1
+            cell_height = img_height + 2 * (gap + 2 * border) + n_txt_fields * (2 * fontsize)
+            searchbar_height = 70
+            height = n_rows * cell_height + searchbar_height
         iframe = ('<iframe class="mols2grid-iframe" width={width} '
                   'height="{height}" frameborder="0" srcdoc="{code}"></iframe>')
         return HTML(iframe.format(width=width, height=height,
