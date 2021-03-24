@@ -61,6 +61,26 @@ class MolGrid:
         self.dataframe = dataframe
 
     @classmethod
+    def dict_from_mol(cls, mol, mdl_col):
+        """Helper method to create dict from a RDKit molecule, adding a
+        Mol block to mdl_col if specified
+
+        Parameters
+        ----------
+        mol : RDKit molecule
+        mdl_col : str
+            Key of Mol block entry in resulting dict
+        """
+        dct = {
+            "SMILES": Chem.MolToSmiles(mol),
+            **mol.GetPropsAsDict()
+        }
+        if mdl_col is not None:
+            dct[mdl_col] = Chem.MolToMolBlock(mol)
+        return dct
+
+
+    @classmethod
     def from_mols(cls, mols, **kwargs):
         """Set up the dataframe used by mols2grid directly from a list of RDKit
         molecules
@@ -72,8 +92,10 @@ class MolGrid:
         kwargs : object
             Other arguments passed on initialization
         """
-        df = pd.DataFrame([{"SMILES": Chem.MolToSmiles(mol),
-                            **mol.GetPropsAsDict()}
+        df = pd.DataFrame([cls.dict_from_mol(
+                            mol,
+                            kwargs['mdl_col'] if 'mdl_col' in kwargs else None
+                           )
                            for mol in mols if mol])
         return cls(df, **kwargs)
 
@@ -88,8 +110,10 @@ class MolGrid:
         kwargs : object
             Other arguments passed on initialization
         """
-        df = pd.DataFrame([{"SMILES": Chem.MolToSmiles(mol),
-                            **mol.GetPropsAsDict()}
+        df = pd.DataFrame([cls.dict_from_mol(
+                            mol,
+                            kwargs['mdl_col'] if 'mdl_col' in kwargs else None
+                           )
                            for mol in Chem.SDMolSupplier(sdf_file) if mol])
         return cls(df, **kwargs)
 
