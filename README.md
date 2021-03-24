@@ -3,7 +3,7 @@
 [![Pypi Version](https://img.shields.io/pypi/v/mols2grid.svg)](https://pypi.python.org/pypi/mols2grid)
 [![Build status](https://github.com/cbouy/mols2grid/workflows/build/badge.svg)](https://github.com/cbouy/mols2grid/actions/workflows/build.yml)
 
-mols2grid is a Python chemical viewer for 2D structures of small molecules, based on RDKit.
+mols2grid is an interactive chemical viewer for 2D structures of small molecules, based on RDKit.
 
 ![Demo showing mols2grid's integration in a Jupyter notebook](https://raw.githubusercontent.com/cbouy/mols2grid/master/demo.png)
 
@@ -62,7 +62,7 @@ You can also rename each field of your input with the `mapping` parameter. Pleas
 #### Parameters for the grid
   
 You can control the general look of the document through the `template` argument:
-* `template="pages"` (default) which is displayed above. It integrates nicely with Jupyter notebooks
+* `template="pages"` (default) which is displayed above. It integrates nicely with Jupyter notebooks and has a search bar
 * `template="table"`, which displays the full list of molecules (no pages). Useful if you ever need to print the full list of molecules on paper (or print to PDF)
 
 Both templates can be configured with the same parameters (a lot of which are [CSS](https://www.w3schools.com/cssref/) declarations):

@@ -238,15 +238,22 @@ class MolGrid:
         """
         df = self.dataframe.drop(columns=self.mol_col).copy()
         cell_width = self.img_size[0]
+        # define fields that are searchable
         if subset is None:
             subset = df.columns.tolist()
             subset = [subset.pop(subset.index("img"))] + subset
+        search_cols = [f"data-{col}" for col in subset if col != "img"]
+        if tooltip:
+            search_cols.append("mols2grid-tooltip")
         if style is None:
             style = {}
         columns = [f"data-{col}" for col in subset]
         width = n_cols * (cell_width + 2 * (gap + 2))
         content = []
-        final_columns = ["mols2grid-id"] + subset
+        if "mols2grid-id" in subset:
+            final_columns = subset[:]
+        else:
+            final_columns = ["mols2grid-id"] + subset
         column_map = {}
         value_names = "[{data: ['mols2grid-id']}, " + str(columns)[1:]
         for col in subset:
@@ -294,6 +301,7 @@ class MolGrid:
             tooltip_trigger = repr(tooltip_trigger),
             tooltip_placement = repr(tooltip_placement),
             n_items_per_page = n_rows * n_cols,
+            search_cols = search_cols,
             data = df.to_dict("records"),
         )
         return template.render(**template_kwargs)

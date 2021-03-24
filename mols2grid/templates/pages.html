@@ -76,7 +76,7 @@
       // search bar
       $('#mols2grid #searchbar').on("keyup", function(e) {
         var query = e.target.value;
-        listObj.search(query);
+        listObj.search(query, {{ search_cols }});
       });
       {% if tooltip %}
       // tooltips
