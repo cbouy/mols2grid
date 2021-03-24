@@ -37,13 +37,20 @@ def display(arg, **kwargs):
     ----------
     arg : pandas.DataFrame, SDF file or list of molecules
         The input containing your molecules
-    smiles_col : str ("SMILES")
-        If a pandas DataFrame is used, name of the columns with SMILES
+    smiles_col : str or None ("SMILES")
+        If a pandas DataFrame is used, name of the column with SMILES
+    mol_col : str or None (None)
+        If a pandas DataFrame is used, name of the column with RDKit molecules
     useSVG : bool (True)
         Use SVG images or PNG
     coordGen : bool (True)
         Use the coordGen library instead of the RDKit one to depict the
         molecules in 2D
+    use_coords : bool
+        Use the coordinates of the molecules (only relevant when an SDF file, a
+        list of molecules or a DataFrame of RDKit molecules were used as input)
+    remove_Hs : bool
+        Remove hydrogen atoms from the drawings
     size : tuple ((160, 120))
         Size of each image
     mapping : dict (None)
