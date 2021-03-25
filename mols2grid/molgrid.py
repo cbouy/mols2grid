@@ -70,6 +70,8 @@ class MolGrid:
         self.dataframe = dataframe
         self.mol_col = mol_col
         self.img_size = kwargs.get("size", (160, 120))
+        self.smiles_col = smiles_col
+        self._extra_columns = ["img"]
 
     @classmethod
     def from_mols(cls, mols, **kwargs):
@@ -196,7 +198,7 @@ class MolGrid:
                  fontsize="12pt", fontfamily="'DejaVu', sans-serif",
                  textalign="center", tooltip_fmt="<strong>{key}</strong>: {value}",
                  tooltip_trigger="click hover", tooltip_placement="bottom",
-                 hover_color="#e7e7e7", style=None):
+                 hover_color="#e7e7e7", style=None, selection=True):
         """Returns the HTML document for the "pages" template
         
         Parameters
@@ -238,10 +240,15 @@ class MolGrid:
             input, and outputs a valid CSS styling, for example
             `style={"Solubility": lambda x: "color: red" if x < -5 else "color: black"}`
             if you want to color the text corresponding to the "Solubility"
-            column in your dataframe.
+            column in your dataframe
+        selection : bool
+            Enables the selection of molecules and displays a checkbox at the top of each
+            cell. This is only usefull in the context of a Jupyter notebook, which gives
+            you access to your selection (index and SMILES) through `mols2grid.selection`
         """
         df = self.dataframe.drop(columns=self.mol_col).copy()
         cell_width = self.img_size[0]
+        smiles = self.smiles_col
         # define fields that are searchable
         if subset is None:
             subset = df.columns.tolist()
@@ -251,13 +258,14 @@ class MolGrid:
             search_cols.append("mols2grid-tooltip")
         if style is None:
             style = {}
-        columns = [f"data-{col}" for col in subset]
+        columns = list(set(subset + [smiles]))
+        columns = [f"data-{col}" for col in columns]
         width = n_cols * (cell_width + 2 * (gap + 2))
         content = []
-        if "mols2grid-id" in subset:
-            final_columns = subset[:]
-        else:
-            final_columns = ["mols2grid-id"] + subset
+        # force id and SMILES to be present in the data
+        final_columns = subset[:]
+        final_columns.extend(["mols2grid-id", smiles])
+        final_columns = list(set(final_columns))
         column_map = {}
         value_names = "[{data: ['mols2grid-id']}, " + str(columns)[1:]
         for col in subset:
@@ -271,6 +279,11 @@ class MolGrid:
                     s = f'<div class="data data-{col}"></div>'
             content.append(s)
             column_map[col] = f"data-{col}"
+        # add but hide a SMILES div if not present
+        if smiles not in subset:
+            s = f'<div class="data data-{smiles}" style="display: none;"></div>'
+            content.append(s)
+            column_map[smiles] = f"data-{smiles}"
             
         if tooltip:
             df["mols2grid-tooltip"] = df.apply(tooltip_formatter, axis=1,
@@ -285,7 +298,11 @@ class MolGrid:
             final_columns.append(name)
             value_names = value_names[:-1] + f", {{ attr: 'style', name: {name!r} }}]"
         
-        item = f'<div class="cell" data-mols2grid-id="0">{"".join(content)}</div>'
+        checkbox = '<input type="checkbox" class="position-relative float-left">'
+        item = '<div class="cell" data-mols2grid-id="0">{}{}</div>'.format(
+            checkbox if selection else "",
+            "".join(content))
+        df["mols2grid-id"] = [str(i) for i in range(len(df))]
         df = df[final_columns].rename(columns=column_map)
         
         template = env.get_template('pages.html')
@@ -307,8 +324,26 @@ class MolGrid:
             n_items_per_page = n_rows * n_cols,
             search_cols = search_cols,
             data = df.to_dict("records"),
+            selection = selection,
+            smiles_col = smiles,
         )
         return template.render(**template_kwargs)
+
+    def get(self, selection):
+        """Retrieve the dataframe subset corresponding to a selection
+        
+        Parameters
+        ----------
+        selection : list or dict
+            Either a list of indices or a dict with keys corresponding to
+            indices to select in the internal dataframe
+
+        Returns
+        -------
+        pandas.DataFrame
+        """
+        sel = list(selection.keys()) if isinstance(selection, dict) else selection
+        return self.dataframe.iloc[sel].drop(columns=self._extra_columns)
     
     def to_table(self, subset=None, tooltip=None, n_cols=6,
                  cell_width=160, border="1px solid #cccccc", gap=0,

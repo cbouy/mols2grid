@@ -23,9 +23,8 @@
       #mols2grid .cell:hover {
         background-color: {{ hover_color }};
       }
-      #mols2grid .cell img {
-        max-width: {{ cell_width }}px;
-        width: {{ cell_width }}px;
+      #mols2grid .cell img, #mols2grid .cell svg {
+        max-width: 100%;
         height: auto;
         padding: 0;
       }
@@ -73,6 +72,12 @@
       );
       listObj.remove("mols2grid-id", "0")
       listObj.add({{ data }})
+      {% if selection %}
+      // checkbox
+      var kernel = window.parent.IPython.notebook.kernel;
+      kernel.execute('import mols2grid')
+      kernel.execute('mols2grid.selection = {}')
+      {% endif %}
       // search bar
       $('#mols2grid #searchbar').on("keyup", function(e) {
         var query = e.target.value;
@@ -87,13 +92,30 @@
           $('#mols2grid a.page-link').click(function() {
             $('.mols2grid-tooltip[data-toggle="popover"]').popover('hide')
           });
+          // create new popover
           $('.mols2grid-tooltip[data-toggle="popover"]').popover({
             placement: {{ tooltip_placement }},
             trigger: {{ tooltip_trigger }},
             html: true,
-          })
+          });
         })
       });
+      {% endif %}
+      {% if selection %}
+      // update selection on checkbox click
+      listObj.on("updated", function (list) {
+        $("input:checkbox").change(function() {
+          var _id = $(this).closest(".cell").attr("data-mols2grid-id");
+          var _smiles = $($(this).siblings(".data-{{ smiles_col }}")[0]).text();
+          if (this.checked) {
+            kernel.execute('mols2grid.selection['+_id+'] = "'+_smiles+'"');
+          } else {
+            kernel.execute('del mols2grid.selection['+_id+']');
+          }
+        }); 
+      });
+      {% endif %}
+      {% if tooltip or selection %}
       listObj.update();
       {% endif %}
     </script>

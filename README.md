@@ -7,7 +7,7 @@ mols2grid is an interactive chemical viewer for 2D structures of small molecules
 
 ![Demo showing mols2grid's integration in a Jupyter notebook](https://raw.githubusercontent.com/cbouy/mols2grid/master/demo.png)
 
-➡️ Check the demo notebook [here](https://nbviewer.jupyter.org/github/cbouy/molgrid/blob/master/demo.ipynb)
+➡️ Check the demo notebook [here](https://nbviewer.jupyter.org/github/cbouy/mols2grid/blob/master/demo.ipynb)
 
 ## Installation ℹ️
 ---
@@ -102,6 +102,8 @@ The `pages` template comes with additional parameters:
 
 * `n_rows=3` : int  
     Number of rows per page
+* `selection=True` : bool
+    Enables the selection of molecules using a checkbox. Only usefull in the context of a Jupyter notebook. You can retrieve your selection of molecules (index and SMILES) through `mols2grid.selection`
 
 Please note that the search bar doesn't allow for substructure searching with SMARTS patterns, it only performs a simple text search.
 
@@ -110,6 +112,7 @@ Please note that the search bar doesn't allow for substructure searching with SM
 You can either:
 * save the grid with `mols2grid.save(output_path, ...)`. The file that is generated is a standalone HTML document that should work with most web browsers.
 * display it directly in a Jupyter notebook with `mols2grid.display(...)` (optionnal argument: `width="100%"`, `height=None`)
+
 
 ## License
 ---
