@@ -111,6 +111,7 @@ def display(arg, **kwargs):
     raise TypeError(f"No display method registered for type {type(arg)!r}")
 
 @display.register(DataFrame)
+@display.register(dict)
 def _(df, **kwargs):
     template, kwargs, render_kwargs = _prepare_kwargs(kwargs, "display")
     return MolGrid(df, **kwargs).display(template=template, **render_kwargs)

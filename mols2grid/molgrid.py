@@ -31,9 +31,10 @@ class MolGrid:
         """
         Parameters
         ----------
-        df : pandas.DataFrame
-            Dataframe containing a SMILES column and some other information 
-            about each molecule
+        df : pandas.DataFrame or dict or list
+            Dataframe containing a SMILES or mol column, or dictionary containing
+            a list of SMILES, or list of dictionnaries containing a SMILES
+            field
         smiles_col : str or None
             Name of the SMILES column in the dataframe, if available
         mol_col : str or None
@@ -53,7 +54,10 @@ class MolGrid:
             raise ValueError("One of `smiles_col` or `mol_col` must be set")
         Draw.rdDepictor.SetPreferCoordGen(coordGen)
         self.useSVG = useSVG
-        dataframe = df.copy()
+        if isinstance(df, pd.DataFrame):
+            dataframe = df.copy()
+        else:
+            dataframe = pd.DataFrame(df)
         if mapping:
             dataframe.rename(columns=mapping, inplace=True)
         if smiles_col and not mol_col:
