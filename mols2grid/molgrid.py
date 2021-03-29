@@ -2,11 +2,12 @@ import warnings
 from base64 import b64encode
 from html import escape
 from pathlib import Path
+from copy import deepcopy
 import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import Draw
 from jinja2 import Environment, FileSystemLoader
-from .utils import requires, tooltip_formatter
+from .utils import requires, tooltip_formatter, mol_to_record
 try:
     from IPython.display import HTML
 except ModuleNotFoundError:
@@ -24,16 +25,19 @@ class MolGrid:
     """Class that handles drawing molecules, rendering the HTML document and
     saving or displaying it in a notebook
     """
-    def __init__(self, df, smiles_col="SMILES", coordGen=True, useSVG=True,
-        mapping=None, **kwargs):
+    def __init__(self, df, smiles_col="SMILES", mol_col=None, coordGen=True,
+        useSVG=True, mapping=None, **kwargs):
         """
         Parameters
         ----------
         df : pandas.DataFrame
             Dataframe containing a SMILES column and some other information 
             about each molecule
-        smiles_col : str
-            Name of the SMILES column in the dataframe
+        smiles_col : str or None
+            Name of the SMILES column in the dataframe, if available
+        mol_col : str or None
+            Name of an RDKit molecule column. If available, coordinates and 
+            atom/bonds annotations from this will be used for depiction
         coordGen : bool
             Sets whether or not the CoordGen library should be preferred to the
             RDKit depiction library
@@ -44,14 +48,22 @@ class MolGrid:
         kwargs : object
             Arguments passed to the `draw_mol` method
         """
+        if not (smiles_col or mol_col):
+            raise ValueError("One of `smiles_col` or `mol_col` must be set")
         Draw.rdDepictor.SetPreferCoordGen(coordGen)
         self.useSVG = useSVG
         dataframe = df.copy()
         if mapping:
             dataframe.rename(columns=mapping, inplace=True)
-        dataframe["img"] = dataframe[smiles_col].apply(self.smi_to_img,
-                                                       **kwargs)
+        if smiles_col and not mol_col:
+            mol_col = "mol"
+            dataframe[mol_col] = dataframe[smiles_col].apply(Chem.MolFromSmiles)
+        elif mol_col and not smiles_col:
+            dataframe["SMILES"] = dataframe[mol_col].apply(Chem.MolToSmiles)
+        dataframe["img"] = dataframe[mol_col].apply(self.mol_to_img, **kwargs)
+        dataframe["mols2grid-id"] = list(range(len(dataframe)))
         self.dataframe = dataframe
+        self.mol_col = mol_col
 
     @classmethod
     def from_mols(cls, mols, **kwargs):
@@ -65,10 +77,9 @@ class MolGrid:
         kwargs : object
             Other arguments passed on initialization
         """
-        df = pd.DataFrame([{"SMILES": Chem.MolToSmiles(mol),
-                            **mol.GetPropsAsDict()}
-                           for mol in mols if mol])
-        return cls(df, **kwargs)
+        df = pd.DataFrame([mol_to_record(mol) for mol in mols if mol])
+        mol_col = kwargs.pop("mol_col", "mol")
+        return cls(df, mol_col=mol_col, **kwargs)
 
     @classmethod
     def from_sdf(cls, sdf_file, **kwargs):
@@ -81,10 +92,10 @@ class MolGrid:
         kwargs : object
             Other arguments passed on initialization
         """
-        df = pd.DataFrame([{"SMILES": Chem.MolToSmiles(mol),
-                            **mol.GetPropsAsDict()}
+        df = pd.DataFrame([mol_to_record(mol)
                            for mol in Chem.SDMolSupplier(sdf_file) if mol])
-        return cls(df, **kwargs)
+        mol_col = kwargs.pop("mol_col", "mol")
+        return cls(df, mol_col=mol_col, **kwargs)
 
     @property
     def template(self):
@@ -101,7 +112,8 @@ class MolGrid:
                              "Use one of 'pages' or 'table'")
         self._template = value
 
-    def draw_mol(self, mol, size=(160, 120), **kwargs):
+    def draw_mol(self, mol, size=(160, 120), use_coords=True, remove_Hs=True,
+        **kwargs):
         """Draw a molecule
 
         Parameters
@@ -110,6 +122,10 @@ class MolGrid:
             The molecule to draw
         size : tuple
             The size of the drawing canvas
+        use_coords : bool
+            Use the 2D or 3D coordinates of the molecule
+        remove_Hs : bool
+            Remove hydrogen atoms from the drawing
         **kwargs : object
             Attributes of the rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions class
             like `fixedBondLength=35, bondLineWidth=2`
@@ -127,6 +143,11 @@ class MolGrid:
         for key, value in kwargs.items():
             setattr(opts, key, value)
         d2d.SetDrawOptions(opts)
+        if not use_coords:
+            mol = deepcopy(mol)
+            mol.RemoveAllConformers()
+        if remove_Hs:
+            mol = Chem.RemoveHs(mol)
         d2d.DrawMolecule(mol)
         d2d.FinishDrawing()
         return d2d.GetDrawingText()
@@ -145,7 +166,7 @@ class MolGrid:
         the molecule"""
         mol = Chem.MolFromSmiles(smi)
         return self.mol_to_img(mol, **kwargs)
-    
+
     def render(self, template="pages", **kwargs):
         """Returns the HTML document corresponding to the "pages" or "table"
         template. See `to_pages` and `to_table` for the list of arguments
@@ -215,7 +236,7 @@ class MolGrid:
             if you want to color the text corresponding to the "Solubility"
             column in your dataframe.
         """
-        df = self.dataframe.copy()
+        df = self.dataframe.drop(columns=self.mol_col).copy()
         if subset is None:
             subset = df.columns.tolist()
             subset = [subset.pop(subset.index("img"))] + subset
@@ -253,7 +274,6 @@ class MolGrid:
             value_names = value_names[:-1] + f", {{ attr: 'style', name: {name!r} }}]"
         
         item = f'<div class="cell" data-mols2grid-id="0">{"".join(content)}</div>'
-        df["mols2grid-id"] = [str(i) for i in range(len(df))]
         df = df[final_columns].rename(columns=column_map)
         
         template = env.get_template('pages.html')
@@ -328,7 +348,7 @@ class MolGrid:
         """
         tr = []
         data = []
-        df = self.dataframe
+        df = self.dataframe.drop(columns=self.mol_col)
 
         if subset is None:
             subset = df.columns.tolist()

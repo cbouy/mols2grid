@@ -12,11 +12,11 @@ mols2grid is a Python chemical viewer for 2D structures of small molecules, base
 ## Installation ℹ️
 ---
 
-mols2grid was developped for Python 3.6+ and requires rdkit, pandas and jinja2 as dependencies.
+mols2grid was developped for Python 3.6+ and requires rdkit (>=2019.09.1), pandas and jinja2 as dependencies.
 
 To install mols2grid from a clean conda environment:
 ```shell
-conda install -c conda-forge rdkit
+conda install -c conda-forge 'rdkit>=2019.09.1'
 pip install mols2grid
 ```
 
@@ -44,19 +44,20 @@ mols2grid.display("path/to/molecules.sdf",
 #### Input parameters
 
 You can setup the grid from various inputs:
-* a pandas **DataFrame** (with a column of SMILES, controlled by the `smiles_col="SMILES"` parameter),
+* a pandas **DataFrame** (with a column of SMILES or RDKit molecules, controlled by the `smiles_col` and `mol_col` parameters),
 * a list of **RDKit molecules** (with properties accessible through the `mol.GetPropsAsDict()` method),
 * or an **SDF file**
 
-You can also rename each field of your input with the `mapping` parameter. Please note that 2 fields are automatically added regardless of your input: `SMILES` and `img`. If a "SMILES" field already exists, it will not be overwritten.
+You can also rename each field of your input with the `mapping` parameter. Please note that 3 fields are automatically added regardless of your input: `mols2grid-id`, `SMILES` and `img`. If a "SMILES" field already exists, it will not be overwritten.
 
 #### Parameters for the drawing of each molecule
 
 * `useSVG=True`: use SVG images or PNG
 * `coordGen=True`: use the coordGen library instead of the RDKit one to depict the molecules in 2D
 * `size=(160, 120)`: size of each image
+* `use_coords=True`: use the coordinates of the input molecules if available
+* `remove_Hs=True`: remove hydrogen atoms from the drawings
 * and all the arguments available in RDKit's [MolDrawOptions](https://www.rdkit.org/docs/source/rdkit.Chem.Draw.rdMolDraw2D.html#rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions), like `addStereoAnnotation=True`
-
 
 #### Parameters for the grid
   

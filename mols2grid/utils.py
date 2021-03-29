@@ -1,5 +1,6 @@
 from functools import wraps
 from importlib.util import find_spec
+from rdkit.Chem import MolToSmiles
 
 def requires(module):
     def inner(func):
@@ -32,3 +33,9 @@ def tooltip_formatter(s, subset, fmt, style):
         v = f'<span style="{style[k](v)}">{v}</span>' if style.get(k) else v
         items.append(fmt.format(key=k, value=v))
     return "<br>".join(items)
+
+def mol_to_record(mol):
+    """Function to create a dict of data from an RDKit molecule"""
+    return {"SMILES": MolToSmiles(mol),
+            **mol.GetPropsAsDict(),
+            "mol": mol}
