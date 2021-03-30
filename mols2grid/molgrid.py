@@ -8,7 +8,7 @@ import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import Draw
 from jinja2 import Environment, FileSystemLoader
-from .utils import requires, tooltip_formatter, mol_to_record
+from .utils import requires, tooltip_formatter, mol_to_record, mol_to_smiles
 try:
     from IPython.display import HTML
 except ModuleNotFoundError:
@@ -60,18 +60,23 @@ class MolGrid:
             dataframe = pd.DataFrame(df)
         if mapping:
             dataframe.rename(columns=mapping, inplace=True)
+        self._extra_columns = ["img", "mols2grid-id"]
         if smiles_col and not mol_col:
             mol_col = "mol"
+            self._extra_columns.append(mol_col)
             dataframe[mol_col] = dataframe[smiles_col].apply(Chem.MolFromSmiles)
-        elif mol_col and not smiles_col:
-            dataframe["SMILES"] = dataframe[mol_col].apply(Chem.MolToSmiles)
-        dataframe["img"] = dataframe[mol_col].apply(self.mol_to_img, **kwargs)
+        elif mol_col and (smiles_col not in dataframe.columns):
+            dataframe[smiles_col] = dataframe[mol_col].apply(mol_to_smiles)
+        # add index
         dataframe["mols2grid-id"] = list(range(len(dataframe)))
+        # drop None
+        dataframe.dropna(axis=0, subset=[mol_col], inplace=True)
+        # generate drawings
+        dataframe["img"] = dataframe[mol_col].apply(self.mol_to_img, **kwargs)
         self.dataframe = dataframe
         self.mol_col = mol_col
         self.img_size = kwargs.get("size", (160, 120))
         self.smiles_col = smiles_col
-        self._extra_columns = ["img"]
 
     @classmethod
     def from_mols(cls, mols, **kwargs):
@@ -85,8 +90,8 @@ class MolGrid:
         kwargs : object
             Other arguments passed on initialization
         """
-        df = pd.DataFrame([mol_to_record(mol) for mol in mols if mol])
         mol_col = kwargs.pop("mol_col", "mol")
+        df = pd.DataFrame([mol_to_record(mol, mol_col) for mol in mols])
         return cls(df, mol_col=mol_col, **kwargs)
 
     @classmethod
@@ -100,9 +105,9 @@ class MolGrid:
         kwargs : object
             Other arguments passed on initialization
         """
-        df = pd.DataFrame([mol_to_record(mol)
-                           for mol in Chem.SDMolSupplier(sdf_file) if mol])
         mol_col = kwargs.pop("mol_col", "mol")
+        df = pd.DataFrame([mol_to_record(mol, mol_col)
+                           for mol in Chem.SDMolSupplier(sdf_file)])
         return cls(df, mol_col=mol_col, **kwargs)
 
     @property
@@ -249,17 +254,17 @@ class MolGrid:
         df = self.dataframe.drop(columns=self.mol_col).copy()
         cell_width = self.img_size[0]
         smiles = self.smiles_col
-        # define fields that are searchable
         if subset is None:
             subset = df.columns.tolist()
             subset = [subset.pop(subset.index("img"))] + subset
+        # define fields that are searchable
         search_cols = [f"data-{col}" for col in subset if col != "img"]
         if tooltip:
             search_cols.append("mols2grid-tooltip")
         if style is None:
             style = {}
-        columns = list(set(subset + [smiles]))
-        columns = [f"data-{col}" for col in columns]
+        value_names = list(set(subset + [smiles]))
+        value_names = [f"data-{col}" for col in value_names]
         width = n_cols * (cell_width + 2 * (gap + 2))
         content = []
         # force id and SMILES to be present in the data
@@ -267,7 +272,14 @@ class MolGrid:
         final_columns.extend(["mols2grid-id", smiles])
         final_columns = list(set(final_columns))
         column_map = {}
-        value_names = "[{data: ['mols2grid-id']}, " + str(columns)[1:]
+        # make a copy if id shown explicitely
+        if "mols2grid-id" in subset:
+            id_name = "mols2grid-id-copy"
+            df[id_name] = df["mols2grid-id"]
+            value_names.append(f"data-{id_name}")
+            final_columns.append(id_name)
+            subset = [id_name if x == "mols2grid-id" else x for x in subset]
+        # organize data
         for col in subset:
             if col == "img" and tooltip:
                 s = (f'<div class="data data-{col} mols2grid-tooltip" '
@@ -279,11 +291,13 @@ class MolGrid:
                     s = f'<div class="data data-{col}"></div>'
             content.append(s)
             column_map[col] = f"data-{col}"
-        # add but hide a SMILES div if not present
+        # add but hide SMILES div if not present
         if smiles not in subset:
             s = f'<div class="data data-{smiles}" style="display: none;"></div>'
             content.append(s)
             column_map[smiles] = f"data-{smiles}"
+        # set mapping for list.js
+        value_names = "[{data: ['mols2grid-id']}, " + str(value_names)[1:]
             
         if tooltip:
             df["mols2grid-tooltip"] = df.apply(tooltip_formatter, axis=1,
@@ -302,9 +316,8 @@ class MolGrid:
         item = '<div class="cell" data-mols2grid-id="0">{}{}</div>'.format(
             checkbox if selection else "",
             "".join(content))
-        df["mols2grid-id"] = [str(i) for i in range(len(df))]
         df = df[final_columns].rename(columns=column_map)
-        
+
         template = env.get_template('pages.html')
         template_kwargs = dict(
             width = width,
@@ -453,6 +466,7 @@ class MolGrid:
     def display(self, width="100%", height=None, **kwargs):
         """Render and display the grid in a Jupyter notebook"""
         code = self.render(**kwargs)
+        template = kwargs.get("template", "pages")
         if not height:
             n_cols = kwargs.get("n_cols", 5)
             tot_rows = ceil(self.dataframe.shape[0] / n_cols)
@@ -461,9 +475,11 @@ class MolGrid:
             gap = kwargs.get("gap", 0)
             border = 1
             fontsize = 12
-            n_txt_fields = len(kwargs.get("subset", self.dataframe.columns)) - 1
+            subset = kwargs.get("subset", self.dataframe.columns)
+            subset = self.dataframe.columns if subset is None else subset
+            n_txt_fields = len(subset) - 1
             cell_height = img_height + 2 * (gap + 2 * border) + n_txt_fields * (2 * fontsize)
-            searchbar_height = 70
+            searchbar_height = 70 if template == "pages" else 0
             height = n_rows * cell_height + searchbar_height
         iframe = ('<iframe class="mols2grid-iframe" width={width} '
                   'height="{height}" frameborder="0" srcdoc="{code}"></iframe>')

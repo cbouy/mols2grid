@@ -34,8 +34,12 @@ def tooltip_formatter(s, subset, fmt, style):
         items.append(fmt.format(key=k, value=v))
     return "<br>".join(items)
 
-def mol_to_record(mol):
+def mol_to_smiles(mol):
+    """Returns a SMILES from an RDKit molecule, or None if not an RDKit mol"""
+    return MolToSmiles(mol) if mol else None
+
+def mol_to_record(mol, mol_col="mol"):
     """Function to create a dict of data from an RDKit molecule"""
     return {"SMILES": MolToSmiles(mol),
             **mol.GetPropsAsDict(),
-            "mol": mol}
+            mol_col: mol} if mol else {}
