@@ -49,6 +49,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
+    <script src="https://rdkit.org/rdkitjs/beta/RDKit_minimal.js"></script>
   </head>
   <body>
     <div id="mols2grid" class="gridcontainer">
@@ -74,12 +75,21 @@
         <div class="input-group float-right col-4 py-3 mr-3 ml-2">
           <input type="text" id="searchbar" class="form-control" placeholder="Search" aria-label="Search" aria-describedby="basic-addon1">
           <div class="input-group-append">
-            <button id="searchbtn" class="btn btn-light disabled" type="button">🔎</button>
+            <button id="searchBtn" class="btn btn-light dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">🔎</button>
+            <div class="dropdown-menu dropdown-menu-right">
+              <button id="txtSearch" class="search-btn dropdown-item active">Text</button>
+              <button id="smartsSearch" class="search-btn dropdown-item">SMARTS</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
     <script>
+      // RDKit
+      onRuntimeInitialized: initRDKitModule().then(function(instance) {
+        RDKitModule = instance;
+        console.log('RDKit version: ' + RDKitModule.version());
+      });
       // pages
       var listObj = new List('mols2grid',
         {
@@ -91,7 +101,7 @@
             item: '<li class="page-item"><a class="page page-link" href="#"></a></li>',
             innerWindow: 1,
             outerWindow: 1,
-          }
+          },
         }
       );
       listObj.remove("mols2grid-id", "0")
@@ -125,7 +135,7 @@
         var _field = $(this).attr("data-name");
         if (_field == sort_field) {
           $(this).removeClass("arrow-" + sort_order)
-          sort_order = (sort_order == "desc") ? "asc" : "desc";
+          sort_order = (sort_order === "desc") ? "asc" : "desc";
         } else {
           $('#mols2grid button.sort-btn.active').removeClass("active "+"arrow-"+sort_order);
           sort_order = "asc";
@@ -136,9 +146,38 @@
         listObj.sort(_field, {order: sort_order, sortFunction: mols2gridSortFunction});
       });
       // search bar
+      function SmartsSearch(query, columns) {
+        query = $('#mols2grid #searchbar').val();
+        var smiles = columns[0];
+        var qmol = RDKitModule.get_qmol(query);
+        if (qmol.is_valid()) {
+          for (var k = 0, kl = listObj.items.length; k < kl; k++) {
+            var item = listObj.items[k];
+            var mol = RDKitModule.get_mol(item.values()[smiles]);
+            var results = JSON.parse(mol.get_substruct_match(qmol));
+            if (results.atoms) {
+              item.found = true;
+            } else {
+              item.found = false;
+            }
+            mol.delete();
+          }
+        }
+        qmol.delete();
+      }
+      var search_type = "Text";
+      $('#mols2grid .search-btn').click(function() {
+        search_type = $(this).text();
+        $('#mols2grid button.search-btn.active').removeClass("active");
+        $(this).addClass("active");
+      });
       $('#mols2grid #searchbar').on("keyup", function(e) {
         var query = e.target.value;
-        listObj.search(query, {{ search_cols }});
+        if (search_type === "Text") {
+          listObj.search(query, {{ search_cols }});
+        } else {
+          listObj.search(query, ["data-"+"{{ smiles_col }}"], SmartsSearch);
+        }
       });
       {% if tooltip %}
       // tooltips
