@@ -56,8 +56,7 @@ You can also rename each field of your input with the `mapping` parameter. Pleas
 * `coordGen=True`: use the coordGen library instead of the RDKit one to depict the molecules in 2D
 * `size=(160, 120)`: size of each image
 * `use_coords=True`: use the coordinates of the input molecules if available
-* `remove_Hs=True`: remove hydrogen atoms from the drawings
-* and all the arguments available in RDKit's [MolDrawOptions](https://www.rdkit.org/docs/source/rdkit.Chem.Draw.rdMolDraw2D.html#rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions), like `addStereoAnnotation=True`
+* `MolDrawOptions=None`: RDKit's [MolDrawOptions](https://www.rdkit.org/docs/source/rdkit.Chem.Draw.rdMolDraw2D.html#rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions) class. Useful for making highly customized drawings. You can also leave this to `None`, and directly use the attributes of this class as parameters like `addStereoAnnotation=True`
 
 #### Parameters for the grid
   
@@ -103,7 +102,7 @@ The `pages` template comes with additional parameters:
 * `n_rows=3` : int  
     Number of rows per page
 * `selection=True` : bool
-    Enables the selection of molecules using a checkbox. Only usefull in the context of a Jupyter notebook. You can retrieve your selection of molecules (index and SMILES) through `mols2grid.selection`
+    Enables the selection of molecules using a checkbox. Only usefull in the context of a Jupyter notebook (not compatible with Visual Studio notebook). You can retrieve your selection of molecules (index and SMILES) through `mols2grid.selection`
 
 Please note that the search bar doesn't allow for substructure searching with SMARTS patterns, it only performs a simple text search.
 

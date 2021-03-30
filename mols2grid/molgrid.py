@@ -125,8 +125,8 @@ class MolGrid:
                              "Use one of 'pages' or 'table'")
         self._template = value
 
-    def draw_mol(self, mol, size=(160, 120), use_coords=True, remove_Hs=True,
-        **kwargs):
+    def draw_mol(self, mol, size=(160, 120), use_coords=True,
+        MolDrawOptions=None, **kwargs):
         """Draw a molecule
 
         Parameters
@@ -137,11 +137,12 @@ class MolGrid:
             The size of the drawing canvas
         use_coords : bool
             Use the 2D or 3D coordinates of the molecule
-        remove_Hs : bool
-            Remove hydrogen atoms from the drawing
+        MolDrawOptions : rdkit.Chem.Draw.MolDrawOptions or None
+            Directly set the drawing options. Useful for making highly
+            customized drawings
         **kwargs : object
-            Attributes of the rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions class
-            like `fixedBondLength=35, bondLineWidth=2`
+            Attributes of the rdkit.Chem.Draw.MolDrawOptions class like
+            `fixedBondLength=35, bondLineWidth=2`
         
         Notes
         -----
@@ -152,16 +153,15 @@ class MolGrid:
             d2d = Draw.MolDraw2DSVG(*size)
         else:
             d2d = Draw.MolDraw2DCairo(*size)
-        opts = Draw.MolDrawOptions()
+        MolDrawOptions = MolDrawOptions or Draw.MolDrawOptions()
         for key, value in kwargs.items():
-            setattr(opts, key, value)
-        d2d.SetDrawOptions(opts)
+            setattr(MolDrawOptions, key, value)
+        d2d.SetDrawOptions(MolDrawOptions)
         if not use_coords:
             mol = deepcopy(mol)
             mol.RemoveAllConformers()
-        if remove_Hs:
-            mol = Chem.RemoveHs(mol)
-        d2d.DrawMolecule(mol)
+        hl_atoms = getattr(mol, "__sssAtoms", [])
+        d2d.DrawMolecule(mol, highlightAtoms=hl_atoms)
         d2d.FinishDrawing()
         return d2d.GetDrawingText()
     
