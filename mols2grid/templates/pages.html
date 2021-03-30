@@ -98,7 +98,7 @@
           page: {{ n_items_per_page }},
           pagination: {
             name: "pagination",
-            item: '<li class="page-item"><a class="page page-link" href="#"></a></li>',
+            item: '<li class="page-item"><a class="page page-link" href="#" onclick="event.preventDefault()"></a></li>',
             innerWindow: 1,
             outerWindow: 1,
           },
@@ -131,7 +131,6 @@
         }
       }
       $('#mols2grid button.sort-btn').click(function(e) {
-        e.preventDefault();
         var _field = $(this).attr("data-name");
         if (_field == sort_field) {
           $(this).removeClass("arrow-" + sort_order)
@@ -186,7 +185,6 @@
         $(function () {
           // hide previous popovers
           $('#mols2grid a.page-link').click(function(e) {
-            e.preventDefault();
             $('.mols2grid-tooltip[data-toggle="popover"]').popover('hide')
           });
           // create new popover
