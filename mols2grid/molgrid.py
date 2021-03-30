@@ -261,6 +261,8 @@ class MolGrid:
         search_cols = [f"data-{col}" for col in subset if col != "img"]
         if tooltip:
             search_cols.append("mols2grid-tooltip")
+        sort_cols = search_cols[:-1] if tooltip else search_cols[:]
+        sort_cols = ["mols2grid-id"] + sort_cols
         if style is None:
             style = {}
         value_names = list(set(subset + [smiles]))
@@ -339,6 +341,7 @@ class MolGrid:
             data = df.to_dict("records"),
             selection = selection,
             smiles_col = smiles,
+            sort_cols = sort_cols,
         )
         return template.render(**template_kwargs)
 
