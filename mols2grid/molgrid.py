@@ -359,7 +359,8 @@ class MolGrid:
         pandas.DataFrame
         """
         sel = list(selection.keys()) if isinstance(selection, dict) else selection
-        return self.dataframe.iloc[sel].drop(columns=self._extra_columns)
+        return (self.dataframe.loc[self.dataframe["mols2grid-id"].isin(sel)]
+                              .drop(columns=self._extra_columns))
     
     def to_table(self, subset=None, tooltip=None, n_cols=6,
                  cell_width=160, border="1px solid #cccccc", gap=0,
