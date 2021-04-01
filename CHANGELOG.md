@@ -4,15 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-### Added
+## [0.0.4] - 2021/04/01
 ### Changed
-### Deprecated
-### Removed
+- The demo notebook can now be run on Google Colab
 ### Fixed
 - DataFrames with `NaN` values would previously lead to an **empty grid** as `NaN` were
   converted to `nan` (not recognized by JS) instead of `NaN`.
 - Selection of molecules in Google Colab now works as expected.
+- Saved documents are now displayed properly
 
 ## [0.0.3] - 2021/03/31
 ### Added
@@ -39,8 +38,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - The "mols2grid-id" now keeps track of molecules that could not be read by RDKit. This
   makes relying on the index of the corresponding entry more reliable.
-### Deprecated
-### Removed
 ### Fixed
 - The "mols2grid-id" field is now correctly set in the internal `DataFrame` and the
   JavaScript `List`.

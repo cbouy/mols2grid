@@ -2,12 +2,13 @@
 
 [![Pypi Version](https://img.shields.io/pypi/v/mols2grid.svg)](https://pypi.python.org/pypi/mols2grid)
 [![Build status](https://github.com/cbouy/mols2grid/workflows/build/badge.svg)](https://github.com/cbouy/mols2grid/actions/workflows/build.yml)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cbouy/mols2grid/blob/master/demo.ipynb)
 
 mols2grid is an interactive chemical viewer for 2D structures of small molecules, based on RDKit.
 
 ![Demo showing mols2grid's integration in a Jupyter notebook](https://raw.githubusercontent.com/cbouy/mols2grid/master/demo.png)
 
-➡️ Check the demo notebook [here](https://nbviewer.jupyter.org/github/cbouy/mols2grid/blob/master/demo.ipynb)
+➡️ Try the demo notebook on [Google Colab](https://colab.research.google.com/github/cbouy/mols2grid/blob/master/demo.ipynb)
 
 ## 🐍 Installation
 ---
