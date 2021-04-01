@@ -119,9 +119,9 @@
         function del_selection(_id) {
           kernel.execute("mols2grid.del_selection("+_id+")");
         }
-      } else if (google.colab !== undefined) {
+      } else if (window.parent.google.colab !== undefined) {
         // Google colab
-        var kernel = google.colab.kernel;
+        var kernel = window.parent.google.colab.kernel;
         (async function() {
           const result = await kernel.invokeFunction('m2g.reset_selection', [], {});
         })();
