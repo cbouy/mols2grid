@@ -20,6 +20,8 @@ conda install -c conda-forge 'rdkit>=2019.09.1'
 pip install mols2grid
 ```
 
+It is compatible with Jupyter Notebook and Google Colab (Visual Studio notebooks and Jupyterlab are not supported).
+
 ## 📜 Usage
 ---
 
@@ -102,8 +104,9 @@ The `pages` template comes with additional parameters:
 * `n_rows=3` : int  
     Number of rows per page
 * `selection=True` : bool
-    Enables the selection of molecules using a checkbox. Only usefull in the context of a Jupyter notebook (not compatible with Visual Studio notebook). You can retrieve your selection of molecules (index and SMILES) through `mols2grid.selection`
+    Enables the selection of molecules using a checkbox. Only usefull in the context of a Jupyter notebook. You can retrieve your selection of molecules (index and SMILES) through `mols2grid.selection`
 
+The `pages` template also allows searching (by text or SMARTS) and sorting the grid.
 
 #### Output parameters
 

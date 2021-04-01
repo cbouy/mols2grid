@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - DataFrames with `NaN` values would previously lead to an **empty grid** as `NaN` were
   converted to `nan` (not recognized by JS) instead of `NaN`.
+- Selection of molecules in Google Colab now works as expected.
 
 ## [0.0.3] - 2021/03/31
 ### Added
