@@ -118,6 +118,7 @@
       var sort_field = "mols2grid-id";
       var sort_order = "asc";
       function coerce_type(str) {
+        if (isNaN(str)) return null;
         var num = parseFloat(str)
         return isNaN(num) ? str : num;
       }

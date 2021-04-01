@@ -1,6 +1,7 @@
 import warnings
 from base64 import b64encode
 from html import escape
+import json
 from pathlib import Path
 from copy import deepcopy
 from math import ceil
@@ -338,7 +339,7 @@ class MolGrid:
             tooltip_placement = repr(tooltip_placement),
             n_items_per_page = n_rows * n_cols,
             search_cols = search_cols,
-            data = df.to_dict("records"),
+            data = json.dumps(df.to_dict("records")),
             selection = selection,
             smiles_col = smiles,
             sort_cols = sort_cols,
