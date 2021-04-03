@@ -14,7 +14,7 @@ def del_selection(_id):
 
 try:
     from google import colab
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     pass
 else:
     colab.output.register_callback('m2g.reset_selection', reset_selection)
