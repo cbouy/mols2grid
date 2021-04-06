@@ -204,7 +204,7 @@ class MolGrid:
                  fontsize="12pt", fontfamily="'DejaVu', sans-serif",
                  textalign="center", tooltip_fmt="<strong>{key}</strong>: {value}",
                  tooltip_trigger="click hover", tooltip_placement="bottom",
-                 hover_color="#e7e7e7", style=None, selection=True):
+                 hover_color="#e7e7e7", style=None, selection=True, fmt=None):
         """Returns the HTML document for the "pages" template
         
         Parameters
@@ -251,6 +251,15 @@ class MolGrid:
             Enables the selection of molecules and displays a checkbox at the top of each
             cell. This is only usefull in the context of a Jupyter notebook, which gives
             you access to your selection (index and SMILES) through `mols2grid.selection`
+        fmt : dict or None
+            Format string or callable to apply to each item in a cell. The dict
+            must follow a `key: formatter` structure where the key must correspond 
+            to one of the columns in `subset`. The formatter is either a format
+            string that will be applied with `formatter.format(value)` or a callable
+            that will be called with `formatter(value)`. For example,
+            `fmt={"Solubility": "{:.2f}", "clogP": lambda x: f"clogP: {x:.2f}"}`
+            will format the solubility with 2 decimals and add the text "clogP: "
+            before the clogP value.
         """
         df = self.dataframe.drop(columns=self.mol_col).copy()
         cell_width = self.img_size[0]
@@ -266,6 +275,8 @@ class MolGrid:
         sort_cols = ["mols2grid-id"] + sort_cols
         if style is None:
             style = {}
+        if fmt is None:
+            fmt = {}
         value_names = list(set(subset + [smiles]))
         value_names = [f"data-{col}" for col in value_names]
         width = n_cols * (cell_width + 2 * (gap + 2))
@@ -319,6 +330,12 @@ class MolGrid:
         item = '<div class="cell" data-mols2grid-id="0">{}{}</div>'.format(
             checkbox if selection else "",
             "".join(content))
+        for fmtkey, fmtitem in fmt.items():
+            if fmtkey in final_columns:
+                try:
+                    df[fmtkey] = df[fmtkey].apply(fmtitem)
+                except TypeError:
+                    df[fmtkey] = df[fmtkey].apply(lambda x: fmtitem.format(x))
         df = df[final_columns].rename(columns=column_map)
 
         template = env.get_template('pages.html')
@@ -368,7 +385,7 @@ class MolGrid:
                  fontsize="12pt", fontfamily="'DejaVu', sans-serif",
                  textalign="center", tooltip_fmt="<strong>{key}</strong>: {value}",
                  tooltip_trigger="click hover", tooltip_placement="bottom",
-                 hover_color="#e7e7e7", style=None):
+                 hover_color="#e7e7e7", style=None, fmt=None):
         """Returns the HTML document for the "table" template
         
         Parameters
@@ -409,6 +426,15 @@ class MolGrid:
             `style={"Solubility": lambda x: "color: red" if x < -5 else "color: black"}`
             if you want to color the text corresponding to the "Solubility"
             column in your dataframe.
+        fmt : dict or None
+            Format string or callable to apply to each item in a cell. The dict
+            must follow a `key: formatter` structure where the key must correspond 
+            to one of the columns in `subset`. The formatter is either a format
+            string that will be applied with `formatter.format(value)` or a callable
+            that will be called with `formatter(value)`. For example,
+            `fmt={"Solubility": "{:.2f}", "clogP": lambda x: f"clogP: {x:.2f}"}`
+            will format the solubility with 2 decimals and add the text "clogP: "
+            before the clogP value.
         """
         tr = []
         data = []
@@ -420,6 +446,8 @@ class MolGrid:
             subset = [subset.pop(subset.index("img"))] + subset
         if style is None:
             style = {}
+        if fmt is None:
+            fmt = {}
 
         for i, row in df.iterrows():
             ncell = i + 1
@@ -435,9 +463,16 @@ class MolGrid:
                 else:
                     func = style.get(col)
                     if func:
-                        item = f'<div class="data data-{col}" style="{func(v)}">{v}</div>'
+                        item = f'<div class="data data-{col}" style="{func(v)}">'
                     else:
-                        item = f'<div class="data data-{col}">{v}</div>'
+                        item = f'<div class="data data-{col}">'
+                    fmter = fmt.get(col)
+                    if fmter:
+                        try:
+                            v = fmter(v)
+                        except TypeError:
+                            v = fmter.format(v)
+                    item += f'{v}</div>'
                 div.append(item)
             div.append("</div>")
             td.append("\n".join(div))
