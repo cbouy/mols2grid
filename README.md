@@ -41,7 +41,9 @@ mols2grid.display("path/to/molecules.sdf",
                   # set what's displayed on the tooltips
                   tooltip=["Name", "smiles", "Class", "Solubility"],
                   # style for the grid labels and tooltips
-                  style={"Solubility": lambda x: "color: red" if x < -3 else "color: black"})
+                  style={"Solubility": lambda x: "color: red" if x < -3 else "color: black"},
+                  # change the precision and format (or other transformations)
+                  transform={"Solubility": lambda x: f"{x:+.2f}"})
 ```
 
 #### Input parameters
@@ -99,6 +101,13 @@ Both templates can be configured with the same parameters (a lot of which are [C
     ```python
     style={"Solubility": lambda x: "color: red" if x < -3 else "color: black"}
     ```
+* `transform=None`: dict or None
+    Functions applied to specific items in all cells. The dict must follow a `key: function` structure where the key must correspond to one of the columns in `subset`. The function takes the item's value as input and transforms it. For example, to round the "Solubility" to 2 decimals, and display the "Melting point" in Celsius instead of Fahrenheit with a single digit precision and some text before ("MP") and after ("°C") the value:
+    ```python
+    transform={"Solubility": lambda x: f"{x:.2f}",
+               "Melting point": lambda x: f"MP: {5/9*(x-32):.1f}°C"}
+    ```
+    These transformations only affect columns in `subset` (not `tooltip`) and are applied independantly from `style`.
 
 The `pages` template comes with additional parameters:
 

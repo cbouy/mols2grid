@@ -204,7 +204,7 @@ class MolGrid:
                  fontsize="12pt", fontfamily="'DejaVu', sans-serif",
                  textalign="center", tooltip_fmt="<strong>{key}</strong>: {value}",
                  tooltip_trigger="click hover", tooltip_placement="bottom",
-                 hover_color="#e7e7e7", style=None, selection=True):
+                 hover_color="#e7e7e7", style=None, selection=True, transform=None):
         """Returns the HTML document for the "pages" template
         
         Parameters
@@ -240,7 +240,7 @@ class MolGrid:
         hover_color : str
             Background color when hovering a cell (CSS)
         style : dict or None
-            CSS styling applied to each item in a cell. The dict must follow a
+            CSS styling applied to specific items in all cells. The dict must follow a
             `key: function` structure where the key must correspond to one of
             the columns in `subset` or `tooltip`. The function takes the item's value as
             input, and outputs a valid CSS styling, for example
@@ -251,6 +251,17 @@ class MolGrid:
             Enables the selection of molecules and displays a checkbox at the top of each
             cell. This is only usefull in the context of a Jupyter notebook, which gives
             you access to your selection (index and SMILES) through `mols2grid.selection`
+        transform : dict or None
+            Functions applied to specific items in all cells. The dict must follow a
+            `key: function` structure where the key must correspond to one of the columns
+            in `subset`. The function takes the item's value as input and transforms it,
+            for example:
+            `transform={"Solubility": lambda x: f"{x:.2f}",
+                    "Melting point": lambda x: f"MP: {5/9*(x-32):.1f}°C"}`
+            will round the solubility to 2 decimals, and display the melting point in
+            Celsius instead of Fahrenheit with a single digit precision and some text
+            before (MP) and after (°C) the value. These transformations only affect
+            columns in `subset` (not `tooltip`) and are applied independantly from `style`
         """
         df = self.dataframe.drop(columns=self.mol_col).copy()
         cell_width = self.img_size[0]
@@ -266,6 +277,8 @@ class MolGrid:
         sort_cols = ["mols2grid-id"] + sort_cols
         if style is None:
             style = {}
+        if transform is None:
+            transform = {}
         value_names = list(set(subset + [smiles]))
         value_names = [f"data-{col}" for col in value_names]
         width = n_cols * (cell_width + 2 * (gap + 2))
@@ -308,17 +321,23 @@ class MolGrid:
             final_columns = final_columns + ["mols2grid-tooltip"]
             value_names = (value_names[:-1] +
                            ", {attr: 'data-content', name: 'mols2grid-tooltip'}]")
-            
+        
+        # apply CSS styles
         for col, func in style.items():
             name = f"style-{col}"
             df[name] = df[col].apply(func)
             final_columns.append(name)
             value_names = value_names[:-1] + f", {{ attr: 'style', name: {name!r} }}]"
         
+        # apply custom user function
+        for col, func in transform.items():
+            df[col] = df[col].apply(func)
+
         checkbox = '<input type="checkbox" class="position-relative float-left">'
         item = '<div class="cell" data-mols2grid-id="0">{}{}</div>'.format(
             checkbox if selection else "",
             "".join(content))
+
         df = df[final_columns].rename(columns=column_map)
 
         template = env.get_template('pages.html')
@@ -368,7 +387,7 @@ class MolGrid:
                  fontsize="12pt", fontfamily="'DejaVu', sans-serif",
                  textalign="center", tooltip_fmt="<strong>{key}</strong>: {value}",
                  tooltip_trigger="click hover", tooltip_placement="bottom",
-                 hover_color="#e7e7e7", style=None):
+                 hover_color="#e7e7e7", style=None, transform=None):
         """Returns the HTML document for the "table" template
         
         Parameters
@@ -402,13 +421,24 @@ class MolGrid:
         hover_color : str
             Background color when hovering a cell (CSS)
         style : dict or None
-            CSS styling applied to each item in a cell. The dict must follow a
+            CSS styling applied to specific items in all cells. The dict must follow a
             `key: function` structure where the key must correspond to one of
             the columns in `subset` or `tooltip`. The function takes the item's value as
             input, and outputs a valid CSS styling, for example
             `style={"Solubility": lambda x: "color: red" if x < -5 else "color: black"}`
             if you want to color the text corresponding to the "Solubility"
-            column in your dataframe.
+            column in your dataframe
+        transform : dict or None
+            Functions applied to specific items in all cells. The dict must follow a
+            `key: function` structure where the key must correspond to one of the columns
+            in `subset`. The function takes the item's value as input and transforms it,
+            for example:
+            `transform={"Solubility": lambda x: f"{x:.2f}",
+                    "Melting point": lambda x: f"MP: {5/9*(x-32):.1f}°C"}`
+            will round the solubility to 2 decimals, and display the melting point in
+            Celsius instead of Fahrenheit with a single digit precision and some text
+            before (MP) and after (°C) the value. These transformations only affect
+            columns in `subset` (not `tooltip`) and are applied independantly from `style`
         """
         tr = []
         data = []
@@ -420,6 +450,8 @@ class MolGrid:
             subset = [subset.pop(subset.index("img"))] + subset
         if style is None:
             style = {}
+        if transform is None:
+            transform = {}
 
         for i, row in df.iterrows():
             ncell = i + 1
@@ -435,9 +467,12 @@ class MolGrid:
                 else:
                     func = style.get(col)
                     if func:
-                        item = f'<div class="data data-{col}" style="{func(v)}">{v}</div>'
+                        item = f'<div class="data data-{col}" style="{func(v)}">'
                     else:
-                        item = f'<div class="data data-{col}">{v}</div>'
+                        item = f'<div class="data data-{col}">'
+                    func = transform.get(col)
+                    v = func(v) if func else v
+                    item += f'{v}</div>'
                 div.append(item)
             div.append("</div>")
             td.append("\n".join(div))
