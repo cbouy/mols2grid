@@ -21,7 +21,7 @@ conda install -c conda-forge 'rdkit>=2019.09.1'
 pip install mols2grid
 ```
 
-It is compatible with Jupyter Notebook and Google Colab (Visual Studio notebooks and Jupyterlab are not supported).
+It is compatible with Jupyter Notebook and Google Colab (Visual Studio notebooks and Jupyterlab are not supported) and can run on Streamlit.
 
 ## 📜 Usage
 ---
