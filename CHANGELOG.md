@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - New `transform` parameter that accepts a dictionnary of field-function items where each
   function transforms the input value that will be displayed. Fixes: Issue #10
+### Fixed
+- Private molecule properties (i.e properties starting with `_`) were not registered when
+  reading properties from RDKit molecules (SDF or list of mols).
 
 ## [0.0.4] - 2021/04/01
 ### Changed
