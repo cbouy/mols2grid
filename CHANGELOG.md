@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.6] - 2021/05/14
+### Changed
+- Javascript module for RDKit is now sourced from `unpkg.com` and pinned to `v2021.3.2`
+
 ## [0.0.5] - 2021/04/08
 ### Added
 - New `transform` parameter that accepts a dictionary of field-function items where each
