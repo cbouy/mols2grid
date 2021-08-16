@@ -14,11 +14,14 @@ mols2grid is an interactive chemical viewer for 2D structures of small molecules
 ## 🐍 Installation
 ---
 
-mols2grid was developped for Python 3.6+ and requires rdkit (>=2019.09.1), pandas and jinja2 as dependencies.
-
-To install mols2grid from a clean conda environment:
+mols2grid was developped for Python 3.6+ and requires rdkit (>=2020.03.1), pandas and jinja2 as dependencies.  
+The easiest way to install it is from conda:
 ```shell
-conda install -c conda-forge 'rdkit>=2019.09.1'
+conda install -c conda-forge mols2grid
+```
+
+Alternatively, you can also use pip:
+```shell
 pip install mols2grid
 ```
 
@@ -125,6 +128,19 @@ You can either:
 * save the grid with `mols2grid.save(output_path, ...)`. The file that is generated is a standalone HTML document that should work with most web browsers.
 * display it directly in a Jupyter notebook with `mols2grid.display(...)` (optionnal argument: `width="100%"`, `height=None`)
 
+## 🚀 Resources
+---
+* [Simple exemple](https://iwatobipen.wordpress.com/2021/06/13/draw-molecules-on-jupyter-notebook-rdkit-mols2grid/) by iwatobipen
+* Creating a web app with Streamlit for filtering datasets:
+  * [Blog post](https://blog.reverielabs.com/building-web-applications-from-python-scripts-with-streamlit/) by Justin Chavez
+  * [Video tutorial](https://www.youtube.com/watch?v=0rqIwSeUImo) by Data Professor
+* [Viewing clustered chemical structures](https://practicalcheminformatics.blogspot.com/2021/07/viewing-clustered-chemical-structures.html) by Pat Walters
+
+## 👏 Acknowledgments
+---
+* [@fredrikw](https://github.com/fredrikw) (contributor)
+* [@JustinChavez](https://github.com/JustinChavez) (contributor)
+* [@hadim](https://github.com/hadim) (conda feedstock maintainer)
 
 ## ⚖ License
 ---
