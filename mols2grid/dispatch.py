@@ -24,9 +24,6 @@ def _prepare_kwargs(kwargs, kind):
         render_kwargs = {"width": kwargs.pop("width", "100%"),
                          "height": kwargs.pop("height", None),
                          **render_kwargs}
-    elif kind == "save":
-        render_kwargs = {"output": kwargs.pop("output"),
-                         **render_kwargs}
     return template, kwargs, render_kwargs
 
 @singledispatch
@@ -135,27 +132,33 @@ def save(arg, **kwargs):
     
     Parameters
     ----------
+    arg : pandas.DataFrame, SDF file or list of molecules
+        The input containing your molecules
     output : str
         Name and path of the output document
     
     See `mols2grid.display` for the full list of arguments
     """
-    raise TypeError(f"No display method registered for type {type(arg)!r}")
+    raise TypeError(f"No save method registered for type {type(arg)!r}")
 
 @save.register(DataFrame)
 def _(df, **kwargs):
     template, kwargs, render_kwargs = _prepare_kwargs(kwargs, "save")
-    return MolGrid(df, **kwargs).save(template=template, **render_kwargs)
+    output = kwargs.pop("output")
+    return MolGrid(df, **kwargs).save(output, template=template,
+                                      **render_kwargs)
 
 @save.register(str)
 def _(sdf, **kwargs):
     template, kwargs, render_kwargs = _prepare_kwargs(kwargs, "save")
-    return MolGrid.from_sdf(sdf, **kwargs).save(template=template,
+    output = kwargs.pop("output")
+    return MolGrid.from_sdf(sdf, **kwargs).save(output, template=template,
                                                 **render_kwargs)
 
 @save.register(Series)
 @save.register(list)
 def _(mols, **kwargs):
     template, kwargs, render_kwargs = _prepare_kwargs(kwargs, "save")
-    return MolGrid.from_mols(mols, **kwargs).save(template=template,
+    output = kwargs.pop("output")
+    return MolGrid.from_mols(mols, **kwargs).save(output, template=template,
                                                   **render_kwargs)
