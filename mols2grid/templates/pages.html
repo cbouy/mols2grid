@@ -112,27 +112,34 @@
         // Jupyter notebook
         var kernel = window.parent.IPython.notebook.kernel;
         kernel.execute('import mols2grid')
-        kernel.execute('mols2grid.reset_selection()')
+        function update_current_grid(grid_id) {
+          kernel.execute("mols2grid._update_current_grid("+grid_id+")");
+        }
         function set_selection(_id, smiles) {
-          kernel.execute("mols2grid.set_selection("+_id+",'"+smiles+"')")
+          kernel.execute("mols2grid._set_selection("+_id+",'"+smiles+"')");
         }
         function del_selection(_id) {
-          kernel.execute("mols2grid.del_selection("+_id+")");
+          kernel.execute("mols2grid._del_selection("+_id+")");
         }
       } else if (window.parent.google !== undefined) {
         // Google colab
         var kernel = window.parent.google.colab.kernel;
-        (async function() {
-          const result = await kernel.invokeFunction('m2g.reset_selection', [], {});
-        })();
+        function update_current_grid(grid_id) {
+          (async function() {
+            const result = await kernel.invokeFunction('m2g._update_current_grid',
+                                                       [grid_id], {});
+          })();
+        }
         function set_selection(_id, smiles) {
           (async function() {
-            const result = await kernel.invokeFunction('m2g.set_selection', [_id, smiles], {});
+            const result = await kernel.invokeFunction('m2g._set_selection',
+                                                       [_id, smiles], {});
           })();
         }
         function del_selection(_id) {
           (async function() {
-            const result = await kernel.invokeFunction('m2g.del_selection', [_id], {});
+            const result = await kernel.invokeFunction('m2g._del_selection',
+                                                       [_id], {});
           })();
         }
       }
@@ -202,7 +209,7 @@
         if (search_type === "Text") {
           listObj.search(query, {{ search_cols }});
         } else {
-          listObj.search(query, ["data-"+"{{ smiles_col }}"], SmartsSearch);
+          listObj.search(query, ["data-{{ smiles_col }}"], SmartsSearch);
         }
       });
       {% if tooltip %}
@@ -228,12 +235,13 @@
       if (kernel !== undefined) {
         listObj.on("updated", function (list) {
           $("input:checkbox").change(function() {
+            update_current_grid({{ grid_id }});
             var _id = parseInt($(this).closest(".cell").attr("data-mols2grid-id"));
             var _smiles = $($(this).siblings(".data-{{ smiles_col }}")[0]).text();
             if (this.checked) {
-              set_selection(_id, _smiles)
+              set_selection(_id, _smiles);
             } else {
-              del_selection(_id)
+              del_selection(_id);
             }
           }); 
         });

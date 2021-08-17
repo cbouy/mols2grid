@@ -10,6 +10,7 @@ from rdkit import Chem
 from rdkit.Chem import Draw
 from jinja2 import Environment, FileSystemLoader
 from .utils import requires, tooltip_formatter, mol_to_record, mol_to_smiles
+from .select import get_selection, selection as SELECTION
 try:
     from IPython.display import HTML
 except ModuleNotFoundError:
@@ -27,6 +28,8 @@ class MolGrid:
     """Class that handles drawing molecules, rendering the HTML document and
     saving or displaying it in a notebook
     """
+    _n_instances = 0
+
     def __init__(self, df, smiles_col="SMILES", mol_col=None, coordGen=True,
         useSVG=True, mapping=None, **kwargs):
         """
@@ -78,6 +81,10 @@ class MolGrid:
         self.mol_col = mol_col
         self.img_size = kwargs.get("size", (160, 120))
         self.smiles_col = smiles_col
+        # register instance
+        self._grid_id = MolGrid._n_instances
+        SELECTION[self._grid_id] = {}
+        MolGrid._n_instances += 1
 
     @classmethod
     def from_mols(cls, mols, **kwargs):
@@ -362,10 +369,11 @@ class MolGrid:
             selection = selection,
             smiles_col = smiles,
             sort_cols = sort_cols,
+            grid_id = self._grid_id,
         )
         return template.render(**template_kwargs)
 
-    def get(self, selection):
+    def get_selection(self, selection=None):
         """Retrieve the dataframe subset corresponding to a selection
         
         Parameters
@@ -378,7 +386,12 @@ class MolGrid:
         -------
         pandas.DataFrame
         """
-        sel = list(selection.keys()) if isinstance(selection, dict) else selection
+        if isinstance(selection, list):
+            sel = selection
+        elif isinstance(selection, int) or selection is None:
+            sel = list(get_selection(selection).keys())
+        else:
+            raise TypeError(f"`selection` must be list, int or None")
         return (self.dataframe.loc[self.dataframe["mols2grid-id"].isin(sel)]
                               .drop(columns=self._extra_columns))
     
