@@ -273,28 +273,41 @@ class MolGrid:
         df = self.dataframe.drop(columns=self.mol_col).copy()
         cell_width = self.img_size[0]
         smiles = self.smiles_col
+        content = []
+        column_map = {}
+        width = n_cols * (cell_width + 2 * (gap + 2))
+
         if subset is None:
             subset = df.columns.tolist()
             subset = [subset.pop(subset.index("img"))] + subset
-        # define fields that are searchable
+        # define fields that are searchable and sortable
         search_cols = [f"data-{col}" for col in subset if col != "img"]
         if tooltip:
             search_cols.append("mols2grid-tooltip")
-        sort_cols = search_cols[:-1] if tooltip else search_cols[:]
+            sort_cols = search_cols[:-1]
+            sort_cols.extend([f"data-{col}" for col in tooltip])
+            for col in tooltip:
+                if col not in subset:
+                    s = f'<div class="data data-{col}" style="display: none;"></div>'
+                    content.append(s)
+                    column_map[col] = f"data-{col}"
+        else:
+            sort_cols = search_cols[:]
         sort_cols = ["mols2grid-id"] + sort_cols
+        # get unique list but keep order
+        sort_cols = list(dict.fromkeys(sort_cols))
         if style is None:
             style = {}
         if transform is None:
             transform = {}
-        value_names = list(set(subset + [smiles]))
+        value_names = list(set(subset + [smiles] + tooltip))
         value_names = [f"data-{col}" for col in value_names]
-        width = n_cols * (cell_width + 2 * (gap + 2))
-        content = []
-        # force id and SMILES to be present in the data
+
+        # force id, SMILES, and tooltip values to be present in the data
         final_columns = subset[:]
-        final_columns.extend(["mols2grid-id", smiles])
+        final_columns.extend(["mols2grid-id", smiles] + tooltip)
         final_columns = list(set(final_columns))
-        column_map = {}
+
         # make a copy if id shown explicitely
         if "mols2grid-id" in subset:
             id_name = "mols2grid-id-copy"

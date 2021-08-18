@@ -67,7 +67,7 @@
             {% if loop.first %}
             <button class="dropdown-item sort-btn arrow-asc active" type="button" data-name="mols2grid-id">Index</button>
             {% else %}
-            <button class="dropdown-item sort-btn" type="button" data-name="{{ name }}">{{ name | replace("data-", "", 1) | capitalize }}</button>
+            <button class="dropdown-item sort-btn" type="button" data-name="{{ name }}">{{ name | replace("data-", "", 1) }}</button>
             {% endif %}
             {% endfor %}
           </div>
@@ -166,11 +166,12 @@
       }
       $('#mols2grid button.sort-btn').click(function(e) {
         var _field = $(this).attr("data-name");
+        console.log(_field);
         if (_field == sort_field) {
           $(this).removeClass("arrow-" + sort_order)
           sort_order = (sort_order === "desc") ? "asc" : "desc";
         } else {
-          $('#mols2grid button.sort-btn.active').removeClass("active "+"arrow-"+sort_order);
+          $('#mols2grid button.sort-btn.active').removeClass("active arrow-" + sort_order);
           sort_order = "asc";
           sort_field = _field;
           $(this).addClass("active");
