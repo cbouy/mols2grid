@@ -321,13 +321,6 @@ class MolGrid:
             column_map[smiles] = f"data-{smiles}"
         # set mapping for list.js
         value_names = "[{data: ['mols2grid-id']}, " + str(value_names)[1:]
-            
-        if tooltip:
-            df["mols2grid-tooltip"] = df.apply(tooltip_formatter, axis=1,
-                                             args=(tooltip, tooltip_fmt, style))
-            final_columns = final_columns + ["mols2grid-tooltip"]
-            value_names = (value_names[:-1] +
-                           ", {attr: 'data-content', name: 'mols2grid-tooltip'}]")
         
         # apply CSS styles
         for col, func in style.items():
@@ -339,6 +332,13 @@ class MolGrid:
         # apply custom user function
         for col, func in transform.items():
             df[col] = df[col].apply(func)
+
+        if tooltip:
+            df["mols2grid-tooltip"] = df.apply(tooltip_formatter, axis=1,
+                                               args=(tooltip, tooltip_fmt, style))
+            final_columns = final_columns + ["mols2grid-tooltip"]
+            value_names = (value_names[:-1] +
+                           ", {attr: 'data-content', name: 'mols2grid-tooltip'}]")
 
         checkbox = '<input type="checkbox" class="position-relative float-left">'
         item = '<div class="cell" data-mols2grid-id="0">{}{}</div>'.format(
