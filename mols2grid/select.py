@@ -17,14 +17,24 @@ def _del_selection(_id):
     global current_selection
     del selection[current_selection][_id]
 
-def get_selection(grid_id=None):
-    """Returns the selection for a specific MolGrid instance. If grid_id is
-    `None`, the most recently updated grid is returned."""
+def get_selection(grid_id=None, copy=True):
+    """Returns the selection for a specific MolGrid instance
+    
+    Parameters
+    ----------
+    grid_id : int, str or None
+        Name of the grid to fetch the selection from. If `None`, the most
+        recently updated grid is returned
+    copy : bool
+        Return a copy of the selection instead of the original object
+    """
     global selection
     global current_selection
     grid_id = current_selection if grid_id is None else grid_id
     sel = selection[grid_id]
-    return deepcopy(sel)
+    if copy:
+        return deepcopy(sel)
+    return sel
 
 try:
     from google import colab
