@@ -394,25 +394,14 @@ class MolGrid:
         )
         return template.render(**template_kwargs)
 
-    def get_selection(self, selection=None):
-        """Retrieve the dataframe subset corresponding to a selection
-        
-        Parameters
-        ----------
-        selection : list or dict
-            Either a list of indices or a dict with keys corresponding to
-            indices to select in the internal dataframe
+    def get_selection(self):
+        """Retrieve the dataframe subset corresponding to your selection
 
         Returns
         -------
         pandas.DataFrame
         """
-        if isinstance(selection, list):
-            sel = selection
-        elif isinstance(selection, (int, str)) or selection is None:
-            sel = list(get_selection(selection).keys())
-        else:
-            raise TypeError(f"`selection` must be list, int, str, or None")
+        sel = list(get_selection().keys())
         return (self.dataframe.loc[self.dataframe["mols2grid-id"].isin(sel)]
                               .drop(columns=self._extra_columns))
     
