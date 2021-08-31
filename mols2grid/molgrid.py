@@ -31,7 +31,7 @@ class MolGrid:
     _n_instances = 0
 
     def __init__(self, df, smiles_col="SMILES", mol_col=None, coordGen=True,
-        useSVG=True, mapping=None, **kwargs):
+        useSVG=True, mapping=None, name=None, **kwargs):
         """
         Parameters
         ----------
@@ -51,6 +51,9 @@ class MolGrid:
             Use SVG instead of PNG
         mapping : dict or None
             Rename the properties/fields stored in the molecule
+        name : int or str or None
+            Name of the grid, as shown in `mols2grid.selection`. If `None`,
+            the name is automatically set.
         kwargs : object
             Arguments passed to the `draw_mol` method
         """
@@ -82,7 +85,7 @@ class MolGrid:
         self.img_size = kwargs.get("size", (160, 120))
         self.smiles_col = smiles_col
         # register instance
-        self._grid_id = MolGrid._n_instances
+        self._grid_id = MolGrid._n_instances if name is None else name
         SELECTION[self._grid_id] = {}
         MolGrid._n_instances += 1
 
@@ -401,10 +404,10 @@ class MolGrid:
         """
         if isinstance(selection, list):
             sel = selection
-        elif isinstance(selection, int) or selection is None:
+        elif isinstance(selection, (int, str)) or selection is None:
             sel = list(get_selection(selection).keys())
         else:
-            raise TypeError(f"`selection` must be list, int or None")
+            raise TypeError(f"`selection` must be list, int, str, or None")
         return (self.dataframe.loc[self.dataframe["mols2grid-id"].isin(sel)]
                               .drop(columns=self._extra_columns))
     
