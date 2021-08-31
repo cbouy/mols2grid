@@ -303,12 +303,17 @@ class MolGrid:
             style = {}
         if transform is None:
             transform = {}
-        value_names = list(set(subset + [smiles] + tooltip))
+        if tooltip:
+            value_names = list(set(subset + [smiles] + tooltip))
+        else:
+            value_names = list(set(subset + [smiles]))
         value_names = [f"data-{col}" for col in value_names]
 
         # force id, SMILES, and tooltip values to be present in the data
         final_columns = subset[:]
-        final_columns.extend(["mols2grid-id", smiles] + tooltip)
+        final_columns.extend(["mols2grid-id", smiles])
+        if tooltip:
+            final_columns.extend(tooltip)
         final_columns = list(set(final_columns))
 
         # make a copy if id shown explicitely
