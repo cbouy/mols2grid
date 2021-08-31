@@ -183,7 +183,7 @@ class MolGrid:
         if self.useSVG:
             return img
         data = b64encode(img).decode()
-        return f'<img src="data:image/png;base64,{data}" alt="molecule">'
+        return f'<img src="data:image/png;base64,{data}">'
     
     def smi_to_img(self, smi, **kwargs):
         """Convert a SMILES string to an HTML img tag containing a drawing of
@@ -326,8 +326,8 @@ class MolGrid:
         # organize data
         for col in subset:
             if col == "img" and tooltip:
-                s = (f'<div class="data data-{col} mols2grid-tooltip" '
-                     'data-toggle="popover" data-content="foo"></div>')  
+                s = (f'<a tabindex="0" class="data data-{col} mols2grid-tooltip" '
+                     'data-toggle="popover" data-content="foo"></a>')  
             else:
                 if style.get(col):
                     s = f'<div class="data data-{col} style-{col}" style=""></div>'
