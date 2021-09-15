@@ -80,8 +80,7 @@ class MolGrid:
         dataframe.dropna(axis=0, subset=[mol_col], inplace=True)
         # generate drawings
         dataframe["img"] = dataframe[mol_col].apply(self.mol_to_img, **kwargs)
-        self.dataframe = dataframe
-        self.mol_col = mol_col
+        self.dataframe = dataframe if mol_col else dataframe.drop(columns=mol_col)
         self.img_size = kwargs.get("size", (160, 120))
         self.smiles_col = smiles_col
         # register instance
@@ -273,7 +272,7 @@ class MolGrid:
             before (MP) and after (°C) the value. These transformations only affect
             columns in `subset` (not `tooltip`) and are applied independantly from `style`
         """
-        df = self.dataframe.drop(columns=self.mol_col).copy()
+        df = self.dataframe.copy()
         cell_width = self.img_size[0]
         smiles = self.smiles_col
         content = []
@@ -465,7 +464,7 @@ class MolGrid:
         """
         tr = []
         data = []
-        df = self.dataframe.drop(columns=self.mol_col)
+        df = self.dataframe
         cell_width = self.img_size[0]
 
         if subset is None:
