@@ -10,7 +10,7 @@ from rdkit import Chem
 from rdkit.Chem import Draw
 from jinja2 import Environment, FileSystemLoader
 from .utils import requires, tooltip_formatter, mol_to_record, mol_to_smiles
-from .select import get_selection, selection as SELECTION
+from .select import register
 try:
     from IPython.display import HTML
 except ModuleNotFoundError:
@@ -85,7 +85,8 @@ class MolGrid:
         self.smiles_col = smiles_col
         # register instance
         self._grid_id = MolGrid._n_instances if name is None else name
-        SELECTION[self._grid_id] = {}
+        register.SELECTIONS[self._grid_id] = {}
+        register.current_selection = self._grid_id
         MolGrid._n_instances += 1
 
     @classmethod
@@ -400,7 +401,7 @@ class MolGrid:
         -------
         pandas.DataFrame
         """
-        sel = list(get_selection().keys())
+        sel = list(register.get_selection().keys())
         return (self.dataframe.loc[self.dataframe["mols2grid-id"].isin(sel)]
                               .drop(columns=self._extra_columns))
     
