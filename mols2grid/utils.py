@@ -1,6 +1,7 @@
 from functools import wraps
 from importlib.util import find_spec
-from rdkit.Chem import MolToSmiles
+from rdkit import Chem
+import pandas as pd
 
 def requires(module):
     def inner(func):
@@ -36,10 +37,15 @@ def tooltip_formatter(s, subset, fmt, style):
 
 def mol_to_smiles(mol):
     """Returns a SMILES from an RDKit molecule, or None if not an RDKit mol"""
-    return MolToSmiles(mol) if mol else None
+    return Chem.MolToSmiles(mol) if mol else None
 
 def mol_to_record(mol, mol_col="mol"):
     """Function to create a dict of data from an RDKit molecule"""
-    return {"SMILES": MolToSmiles(mol),
+    return {"SMILES": Chem.MolToSmiles(mol),
             **mol.GetPropsAsDict(includePrivate=True),
             mol_col: mol} if mol else {}
+
+def sdf_to_dataframe(sdf_path):
+    """Returns a dataframe of molecules from an SDF file"""
+    return pd.DataFrame([mol_to_record(mol, "mol")
+                         for mol in Chem.SDMolSupplier(sdf_path)])
