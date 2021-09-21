@@ -530,22 +530,20 @@ class MolGrid:
         """Render and display the grid in a Jupyter notebook"""
         code = self.render(**kwargs)
         template = kwargs.get("template", "pages")
-        if not height:
-            n_cols = kwargs.get("n_cols", 5)
-            tot_rows = ceil(self.dataframe.shape[0] / n_cols)
-            n_rows = min([kwargs.get("n_rows", 3), tot_rows])
-            img_height = self.img_size[1]
-            gap = kwargs.get("gap", 0)
-            border = 1
-            fontsize = 12
-            subset = kwargs.get("subset", self.dataframe.columns)
-            subset = self.dataframe.columns if subset is None else subset
-            n_txt_fields = len(subset) - 1
-            cell_height = img_height + 2 * (gap + 2 * border) + n_txt_fields * (2 * fontsize)
-            searchbar_height = 70 if template == "pages" else 0
-            height = n_rows * cell_height + searchbar_height
-        iframe = ('<iframe class="mols2grid-iframe" width={width} '
-                  'height="{height}" frameborder="0" srcdoc="{code}"></iframe>')
+        if height:
+            iframe = (
+                '<iframe class="mols2grid-iframe" frameborder="0" '
+                'width={width} height="{height}" srcdoc="{code}"></iframe>')
+        else:
+            # automatically resize iframe
+            iframe = (
+                '<script>function resizeIframe(iframe) {{'
+                'iframe.height = iframe.contentWindow.document.body.scrollHeight + "px";'
+                '}}</script>'
+                '<iframe class="mols2grid-iframe" frameborder="0" '
+                'onload="resizeIframe(this)" '
+                'width={width} height="10px" srcdoc="{code}"></iframe>'
+            )
         return HTML(iframe.format(width=width, height=height,
                                   code=escape(code)))
 
