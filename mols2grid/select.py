@@ -29,24 +29,35 @@ class SelectionRegister:
         return self.SELECTIONS.get(grid_id, {})
 
 
+# deprecate old selection system
+def warn(func):
+    def wrapper(*args, **kwargs):
+        warnings.warn(
+            "Accessing the current grid's selection through "
+            "`mols2grid.selection` is deprecated and will be removed soon. "
+            "Please use `mols2grid.get_selection()` instead")
+        return func(*args, **kwargs)
+    return wrapper
+
+
 class _OldSelection(UserDict):
     def __init__(self, register):
         self._sel = register.get_selection
         super().__init__()
 
+    @warn
     def __repr__(self):
-        warnings.warn(
-            "Accessing the current grid's selection through "
-            "`mols2grid.selection` is deprecated and will be removed soon. "
-            "Please use `mols2grid.get_selection()` instead")
         return repr(self._sel())
 
+    @warn
     def __iter__(self):
         return iter(self._sel())
 
+    @warn
     def __len__(self):
         return len(self._sel())
 
+    @warn
     def __missing__(self, key):
         return self._sel()[key]
 
