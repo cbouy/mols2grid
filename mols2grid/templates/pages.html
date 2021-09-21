@@ -167,7 +167,6 @@
       }
       $('#mols2grid button.sort-btn').click(function(e) {
         var _field = $(this).attr("data-name");
-        console.log(_field);
         if (_field == sort_field) {
           $(this).removeClass("arrow-" + sort_order)
           sort_order = (sort_order === "desc") ? "asc" : "desc";
@@ -228,6 +227,7 @@
             placement: {{ tooltip_placement }},
             trigger: {{ tooltip_trigger }},
             html: true,
+            sanitize: false,
           });
         })
       });
