@@ -17,7 +17,7 @@
     float: left;
 }
 #mols2grid .cell:hover {
-    background-color: {{ hover_color }};
+    background-color: {{ hover_color }} !important;
 }
 #mols2grid .cell img, #mols2grid .cell svg {
     max-width: 100%;
