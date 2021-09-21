@@ -18,6 +18,9 @@ var listObj = new List('mols2grid', {
 listObj.remove("mols2grid-id", "0");
 listObj.add({{ data }});
 {% if selection %}
+if (window.parent.mols2grid_iframe === undefined) {
+    window.parent.mols2grid_iframe = {};
+}
 // selection
 {% include 'js/molstorage.js' %}
 var SELECTION = new MolStorage();
@@ -64,3 +67,4 @@ listObj.on("updated", function (list) {
 {%if tooltip or selection or whole_cell_style %}
 listObj.update();
 {% endif %}
+window.parent.mols2grid_iframe["{{ grid_id }}"] = window;

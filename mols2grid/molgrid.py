@@ -4,15 +4,15 @@ from html import escape
 import json
 from pathlib import Path
 from copy import deepcopy
-from math import ceil
 import pandas as pd
+import numpy as np
 from rdkit import Chem
 from rdkit.Chem import Draw
 from jinja2 import Environment, FileSystemLoader
 from .utils import requires, tooltip_formatter, mol_to_record, mol_to_smiles
 from .select import register
 try:
-    from IPython.display import HTML
+    from IPython.display import HTML, Javascript
 except ModuleNotFoundError:
     pass
 else:
@@ -430,6 +430,35 @@ class MolGrid:
         sel = list(register.get_selection().keys())
         return (self.dataframe.loc[self.dataframe["mols2grid-id"].isin(sel)]
                               .drop(columns=self._extra_columns))
+
+    def filter(self, mask):
+        """Filters the grid using a mask (boolean array)
+        
+        Parameters
+        ----------
+        mask : list, pd.Series, np.ndarray
+            Boolean array: `True` when the item should be displayed, `False` if it should
+            be filtered out. 
+        """
+        # convert mask to mols2grid-id
+        ids = self.dataframe.loc[mask]["mols2grid-id"]
+        return self._filter_by_id(ids)
+
+    def filter_by_index(self, indices):
+        """Filters the grid using the dataframe's index"""
+        # convert index to mols2grid-id
+        ids = self.dataframe.loc[self.dataframe.index.isin(indices)]["mols2grid-id"]
+        return self._filter_by_id(ids)
+        
+    def _filter_by_id(self, ids):
+        """Filters the grid using the values in the `mols2grid-id` column"""
+        if isinstance(ids, (pd.Series, np.ndarray)):
+            ids = ids.to_list()
+        code = env.get_template('js/filter.js').render(
+            grid_id = self._grid_id,
+            ids = ids,
+            )
+        return Javascript(code)
     
     def to_table(self, subset=None, tooltip=None, n_cols=6,
                  cell_width=160, border="1px solid #cccccc", gap=0,
