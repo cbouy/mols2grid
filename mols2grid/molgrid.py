@@ -341,15 +341,25 @@ class MolGrid:
             content.append(s)
             column_map[smiles] = f"data-{smiles}"
         # set mapping for list.js
-        value_names = "[{data: ['mols2grid-id']}, " + str(value_names)[1:]
-        
+        if "__all__" in style.keys():
+            whole_cell_style = True
+            x = "[{data: ['mols2grid-id', 'cellstyle']}, "
+        else:
+            whole_cell_style = False
+            x = "[{data: ['mols2grid-id']}, "
+        value_names = x + str(value_names)[1:]
+
         # apply CSS styles
         for col, func in style.items():
-            name = f"style-{col}"
-            df[name] = df[col].apply(func)
+            if col == "__all__":
+                name = "cellstyle"
+                df[name] = df.apply(func, axis=1)
+            else:
+                name = f"style-{col}"
+                df[name] = df[col].apply(func)
             final_columns.append(name)
             value_names = value_names[:-1] + f", {{ attr: 'style', name: {name!r} }}]"
-        
+
         # apply custom user function
         for col, func in transform.items():
             df[col] = df[col].apply(func)
@@ -361,10 +371,17 @@ class MolGrid:
             value_names = (value_names[:-1] +
                            ", {attr: 'data-content', name: 'mols2grid-tooltip'}]")
 
-        checkbox = '<input type="checkbox" class="position-relative float-left">'
-        item = '<div class="cell" data-mols2grid-id="0">{}{}</div>'.format(
-            checkbox if selection else "",
-            "".join(content))
+        if selection:
+            checkbox = '<input type="checkbox" class="position-relative float-left">'
+        else:
+            checkbox = ""
+        if whole_cell_style:
+            item = ('<div class="cell" data-mols2grid-id="0" '
+                    'data-cellstyle="0">{checkbox}{content}</div>')
+        else:
+            item = ('<div class="cell" data-mols2grid-id="0">'
+                    '{checkbox}{content}</div>')
+        item = item.format(checkbox=checkbox, content="".join(content))
 
         df = df[final_columns].rename(columns=column_map)
 
@@ -391,6 +408,7 @@ class MolGrid:
             smiles_col = smiles,
             sort_cols = sort_cols,
             grid_id = self._grid_id,
+            whole_cell_style = whole_cell_style,
         )
         return template.render(**template_kwargs)
 

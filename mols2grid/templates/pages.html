@@ -104,8 +104,8 @@
           },
         }
       );
-      listObj.remove("mols2grid-id", "0")
-      listObj.add({{ data }})
+      listObj.remove("mols2grid-id", "0");
+      listObj.add({{ data }});
       {% if selection %}
       // checkbox
       if (window.parent.IPython !== undefined) {
@@ -213,6 +213,18 @@
           listObj.search(query, ["data-{{ smiles_col }}"], SmartsSearch);
         }
       });
+      {% if whole_cell_style %}
+      // add style for whole cell
+      listObj.on("updated", function (list) {
+        $('#mols2grid div.cell').each(function() {
+          var $t = $(this);
+          $t.attr({
+              style: $t.attr('data-cellstyle')
+            })
+            .removeAttr('data-cellstyle');
+        });
+      });
+      {% endif %}
       {% if tooltip %}
       // tooltips
       $.fn.tooltip.Constructor.Default.whiteList.span = ['style']
@@ -249,7 +261,7 @@
         });
       }
       {% endif %}
-      {% if tooltip or selection %}
+      {%if tooltip or selection or whole_cell_style %}
       listObj.update();
       {% endif %}
     </script>
