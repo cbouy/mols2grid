@@ -4,15 +4,15 @@ function SmartsSearch(query, columns) {
     var qmol = RDKitModule.get_qmol(query);
     if (qmol.is_valid()) {
         for (var k = 0, kl = listObj.items.length; k < kl; k++) {
-        var item = listObj.items[k];
-        var mol = RDKitModule.get_mol(item.values()[smiles]);
-        var results = JSON.parse(mol.get_substruct_match(qmol));
-        if (results.atoms) {
-            item.found = true;
-        } else {
-            item.found = false;
-        }
-        mol.delete();
+            var item = listObj.items[k];
+            var mol = RDKitModule.get_mol(item.values()[smiles]);
+            var results = JSON.parse(mol.get_substruct_match(qmol));
+            if (results.atoms) {
+                item.found = true;
+            } else {
+                item.found = false;
+            }
+            mol.delete();
         }
     }
     qmol.delete();
