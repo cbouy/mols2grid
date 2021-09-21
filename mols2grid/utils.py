@@ -15,7 +15,7 @@ def requires(module):
         return wrapper
     return inner
 
-def tooltip_formatter(s, subset, fmt, style):
+def tooltip_formatter(s, subset, fmt, style, transform):
     """Function to generate tooltips from a pandas Series
     
     Parameters
@@ -28,9 +28,12 @@ def tooltip_formatter(s, subset, fmt, style):
         Format string for each key-value pair of the tooltip
     style : dict
         CSS styling applied to each item independently
+    transform : dict
+        Functions applied to each value before rendering
     """
     items = []
     for k, v in s[subset].to_dict().items():
+        v = transform[k](v) if transform.get(k) else v
         v = f'<span style="{style[k](v)}">{v}</span>' if style.get(k) else v
         items.append(fmt.format(key=k, value=v))
     return "<br>".join(items)

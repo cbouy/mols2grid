@@ -360,16 +360,17 @@ class MolGrid:
             final_columns.append(name)
             value_names = value_names[:-1] + f", {{ attr: 'style', name: {name!r} }}]"
 
-        # apply custom user function
-        for col, func in transform.items():
-            df[col] = df[col].apply(func)
-
         if tooltip:
             df["mols2grid-tooltip"] = df.apply(tooltip_formatter, axis=1,
-                                               args=(tooltip, tooltip_fmt, style))
+                                               args=(tooltip, tooltip_fmt, style,
+                                                     transform))
             final_columns = final_columns + ["mols2grid-tooltip"]
             value_names = (value_names[:-1] +
                            ", {attr: 'data-content', name: 'mols2grid-tooltip'}]")
+
+        # apply custom user function
+        for col, func in transform.items():
+            df[col] = df[col].apply(func)
 
         if selection:
             checkbox = '<input type="checkbox" class="position-relative float-left">'
