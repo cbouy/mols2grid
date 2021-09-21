@@ -53,32 +53,34 @@
   </head>
   <body>
     <div id="mols2grid" class="gridcontainer">
-      <div class="row">
+      <div class="row mb-3">
         <div class="list">{{ item }}</div>
       </div>
-      <div class="row">
-        <ul class="pagination pt-3 pl-3 col"></ul>
-        <div class="dropdown float-right col-1 py-3 mr-4">
-          <button class="btn btn-light dropdown-toggle" type="button" id="sortDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Sort by
-          </button>
-          <div class="dropdown-menu" aria-labelledby="sortDropdownMenu">
-            {% for name in sort_cols %}
-            {% if loop.first %}
-            <button class="dropdown-item sort-btn arrow-asc active" type="button" data-name="mols2grid-id">Index</button>
-            {% else %}
-            <button class="dropdown-item sort-btn" type="button" data-name="{{ name }}">{{ name | replace("data-", "", 1) }}</button>
-            {% endif %}
-            {% endfor %}
+      <div class="d-inline">
+        <ul class="pagination float-left"></ul>
+        <div id="controls" class="d-flex flex-row float-right">
+          <div id="sort-dropdown" class="dropdown pl-2">
+            <button class="btn btn-light dropdown-toggle" type="button" id="sortDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Sort by
+            </button>
+            <div class="dropdown-menu" aria-labelledby="sortDropdownMenu">
+              {% for name in sort_cols %}
+              {% if loop.first %}
+              <button class="dropdown-item sort-btn arrow-asc active" type="button" data-name="mols2grid-id">Index</button>
+              {% else %}
+              <button class="dropdown-item sort-btn" type="button" data-name="{{ name }}">{{ name | replace("data-", "", 1) | capitalize }}</button>
+              {% endif %}
+              {% endfor %}
+            </div>
           </div>
-        </div>
-        <div class="input-group float-right col-4 py-3 mr-3 ml-2">
-          <input type="text" id="searchbar" class="form-control" placeholder="Search" aria-label="Search" aria-describedby="basic-addon1">
-          <div class="input-group-append">
-            <button id="searchBtn" class="btn btn-light dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">🔎</button>
-            <div class="dropdown-menu dropdown-menu-right">
-              <button id="txtSearch" class="search-btn dropdown-item active">Text</button>
-              <button id="smartsSearch" class="search-btn dropdown-item">SMARTS</button>
+          <div class="input-group row pl-4">
+            <input type="text" id="searchbar" class="form-control" placeholder="Search" aria-label="Search" aria-describedby="basic-addon1">
+            <div class="input-group-append">
+              <button id="searchBtn" class="btn btn-light dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">🔎</button>
+              <div class="dropdown-menu dropdown-menu-right">
+                <button id="txtSearch" class="search-btn dropdown-item active">Text</button>
+                <button id="smartsSearch" class="search-btn dropdown-item">SMARTS</button>
+              </div>
             </div>
           </div>
         </div>
@@ -108,6 +110,29 @@
       listObj.add({{ data }});
       {% if selection %}
       // checkbox
+      class MolStorage extends Map {
+        to_dict() {
+          var content = "{";
+          for (let [key, value] of this) {
+            content += key + ":" + JSON.stringify(value) + ",";
+          }
+          content = content.length > 1 ? content.slice(0, -1) : content;
+          content += "}";
+          return content
+        }
+        download_smi(fileName) {
+          var content = "";
+          for (let [key, value] of this) {
+            content += value + "\n";
+          }
+          var a = document.createElement("a");
+          var file = new Blob([content], {type: "text/plain"});
+          a.href = URL.createObjectURL(file);
+          a.download = fileName;
+          a.click();
+        }
+      }
+      var SELECTION = new MolStorage();
       if (window.parent.IPython !== undefined) {
         // Jupyter notebook
         var kernel = window.parent.IPython.notebook.kernel;
@@ -117,9 +142,11 @@
           kernel.execute("m2g_sel._update_current_grid("+grid_id+")");
         }
         function set_selection(_id, smiles) {
-          kernel.execute("m2g_sel._set_selection("+_id+",'"+smiles+"')");
+          SELECTION.set(_id, smiles);
+          kernel.execute("m2g_sel._set_selection("+_id+",'"+smiles+"')")
         }
         function del_selection(_id) {
+          SELECTION.delete(_id);
           kernel.execute("m2g_sel._del_selection("+_id+")");
         }
       } else if (window.parent.google !== undefined) {
@@ -132,19 +159,27 @@
           })();
         }
         function set_selection(_id, smiles) {
+          SELECTION.set(_id, smiles);
           (async function() {
             const result = await kernel.invokeFunction('m2g_sel._set_selection',
                                                        [_id, smiles], {});
           })();
         }
         function del_selection(_id) {
+          SELECTION.delete(_id);
           (async function() {
             const result = await kernel.invokeFunction('m2g_sel._del_selection',
                                                        [_id], {});
           })();
         }
+      } else {
+        function set_selection(_id, smiles) {
+          SELECTION.set(_id, smiles);
+        }
+        function del_selection(_id) {
+          SELECTION.delete(_id);
+        }
       }
-      
       {% endif %}
       // sort
       var sort_field = "mols2grid-id";
@@ -245,21 +280,63 @@
       });
       {% endif %}
       {% if selection %}
+      // add "copy to clipboard" and save buttons
+      $("#sort-dropdown").before(`
+        <div id="chkbox-dropdown" class="dropdown">
+          <button class="btn btn-light dropdown-toggle" type="button" id="chkboxDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">☑</button>
+          <div class="dropdown-menu" aria-labelledby="checkboxDropdownMenu">
+            <button id="btn-chkbox-all" class="dropdown-item" type="button">Check all</button>
+            <button id="btn-chkbox-invert" class="dropdown-item" type="button">Invert</button>
+            <button id="btn-chkbox-copy" class="dropdown-item" type="button">Copy to clipboard</button>
+            <button id="btn-chkbox-dlsmi" class="dropdown-item" type="button">Save SMILES</button>
+          </div>
+        </div>`
+      );
+      $('#btn-chkbox-all').click(function (e) {
+        var current_page = parseInt($("li.page-item.active > a").text());
+        var n_items = {{ n_items_per_page }};
+        var last_page = parseInt($("li.page-item > a").last().text());
+        for (let i = 0; i < last_page; i++) {
+          listObj.show(i * n_items + 1, n_items);
+          $("input:checkbox").each(function() {
+            this.checked = true;
+            $(this).trigger("change");
+          });
+        }
+        listObj.show((current_page - 1) * n_items + 1, n_items);
+      });
+      $('#btn-chkbox-invert').click(function (e) {
+        var current_page = parseInt($("li.page-item.active > a").text());
+        var n_items = {{ n_items_per_page }};
+        var last_page = parseInt($("li.page-item > a").last().text());
+        for (let i = 0; i < last_page; i++) {
+          listObj.show(i * n_items + 1, n_items);
+          $("input:checkbox").each(function() {
+            this.checked = !this.checked;
+            $(this).trigger("change");
+          });
+        }
+        listObj.show((current_page - 1) * n_items + 1, n_items);
+      });
+      $("#btn-chkbox-copy").click(function(e) {
+        navigator.clipboard.writeText(SELECTION.to_dict());
+      });
+      $("#btn-chkbox-dlsmi").click(function(e) {
+        SELECTION.download_smi("selection.smi");
+      });
       // update selection on checkbox click
-      if (kernel !== undefined) {
-        listObj.on("updated", function (list) {
-          $("input:checkbox").change(function() {
-            update_current_grid({{ grid_id | tojson }});
-            var _id = parseInt($(this).closest(".cell").attr("data-mols2grid-id"));
-            var _smiles = $($(this).siblings(".data-{{ smiles_col }}")[0]).text();
-            if (this.checked) {
-              set_selection(_id, _smiles);
-            } else {
-              del_selection(_id);
-            }
-          }); 
-        });
-      }
+      listObj.on("updated", function (list) {
+        $("input:checkbox").change(function() {
+          update_current_grid({{ grid_id | tojson }});
+          var _id = parseInt($(this).closest(".cell").attr("data-mols2grid-id"));
+          var _smiles = $($(this).siblings(".data-{{ smiles_col }}")[0]).text();
+          if (this.checked) {
+            set_selection(_id, _smiles);
+          } else {
+            del_selection(_id);
+          }
+        }); 
+      });
       {% endif %}
       {%if tooltip or selection or whole_cell_style %}
       listObj.update();
