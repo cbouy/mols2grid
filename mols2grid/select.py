@@ -28,6 +28,10 @@ class SelectionRegister:
         grid_id = self.current_selection if grid_id is None else grid_id
         return self.SELECTIONS.get(grid_id, {})
 
+    def list_grids(self):
+        """Returns a list of grid names"""
+        return list(self.SELECTIONS.keys())
+
 
 # deprecate old selection system
 def warn(func):
@@ -64,6 +68,7 @@ class _OldSelection(UserDict):
 
 register = SelectionRegister()
 get_selection = register.get_selection
+list_grids = register.list_grids
 selection = _OldSelection(register)
 
 
