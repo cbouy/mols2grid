@@ -214,7 +214,8 @@ class MolGrid:
                  fontsize="12pt", fontfamily="'DejaVu', sans-serif",
                  textalign="center", tooltip_fmt="<strong>{key}</strong>: {value}",
                  tooltip_trigger="click hover", tooltip_placement="bottom",
-                 hover_color="#e7e7e7", style=None, selection=True, transform=None):
+                 hover_color="#e7e7e7", style=None, selection=True, transform=None,
+                 custom_css=None):
         """Returns the HTML document for the "pages" template
         
         Parameters
@@ -256,7 +257,10 @@ class MolGrid:
             input, and outputs a valid CSS styling, for example
             `style={"Solubility": lambda x: "color: red" if x < -5 else "color: black"}`
             if you want to color the text corresponding to the "Solubility"
-            column in your dataframe
+            column in your dataframe. You can also style a whole cell using the `__all__`
+            key, the corresponding function then has access to all values for each cell:
+            `style={"__all__": lambda x: "color: red" if x["Solubility"] < -5 else 
+            "color: black"}`
         selection : bool
             Enables the selection of molecules and displays a checkbox at the top of each
             cell. This is only usefull in the context of a Jupyter notebook, which gives
@@ -264,14 +268,16 @@ class MolGrid:
         transform : dict or None
             Functions applied to specific items in all cells. The dict must follow a
             `key: function` structure where the key must correspond to one of the columns
-            in `subset`. The function takes the item's value as input and transforms it,
-            for example:
+            in `subset` or `tooltip`. The function takes the item's value as input and 
+            transforms it, for example:
             `transform={"Solubility": lambda x: f"{x:.2f}",
-                    "Melting point": lambda x: f"MP: {5/9*(x-32):.1f}°C"}`
+                        "Melting point": lambda x: f"MP: {5/9*(x-32):.1f}°C"}`
             will round the solubility to 2 decimals, and display the melting point in
             Celsius instead of Fahrenheit with a single digit precision and some text
             before (MP) and after (°C) the value. These transformations only affect
-            columns in `subset` (not `tooltip`) and are applied independantly from `style`
+            columns in `subset` and `tooltip`, and do not interfere with `style`.
+        custom_css : str
+            Custom CSS properties applied to the content of the HTML document.
         """
         df = self.dataframe.copy()
         cell_width = self.img_size[0]
@@ -410,6 +416,7 @@ class MolGrid:
             sort_cols = sort_cols,
             grid_id = self._grid_id,
             whole_cell_style = whole_cell_style,
+            custom_css = custom_css if custom_css else "",
         )
         return template.render(**template_kwargs)
 
