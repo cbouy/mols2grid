@@ -547,7 +547,6 @@ class MolGrid:
     def display(self, width="100%", height=None, **kwargs):
         """Render and display the grid in a Jupyter notebook"""
         code = self.render(**kwargs)
-        template = kwargs.get("template", "pages")
         if height:
             iframe = (
                 '<iframe class="mols2grid-iframe" frameborder="0" '
@@ -555,11 +554,8 @@ class MolGrid:
         else:
             # automatically resize iframe
             iframe = (
-                '<script>function resizeIframe(iframe) {{'
-                'iframe.height = iframe.contentWindow.document.body.scrollHeight + "px";'
-                '}}</script>'
                 '<iframe class="mols2grid-iframe" frameborder="0" '
-                'onload="resizeIframe(this)" '
+                'onload="javascript:(function(o){{o.style.height=o.contentWindow.document.body.scrollHeight+18+\'px\';}}(this));" '
                 'width={width} height="10px" srcdoc="{code}"></iframe>'
             )
         return HTML(iframe.format(width=width, height=height,
