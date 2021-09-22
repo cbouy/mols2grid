@@ -215,7 +215,7 @@ class MolGrid:
                  textalign="center", tooltip_fmt="<strong>{key}</strong>: {value}",
                  tooltip_trigger="click hover", tooltip_placement="bottom",
                  hover_color="#e7e7e7", style=None, selection=True, transform=None,
-                 custom_css=None):
+                 custom_css=None, callback=None):
         """Returns the HTML document for the "pages" template
         
         Parameters
@@ -278,6 +278,10 @@ class MolGrid:
             columns in `subset` and `tooltip`, and do not interfere with `style`.
         custom_css : str
             Custom CSS properties applied to the content of the HTML document.
+        callback : str
+            JavaScript callback to be executed when clicking on an image. A dictionnary
+            containing the data for the full cell is available as `data`. All the values
+            are parsed as strings, except "mols2grid-id" which is always an integer.
         """
         df = self.dataframe.copy()
         cell_width = self.img_size[0]
@@ -417,6 +421,7 @@ class MolGrid:
             grid_id = self._grid_id,
             whole_cell_style = whole_cell_style,
             custom_css = custom_css if custom_css else "",
+            callback = callback,
         )
         return template.render(**template_kwargs)
 

@@ -64,6 +64,9 @@ listObj.on("updated", function (list) {
 {% if selection %}
 {% include 'js/selection_actions.js' %}
 {% endif %}
+{% if callback %}
+{% include 'js/callback.js' %}
+{% endif %}
 {%if tooltip or selection or whole_cell_style %}
 listObj.update();
 {% endif %}
