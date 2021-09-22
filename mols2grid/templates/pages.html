@@ -28,6 +28,9 @@
               <button class="dropdown-item sort-btn" type="button" data-name="{{ name }}">{{ name | replace("data-", "", 1) | capitalize }}</button>
               {% endif %}
               {% endfor %}
+              {% if selection %}
+              <button class="dropdown-item sort-btn" type="button" data-name="checkbox">Selected</button>
+              {% endif %}
             </div>
           </div>
           <div class="input-group row pl-4">

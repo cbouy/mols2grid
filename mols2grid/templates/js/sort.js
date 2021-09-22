@@ -16,6 +16,27 @@ function mols2gridSortFunction(itemA, itemB, options) {
         return 0;
     }
 }
+function checkboxSort(itemA, itemB, options) {
+    if (itemA.elm !== undefined) {
+        var checkedA = itemA.elm.firstChild.checked;
+        if (itemB.elm !== undefined) {
+            var checkedB = itemB.elm.firstChild.checked;
+            if (checkedA && !checkedB) {
+                return -1;
+            } else if (!checkedA && checkedB) {
+                return 1;
+            } else {
+                return 0;
+            }
+        } else {
+            return -1;
+        }
+    } else if (itemB.elm !== undefined) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
 $('#mols2grid button.sort-btn').click(function(e) {
     var _field = $(this).attr("data-name");
     if (_field == sort_field) {
@@ -28,5 +49,9 @@ $('#mols2grid button.sort-btn').click(function(e) {
         $(this).addClass("active");
     }
     $(this).addClass("arrow-" + sort_order)
-    listObj.sort(_field, {order: sort_order, sortFunction: mols2gridSortFunction});
+    if (sort_field == "checkbox") {
+        listObj.sort("mols2grid-id", {order: sort_order, sortFunction: checkboxSort});
+    } else {
+        listObj.sort(_field, {order: sort_order, sortFunction: mols2gridSortFunction});
+    }
 });
