@@ -83,6 +83,7 @@ class MolGrid:
         self.dataframe = dataframe if mol_col else dataframe.drop(columns=mol_col)
         self.img_size = kwargs.get("size", (160, 120))
         self.smiles_col = smiles_col
+        self.mol_col = mol_col
         # register instance
         self._grid_id = MolGrid._n_instances if name is None else name
         register.SELECTIONS[self._grid_id] = {}
@@ -283,7 +284,7 @@ class MolGrid:
             containing the data for the full cell is available as `data`. All the values
             are parsed as strings, except "mols2grid-id" which is always an integer.
         """
-        df = self.dataframe.copy()
+        df = self.dataframe.drop(columns=self.mol_col).copy()
         cell_width = self.img_size[0]
         smiles = self.smiles_col
         content = []
