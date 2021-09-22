@@ -38,6 +38,9 @@ if (window.parent.IPython !== undefined) {
         })();
     }
 } else {
+    function update_current_grid(grid_id) {
+        null;
+    }
     function set_selection(_id, smiles) {
         SELECTION.set(_id, smiles);
     }
