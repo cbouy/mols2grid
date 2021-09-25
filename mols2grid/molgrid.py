@@ -36,9 +36,9 @@ class MolGrid:
         Parameters
         ----------
         df : pandas.DataFrame or dict or list
-            Dataframe containing a SMILES or mol column, or dictionary containing
-            a list of SMILES, or list of dictionnaries containing a SMILES
-            field
+            Dataframe containing a SMILES or mol column, or dictionary
+            containing a list of SMILES, or list of dictionnaries containing a
+            SMILES field
         smiles_col : str or None
             Name of the SMILES column in the dataframe, if available
         mol_col : str or None
@@ -51,9 +51,9 @@ class MolGrid:
             Use SVG instead of PNG
         mapping : dict or None
             Rename the properties/fields stored in the molecule
-        name : int or str or None
-            Name of the grid, as shown in `mols2grid.selection`. If `None`,
-            the name is automatically set.
+        name : str
+            Name of the grid. Used when retrieving selections from multiple
+            grids at the same time
         kwargs : object
             Arguments passed to the `draw_mol` method
         """

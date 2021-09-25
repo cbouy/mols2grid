@@ -14,6 +14,7 @@ _SIGNATURE["render"].pop("kwargs")
 
 
 def _prepare_kwargs(kwargs, kind):
+    """Separate kwargs for the init and render methods of MolGrid"""
     template = kwargs.pop("template", _SIGNATURE["render"]["template"].default)
     render_kwargs = {key: value
                      for key, value in kwargs.items()
@@ -43,15 +44,18 @@ def display(arg, **kwargs):
     coordGen : bool (True)
         Use the coordGen library instead of the RDKit one to depict the
         molecules in 2D
-    use_coords : bool
+    use_coords : bool (True)
         Use the coordinates of the molecules (only relevant when an SDF file, a
         list of molecules or a DataFrame of RDKit molecules were used as input)
-    remove_Hs : bool
+    remove_Hs : bool (False)
         Remove hydrogen atoms from the drawings
     size : tuple ((160, 120))
         Size of each image
-    mapping : dict (None)
+    rename : dict (None)
         Rename the properties in the final document
+    name : str ("default")
+        Name of the grid. Used when retrieving selections from multiple grids
+        at the same time
     template : str ("pages")
         One of {pages, table}
     width : str ("100%)
@@ -62,7 +66,8 @@ def display(arg, **kwargs):
     subset: list (None)
         Columns to be displayed in each cell of the grid. Each column's value
         will be displayed from top to bottom in the same order given here.
-        Use "img" for the image of the molecule.
+        Use "img" for the image of the molecule, and "mols2grid-id" for the
+        molecule's index in your input file.
         Default: all columns (with "img" in first position)
     tooltip : list (None)
         Columns to be displayed as a tooltip when hovering/clicking on the
@@ -76,7 +81,7 @@ def display(arg, **kwargs):
     n_cols : int (5)
         Number of columns per page
     n_rows` : int (3)
-        Number of rows per page (only available for the "pages" template)
+        Only available for the "pages" template. Number of rows per page
     border : str ("1px solid #cccccc")
         Styling of the border around each cell (CSS)
     gap : int or str (0)
@@ -99,6 +104,34 @@ def display(arg, **kwargs):
         ```python
         style={"Solubility": lambda x: "color: red" if x < -5 else "color: black"}
         ```
+        You can also style a whole cell using the `__all__` key, the corresponding function then has access to all values for each cell:
+        ```python
+        style={"__all__": lambda x: "color: red" if x["Solubility"] < -5 else "color: black"}`
+        ```
+    selection : bool (True)
+        Only available for the "pages" template. Enables the selection of molecules and
+        displays a checkbox at the top of each cell. To access your selection (index and
+        SMILES), use `mols2grid.get_selection()` or the export options in the bottom
+        checkbox dropdown menu.
+    transform : dict (None)
+        Functions applied to specific items in all cells. The dict must follow a
+        `key: function` structure where the key must correspond to one of the columns
+        in `subset` or `tooltip`. The function takes the item's value as input and 
+        transforms it, for example:
+        `transform={"Solubility": lambda x: f"{x:.2f}",
+                    "Melting point": lambda x: f"MP: {5/9*(x-32):.1f}°C"}`
+        will round the solubility to 2 decimals, and display the melting point in
+        Celsius instead of Fahrenheit with a single digit precision and some text
+        before (MP) and after (°C) the value. These transformations only affect
+        columns in `subset` and `tooltip`, and do not interfere with `style`.
+    custom_css : str
+        Only available for the "pages" template. Custom CSS properties applied to the
+        content of the HTML document.
+    callback : str
+        Only available for the "pages" template. JavaScript callback to be executed when
+        clicking on an image. A dictionnary containing the data for the full cell is
+        available as `data`. All the values are parsed as strings, except "mols2grid-id"
+        which is always an integer.
     
     Notes
     -----
