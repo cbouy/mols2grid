@@ -48,7 +48,7 @@ def mol_to_record(mol, mol_col="mol"):
             **mol.GetPropsAsDict(includePrivate=True),
             mol_col: mol} if mol else {}
 
-def sdf_to_dataframe(sdf_path):
+def sdf_to_dataframe(sdf_path, mol_col="mol"):
     """Returns a dataframe of molecules from an SDF file"""
-    return pd.DataFrame([mol_to_record(mol, "mol")
+    return pd.DataFrame([mol_to_record(mol, mol_col)
                          for mol in Chem.SDMolSupplier(sdf_path)])
