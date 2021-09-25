@@ -30,7 +30,7 @@ class MolGrid:
     """
 
     def __init__(self, df, smiles_col="SMILES", mol_col=None, coordGen=True,
-        useSVG=True, mapping=None, name="default", **kwargs):
+        useSVG=True, rename=None, name="default", **kwargs):
         """
         Parameters
         ----------
@@ -55,6 +55,9 @@ class MolGrid:
             grids at the same time
         kwargs : object
             Arguments passed to the `draw_mol` method
+
+        ..versionchanged: 0.0.7
+            Added `rename` argument to replace `mapping`
         """
         if not (smiles_col or mol_col):
             raise ValueError("One of `smiles_col` or `mol_col` must be set")
@@ -65,9 +68,17 @@ class MolGrid:
         if isinstance(df, pd.DataFrame):
             dataframe = df.copy()
         else:
+            # list of dicts or other input formats for dataframes
             dataframe = pd.DataFrame(df)
+        mapping = kwargs.pop("mapping", None)
         if mapping:
-            dataframe.rename(columns=mapping, inplace=True)
+            warnings.warn(
+                "`mapping` is deprecated and will be removed soon. Consider "
+                "using `rename` in the future."
+            )
+        rename = mapping or rename
+        if rename:
+            dataframe.rename(columns=rename, inplace=True)
         self._extra_columns = ["img", "mols2grid-id"]
         if smiles_col and not mol_col:
             mol_col = "mol"
