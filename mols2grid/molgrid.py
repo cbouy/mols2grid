@@ -30,7 +30,7 @@ class MolGrid:
     """
 
     def __init__(self, df, smiles_col="SMILES", mol_col=None, coordGen=True,
-        useSVG=True, rename=None, name="default", **kwargs):
+        useSVG=True, removeHs=False, rename=None, name="default", **kwargs):
         """
         Parameters
         ----------
@@ -48,7 +48,9 @@ class MolGrid:
             RDKit depiction library
         useSVG : bool
             Use SVG instead of PNG
-        mapping : dict or None
+        removeHs : bool
+            Remove hydrogen atoms from the drawings
+        rename : dict or None
             Rename the properties/fields stored in the molecule
         name : str
             Name of the grid. Used when retrieving selections from multiple
@@ -84,7 +86,9 @@ class MolGrid:
             mol_col = "mol"
             self._extra_columns.append(mol_col)
             dataframe[mol_col] = dataframe[smiles_col].apply(Chem.MolFromSmiles)
-        elif mol_col and (smiles_col not in dataframe.columns):
+        if removeHs:
+            dataframe[mol_col] = dataframe[mol_col].apply(Chem.RemoveHs)
+        if mol_col and (smiles_col not in dataframe.columns):
             dataframe[smiles_col] = dataframe[mol_col].apply(mol_to_smiles)
         # add index
         dataframe["mols2grid-id"] = list(range(len(dataframe)))
