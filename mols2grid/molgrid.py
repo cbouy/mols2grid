@@ -9,7 +9,11 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem import Draw
 from jinja2 import Environment, FileSystemLoader
-from .utils import requires, tooltip_formatter, mol_to_record, mol_to_smiles
+from .utils import (requires,
+                    tooltip_formatter,
+                    mol_to_record,
+                    mol_to_smiles,
+                    sdf_to_dataframe)
 from .select import register
 try:
     from IPython.display import HTML, Javascript
@@ -138,8 +142,7 @@ class MolGrid:
             Other arguments passed on initialization
         """
         mol_col = kwargs.pop("mol_col", "mol")
-        df = pd.DataFrame([mol_to_record(mol, mol_col)
-                           for mol in Chem.SDMolSupplier(sdf_file)])
+        df = sdf_to_dataframe(sdf_file, mol_col=mol_col)
         return cls(df, mol_col=mol_col, **kwargs)
 
     @property
