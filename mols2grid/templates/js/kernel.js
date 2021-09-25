@@ -3,8 +3,7 @@ if (window.parent.IPython !== undefined) {
     var kernel = window.parent.IPython.notebook.kernel;
     kernel.execute('from mols2grid.select import register as m2g_sel')
     function update_current_grid(grid_id) {
-        grid_id = typeof grid_id === "string" ? "'"+grid_id+"'" : grid_id;
-        kernel.execute("m2g_sel._update_current_grid("+grid_id+")");
+        kernel.execute("m2g_sel._update_current_grid('"+grid_id+"')");
     }
     function set_selection(_id, smiles) {
         SELECTION.set(_id, smiles);

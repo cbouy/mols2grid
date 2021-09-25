@@ -5,7 +5,6 @@ class SelectionRegister:
     """Register for grid selections"""
     def __init__(self):
         self.SELECTIONS = {}
-        self.current_selection = 0
 
     def _update_current_grid(self, grid_id):
         self.current_selection = grid_id

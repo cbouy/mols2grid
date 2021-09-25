@@ -28,10 +28,9 @@ class MolGrid:
     """Class that handles drawing molecules, rendering the HTML document and
     saving or displaying it in a notebook
     """
-    _n_instances = 0
 
     def __init__(self, df, smiles_col="SMILES", mol_col=None, coordGen=True,
-        useSVG=True, mapping=None, name=None, **kwargs):
+        useSVG=True, mapping=None, name="default", **kwargs):
         """
         Parameters
         ----------
@@ -59,6 +58,8 @@ class MolGrid:
         """
         if not (smiles_col or mol_col):
             raise ValueError("One of `smiles_col` or `mol_col` must be set")
+        if not isinstance(name, str):
+            raise TypeError(f"`name` must be a string. Currently of type {type(name)}")
         Draw.rdDepictor.SetPreferCoordGen(coordGen)
         self.useSVG = useSVG
         if isinstance(df, pd.DataFrame):
@@ -85,10 +86,14 @@ class MolGrid:
         self.smiles_col = smiles_col
         self.mol_col = mol_col
         # register instance
-        self._grid_id = MolGrid._n_instances if name is None else name
-        register.SELECTIONS[self._grid_id] = {}
-        register.current_selection = self._grid_id
-        MolGrid._n_instances += 1
+        self._grid_id = name
+        overwrite = register.SELECTIONS.get(name, False)
+        if overwrite:
+            warnings.warn(
+                f"Overwriting non-empty {name!r} grid selection: {str(overwrite)}"
+            )
+        register.SELECTIONS[name] = {}
+        register.current_selection = name
 
     @classmethod
     def from_mols(cls, mols, **kwargs):
