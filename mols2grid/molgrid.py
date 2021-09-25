@@ -542,7 +542,7 @@ class MolGrid:
             will round the solubility to 2 decimals, and display the melting point in
             Celsius instead of Fahrenheit with a single digit precision and some text
             before (MP) and after (°C) the value. These transformations only affect
-            columns in `subset` (not `tooltip`) and are applied independantly from `style`
+            columns in `subset` and `tooltip`, and are applied independantly from `style`
         """
         tr = []
         data = []
@@ -561,11 +561,18 @@ class MolGrid:
             ncell = i + 1
             nrow, ncol = divmod(i, n_cols)
             td = [f'<td class="col-{ncol}>"']
-            div = [f'<div class="cell-{i}">']
+            if "__all__" in style.keys():
+                s = style["__all__"](row)
+                div = [f'<div class="cell-{i}" style="{s}">']
+            else:
+                div = [f'<div class="cell-{i}">']
             for col in subset:
                 v = row[col]
                 if col == "img" and tooltip:
-                    popover = tooltip_formatter(row, tooltip, tooltip_fmt, style)
+                    popover = tooltip_formatter(row, tooltip, tooltip_fmt, style,
+                                                transform)
+                    func = transform.get(col)
+                    v = func(v) if func else v
                     item = (f'<div class="data data-{col} mols2grid-tooltip" data-toggle="popover" '
                             f'data-content="{escape(popover)}">{v}</div>')
                 else:
