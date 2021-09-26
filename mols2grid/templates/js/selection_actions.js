@@ -39,7 +39,7 @@ $("#btn-chkbox-dlsmi").click(function(e) {
 // update selection on checkbox click
 listObj.on("updated", function (list) {
     $("input:checkbox").change(function() {
-        update_current_grid({{ grid_id }});
+        update_current_grid({{ grid_id | tojson }});
         var _id = parseInt($(this).closest(".cell").attr("data-mols2grid-id"));
         var _smiles = $($(this).siblings(".data-{{ smiles_col }}")[0]).text();
         if (this.checked) {

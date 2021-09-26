@@ -52,3 +52,9 @@ def sdf_to_dataframe(sdf_path, mol_col="mol"):
     """Returns a dataframe of molecules from an SDF file"""
     return pd.DataFrame([mol_to_record(mol, mol_col)
                          for mol in Chem.SDMolSupplier(sdf_path)])
+
+def remove_coordinates(mol):
+    """Removes the existing coordinates from the molecule. The molecule is
+    modified inplace"""
+    mol.RemoveAllConformers()
+    return mol

@@ -3,7 +3,6 @@ from base64 import b64encode
 from html import escape
 import json
 from pathlib import Path
-from copy import deepcopy
 import pandas as pd
 import numpy as np
 from rdkit import Chem
@@ -13,7 +12,8 @@ from .utils import (requires,
                     tooltip_formatter,
                     mol_to_record,
                     mol_to_smiles,
-                    sdf_to_dataframe)
+                    sdf_to_dataframe,
+                    remove_coordinates)
 from .select import register
 try:
     from IPython.display import HTML, Javascript
@@ -33,8 +33,9 @@ class MolGrid:
     saving or displaying it in a notebook
     """
 
-    def __init__(self, df, smiles_col="SMILES", mol_col=None, coordGen=True,
-        useSVG=True, removeHs=False, rename=None, name="default", **kwargs):
+    def __init__(self, df, smiles_col="SMILES", mol_col=None, removeHs=False,
+        use_coords=True, coordGen=True, useSVG=True, size=(160, 120),
+        MolDrawOptions=None, rename=None, name="default", **kwargs):
         """
         Parameters
         ----------
@@ -47,20 +48,31 @@ class MolGrid:
         mol_col : str or None
             Name of an RDKit molecule column. If available, coordinates and 
             atom/bonds annotations from this will be used for depiction
+        removeHs : bool
+            Remove hydrogen atoms from the drawings
+        use_coords : bool
+            Use the existing coordinates of the molecule
         coordGen : bool
             Sets whether or not the CoordGen library should be preferred to the
             RDKit depiction library
         useSVG : bool
             Use SVG instead of PNG
-        removeHs : bool
-            Remove hydrogen atoms from the drawings
+        size : tuple
+            The size of the drawing canvas
+        MolDrawOptions : rdkit.Chem.Draw.MolDrawOptions or None
+            Drawing options. Useful for making highly customized drawings
         rename : dict or None
             Rename the properties/fields stored in the molecule
         name : str
             Name of the grid. Used when retrieving selections from multiple
             grids at the same time
         kwargs : object
-            Arguments passed to the `draw_mol` method
+            MolDrawOptions attributes
+
+        Notes
+        -----
+        The list of supported MolDrawOptions attributes are available in
+        https://www.rdkit.org/docs/source/rdkit.Chem.Draw.rdMolDraw2D.html#rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions
 
         ..versionchanged: 0.0.7
             Added `rename` argument to replace `mapping`
@@ -68,9 +80,9 @@ class MolGrid:
         if not (smiles_col or mol_col):
             raise ValueError("One of `smiles_col` or `mol_col` must be set")
         if not isinstance(name, str):
-            raise TypeError(f"`name` must be a string. Currently of type {type(name)}")
+            raise TypeError(
+                f"`name` must be a string. Currently of type {type(name).__name__}")
         Draw.rdDepictor.SetPreferCoordGen(coordGen)
-        self.useSVG = useSVG
         if isinstance(df, pd.DataFrame):
             dataframe = df.copy()
         else:
@@ -82,16 +94,24 @@ class MolGrid:
                 "`mapping` is deprecated and will be removed soon. Consider "
                 "using `rename` in the future."
             )
-        rename = mapping or rename
+        rename = rename or mapping
         if rename:
             dataframe.rename(columns=rename, inplace=True)
         self._extra_columns = ["img", "mols2grid-id"]
+        # generate temporary RDKit molecules
         if smiles_col and not mol_col:
             mol_col = "mol"
+            keep_mols = False
             self._extra_columns.append(mol_col)
             dataframe[mol_col] = dataframe[smiles_col].apply(Chem.MolFromSmiles)
+        else:
+            keep_mols = True
+        # remove hydrogens
         if removeHs:
             dataframe[mol_col] = dataframe[mol_col].apply(Chem.RemoveHs)
+        if not use_coords:
+            dataframe[mol_col] = dataframe[mol_col].apply(remove_coordinates)
+        # generate smiles col
         if mol_col and (smiles_col not in dataframe.columns):
             dataframe[smiles_col] = dataframe[mol_col].apply(mol_to_smiles)
         # add index
@@ -99,9 +119,15 @@ class MolGrid:
         # drop None
         dataframe.dropna(axis=0, subset=[mol_col], inplace=True)
         # generate drawings
-        dataframe["img"] = dataframe[mol_col].apply(self.mol_to_img, **kwargs)
-        self.dataframe = dataframe if mol_col else dataframe.drop(columns=mol_col)
-        self.img_size = kwargs.get("size", (160, 120))
+        self.useSVG = useSVG
+        opts = MolDrawOptions or Draw.MolDrawOptions()
+        for key, value in kwargs.items():
+            setattr(opts, key, value)
+        self.MolDrawOptions = opts
+        self._MolDraw2D = Draw.MolDraw2DSVG if useSVG else Draw.MolDraw2DCairo
+        self.img_size = size
+        dataframe["img"] = dataframe[mol_col].apply(self.mol_to_img)
+        self.dataframe = dataframe if keep_mols else dataframe.drop(columns=mol_col)
         self.smiles_col = smiles_col
         self.mol_col = mol_col
         # register instance
@@ -127,7 +153,8 @@ class MolGrid:
             Other arguments passed on initialization
         """
         mol_col = kwargs.pop("mol_col", "mol")
-        df = pd.DataFrame([mol_to_record(mol, mol_col) for mol in mols])
+        df = pd.DataFrame([mol_to_record(mol, mol_col=mol_col)
+                           for mol in mols])
         return cls(df, mol_col=mol_col, **kwargs)
 
     @classmethod
@@ -160,60 +187,23 @@ class MolGrid:
                              "Use one of 'pages' or 'table'")
         self._template = value
 
-    def draw_mol(self, mol, size=(160, 120), use_coords=True,
-        MolDrawOptions=None, **kwargs):
-        """Draw a molecule
-
-        Parameters
-        ----------
-        mol : rdkit.Chem.rdchem.Mol
-            The molecule to draw
-        size : tuple
-            The size of the drawing canvas
-        use_coords : bool
-            Use the 2D or 3D coordinates of the molecule
-        MolDrawOptions : rdkit.Chem.Draw.MolDrawOptions or None
-            Directly set the drawing options. Useful for making highly
-            customized drawings
-        **kwargs : object
-            Attributes of the rdkit.Chem.Draw.MolDrawOptions class like
-            `fixedBondLength=35, bondLineWidth=2`
-        
-        Notes
-        -----
-        The list of supported MolDrawOptions attributes are available in
-        https://www.rdkit.org/docs/source/rdkit.Chem.Draw.rdMolDraw2D.html#rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions
-        """
-        if self.useSVG:
-            d2d = Draw.MolDraw2DSVG(*size)
-        else:
-            d2d = Draw.MolDraw2DCairo(*size)
-        MolDrawOptions = MolDrawOptions or Draw.MolDrawOptions()
-        for key, value in kwargs.items():
-            setattr(MolDrawOptions, key, value)
-        d2d.SetDrawOptions(MolDrawOptions)
-        if not use_coords:
-            mol = deepcopy(mol)
-            mol.RemoveAllConformers()
+    def draw_mol(self, mol):
+        """Draw a molecule"""
+        d2d = self._MolDraw2D(*self.img_size)
+        d2d.SetDrawOptions(self.MolDrawOptions)
         hl_atoms = getattr(mol, "__sssAtoms", [])
         d2d.DrawMolecule(mol, highlightAtoms=hl_atoms)
         d2d.FinishDrawing()
         return d2d.GetDrawingText()
-    
-    def mol_to_img(self, mol, **kwargs):
-        """Convert an RDKit mol to an HTML img tag containing a drawing of the
+
+    def mol_to_img(self, mol):
+        """Convert an RDKit mol to an HTML image containing a drawing of the
         molecule"""
-        img = self.draw_mol(mol, **kwargs)
+        img = self.draw_mol(mol)
         if self.useSVG:
             return img
         data = b64encode(img).decode()
         return f'<img src="data:image/png;base64,{data}">'
-    
-    def smi_to_img(self, smi, **kwargs):
-        """Convert a SMILES string to an HTML img tag containing a drawing of
-        the molecule"""
-        mol = Chem.MolFromSmiles(smi)
-        return self.mol_to_img(mol, **kwargs)
 
     def render(self, template="pages", **kwargs):
         """Returns the HTML document corresponding to the "pages" or "table"
