@@ -18,18 +18,18 @@ concurrency:
 
 jobs:
   tests:
-    name: CI-${{ matrix.os }} | py${{ matrix.python-version }} | rdkit-${{ matrix.rdkit-version }}
+    name: CI-${{ matrix.os }} | py${{ matrix.python-version }} | ${{ matrix.rdkit-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest]
         python-version: [3.6, 3.8]
-        rdkit-version: ["rdkit>=2020.03.1"]
+        rdkit-version: ["rdkit>2020.03.1"]
         include:
         - name: CI min version
           os: ubuntu-latest
           python-version: 3.6
-          rdkit-version: "rdkit==2019.09.3"
+          rdkit-version: "rdkit==2020.03.1"
 
     steps:
       - uses: actions/checkout@v2
@@ -70,37 +70,37 @@ jobs:
           pip install .[tests]
           pip list
       
-          - name: Run tests
-      run: |
-        pytest --color=yes --disable-pytest-warnings --cov=mols2grid --cov-report=xml tests/
+      - name: Run tests
+        run: |
+          pytest --color=yes --disable-pytest-warnings --cov=mols2grid --cov-report=xml tests/
 
-    - name: Measure tests coverage
-      uses: codecov/codecov-action@v1
-      with:
-        file: coverage.xml
-        fail_ci_if_error: True
-        verbose: True
+      - name: Measure tests coverage
+        uses: codecov/codecov-action@v1
+        with:
+          file: coverage.xml
+          fail_ci_if_error: True
+          verbose: True
 
-    - name: Prepare for build
-      run: |
-        pip uninstall -y mols2grid
-        python setup.py sdist bdist_wheel
-        echo "$SCRIPT" > test_install.py
-        cat test_install.py
-      env:
-        - SCRIPT: |
-          import mols2grid as mg
-          from rdkit import RDConfig
-          sdf = f"{RDConfig.RDDocsDir}/Book/data/solubility.test.sdf"
-          mg.save("/dev/null", sdf, subset=["img", "mols2grid-id"])
+      - name: Prepare for build
+        run: |
+          pip uninstall -y mols2grid
+          python setup.py sdist bdist_wheel
+          echo "$SCRIPT" > test_install.py
+          cat test_install.py
+        env:
+          SCRIPT: |
+            import mols2grid as mg
+            from rdkit import RDConfig
+            sdf = f"{RDConfig.RDDocsDir}/Book/data/solubility.test.sdf"
+            mg.save(sdf, output="/dev/null", subset=["img", "mols2grid-id"])
 
-    - name: Test tar.gz build
-      run: |
-        pip install dist/mols2grid-*.tar.gz
-        python test_install.py
-        pip uninstall -y mols2grid
+      - name: Test tar.gz build
+        run: |
+          pip install dist/mols2grid-*.tar.gz
+          python test_install.py
+          pip uninstall -y mols2grid
 
-    - name: Test wheel build
-      run: |
-        pip install dist/mols2grid-*.whl
-        python test_install.py
+      - name: Test wheel build
+        run: |
+          pip install dist/mols2grid-*.whl
+          python test_install.py
