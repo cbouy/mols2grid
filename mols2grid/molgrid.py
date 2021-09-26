@@ -132,13 +132,7 @@ class MolGrid:
         self.mol_col = mol_col
         # register instance
         self._grid_id = name
-        overwrite = register.SELECTIONS.get(name, False)
-        if overwrite:
-            warnings.warn(
-                f"Overwriting non-empty {name!r} grid selection: {str(overwrite)}"
-            )
-        register.SELECTIONS[name] = {}
-        register.current_selection = name
+        register._init_grid(name)
 
     @classmethod
     def from_mols(cls, mols, **kwargs):

@@ -9,6 +9,15 @@ class SelectionRegister:
     def _update_current_grid(self, grid_id):
         self.current_selection = grid_id
 
+    def _init_grid(self, grid_id):
+        overwrite = self.SELECTIONS.get(grid_id, False)
+        if overwrite:
+            warnings.warn(
+                f"Overwriting non-empty {grid_id!r} grid selection: {str(overwrite)}"
+            )
+        self.SELECTIONS[grid_id] = {}
+        self._update_current_grid(grid_id)
+
     def _set_selection(self, _id, smiles):
         self.SELECTIONS[self.current_selection][_id] = smiles
 
@@ -25,11 +34,17 @@ class SelectionRegister:
             recently updated grid is returned
         """
         grid_id = self.current_selection if grid_id is None else grid_id
-        return self.SELECTIONS.get(grid_id, {})
+        return self.SELECTIONS[grid_id]
 
     def list_grids(self):
         """Returns a list of grid names"""
         return list(self.SELECTIONS.keys())
+
+    def _clear(self):
+        """Clears all selections"""
+        if hasattr(self, "current_selection"):
+            del self.current_selection
+        self.SELECTIONS.clear()
 
 
 # deprecate old selection system
