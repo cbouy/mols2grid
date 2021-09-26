@@ -475,8 +475,7 @@ class MolGrid:
             ids = ids.to_list()
         code = env.get_template('js/filter.js').render(
             grid_id = self._grid_id,
-            ids = ids,
-            )
+            ids = ids)
         return Javascript(code)
     
     def to_table(self, subset=None, tooltip=None, n_cols=6,
