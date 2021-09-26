@@ -127,16 +127,6 @@ def test_update_current_grid_on_init():
     assert register.get_selection("foo") is register.get_selection()
     assert register.get_selection() == {}
 
-def test_overwrite_warning():
-    _make_grid()
-    register._set_selection(0, "C")
-    with pytest.warns(
-        UserWarning,
-        match=f"Overwriting non-empty 'default' grid selection: {{0: 'C'}}"
-    ):
-        _make_grid()
-    assert register.get_selection() == {}
-
 def test_from_mols(mols):
     grid = MolGrid.from_mols(mols)
     assert "mol" in grid.dataframe.columns
