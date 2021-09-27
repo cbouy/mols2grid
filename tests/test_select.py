@@ -10,10 +10,14 @@ def clear_register_before_each_test():
     register._init_grid("foo")
     yield
 
-def test_update_current_grid():
+def test_clear_register():
     register._clear()
     assert not hasattr(register, "current_selection")
-    grid = mg.MolGrid(data, name="foo")
+    assert register.SELECTIONS == {}
+
+def test_update_current_grid():
+    register._clear()
+    mg.MolGrid(data, name="foo")
     assert register.current_selection == "foo"
 
 def test_init_grid():
@@ -34,12 +38,23 @@ def test_set_selection():
         register._set_selection(index, smi)
         assert register.SELECTIONS["foo"][index] == smi
 
-def test_del_selection():
+def test_unset_selection():
     for index, smi in [(0, "C"), (1, "CC")]:
         register._set_selection(index, smi)
-    register._del_selection(0)
+    register._unset_selection(0)
     assert 0 not in register.SELECTIONS["foo"].keys()
     assert "C" not in register.SELECTIONS["foo"].values()
+
+def test_add_selection():
+    register._init_grid("bar")
+    register.add_selection("foo", 0, "C")
+    assert register.get_selection()[0] == "C"
+
+def test_del_selection():
+    register._set_selection(0, "C")
+    register._init_grid("bar")
+    register.del_selection("foo", 0)
+    assert register.get_selection() == {}
 
 def test_get_selection():
     assert register.get_selection() == {}

@@ -2,39 +2,87 @@ import warnings
 from collections import UserDict
 
 class SelectionRegister:
-    """Register for grid selections"""
+    """Register for grid selections
+    
+    Attributes
+    ----------
+    SELECTIONS : dict
+        Stores each grid selection according to their name
+    current_selection : str
+        Name of the most recently updated grid
+    """
     def __init__(self):
         self.SELECTIONS = {}
 
-    def _update_current_grid(self, grid_id):
-        self.current_selection = grid_id
+    def _update_current_grid(self, name):
+        self.current_selection = name
 
-    def _init_grid(self, grid_id):
-        overwrite = self.SELECTIONS.get(grid_id, False)
+    def _init_grid(self, name):
+        overwrite = self.SELECTIONS.get(name, False)
         if overwrite:
             warnings.warn(
-                f"Overwriting non-empty {grid_id!r} grid selection: {str(overwrite)}"
+                f"Overwriting non-empty {name!r} grid selection: {str(overwrite)}"
             )
-        self.SELECTIONS[grid_id] = {}
-        self._update_current_grid(grid_id)
+        self.SELECTIONS[name] = {}
+        self._update_current_grid(name)
 
     def _set_selection(self, _id, smiles):
         self.SELECTIONS[self.current_selection][_id] = smiles
 
-    def _del_selection(self, _id):
+    def _unset_selection(self, _id):
         del self.SELECTIONS[self.current_selection][_id]
 
-    def get_selection(self, grid_id=None):
+    def add_selection(self, name, _id, smiles):
+        """Add an entry to a grid
+
+        Parameters
+        ----------
+        name : str
+            Name of the grid to update
+        _id : int
+            Identifier (`mols2grid-id`) of the entry
+        smiles : str
+            SMILES of the entry
+
+        Notes
+        -----
+        Manually using this function will not affect the checkbox displayed
+        on the grid. It is only usefull when retrieving selections from Python
+        with `mols2grid.get_selection()`.
+        """
+        self._update_current_grid(name)
+        self._set_selection(_id, smiles)
+
+    def del_selection(self, name, _id):
+        """Remove an entry from a grid
+
+         Parameters
+        ----------
+        name : str
+            Name of the grid to update
+        _id : int
+            Identifier (`mols2grid-id`) of the entry
+
+        Notes
+        -----
+        Manually using this function will not affect the checkbox displayed
+        on the grid. It is only usefull when retrieving selections from Python
+        with `mols2grid.get_selection()`.
+        """
+        self._update_current_grid(name)
+        self._unset_selection(_id)
+
+    def get_selection(self, name=None):
         """Returns the selection for a specific MolGrid instance
 
         Parameters
         ----------
-        grid_id : int, str or None
+        name : str or None
             Name of the grid to fetch the selection from. If `None`, the most
             recently updated grid is returned
         """
-        grid_id = self.current_selection if grid_id is None else grid_id
-        return self.SELECTIONS[grid_id]
+        name = self.current_selection if name is None else name
+        return self.SELECTIONS[name]
 
     def list_grids(self):
         """Returns a list of grid names"""
@@ -92,9 +140,7 @@ try:
 except (ModuleNotFoundError, ImportError):
     pass
 else:
-    colab.output.register_callback('m2g_sel._update_current_grid',
-                                   register._update_current_grid)
-    colab.output.register_callback('m2g_sel._set_selection',
-                                   register._set_selection)
-    colab.output.register_callback('m2g_sel._del_selection',
-                                   register._del_selection)
+    colab.output.register_callback('_m2g_reg.add_selection',
+                                   register.add_selection)
+    colab.output.register_callback('_m2g_reg.del_selection',
+                                   register.del_selection)
