@@ -127,7 +127,11 @@ class MolGrid:
         self._MolDraw2D = Draw.MolDraw2DSVG if useSVG else Draw.MolDraw2DCairo
         self.img_size = size
         dataframe["img"] = dataframe[mol_col].apply(self.mol_to_img)
-        self.dataframe = dataframe if keep_mols else dataframe.drop(columns=mol_col)
+        if keep_mols:
+            self.dataframe = dataframe
+        else:
+            self.dataframe = dataframe.drop(columns=mol_col)
+            mol_col = None
         self.smiles_col = smiles_col
         self.mol_col = mol_col
         # register instance
@@ -291,7 +295,10 @@ class MolGrid:
             containing the data for the full cell is available as `data`. All the values
             are parsed as strings, except "mols2grid-id" which is always an integer.
         """
-        df = self.dataframe.drop(columns=self.mol_col).copy()
+        if self.mol_col:
+            df = self.dataframe.drop(columns=self.mol_col).copy()
+        else:
+            df = self.dataframe.copy()
         cell_width = self.img_size[0]
         smiles = self.smiles_col
         content = []
