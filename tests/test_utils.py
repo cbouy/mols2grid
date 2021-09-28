@@ -84,7 +84,7 @@ def test_mol_to_record_custom_mol_col():
     new = utils.mol_to_record(mol, mol_col="foo")
     assert new["foo"] is mol
 
-def test_sdf_to_dataframe(df):
+def test_sdf_to_dataframe():
     df = utils.sdf_to_dataframe(sdf)
     exp = {
         'ID': 5,
