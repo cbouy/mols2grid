@@ -204,4 +204,36 @@ def test_save(grid):
         grid.save(f.name)
         assert Path(f.name).is_file()
 
-# TODO: test filters and renderers
+@pytest.mark.parametrize("kind", ["pages", "table"])
+def test_render(grid, kind):
+    grid.render(template=kind)
+
+def test_render_wrong_template(grid):
+    with pytest.raises(ValueError, match="template='foo' not supported"):
+        grid.render(template="foo")
+
+@pytest.mark.parametrize("kwargs", [
+    dict(),
+    dict(subset=["ID"]),
+    dict(tooltip=["ID"]),
+    dict(selection=False),
+    dict(style={"ID": lambda x: "color: red" if x == 1 else ""}),
+    dict(transform={"ID": lambda x: f"Id. #{x}"}),
+    dict(custom_css="* {color: red;}"),
+    dict(callback="console.log(JSON.stringify(data));"),
+])
+def test_integration_pages(grid, kwargs):
+    grid.to_pages(**kwargs)
+
+@pytest.mark.parametrize("kwargs", [
+    dict(),
+    dict(subset=["ID"]),
+    dict(tooltip=["ID"]),
+    dict(gap="5px"),
+    dict(style={"ID": lambda x: "color: red" if x == 1 else ""}),
+    dict(transform={"ID": lambda x: f"Id. #{x}"}),
+])
+def test_integration_table(grid, kwargs):
+    grid.to_table(**kwargs)
+
+# TODO: test filters and display

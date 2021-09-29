@@ -252,7 +252,7 @@ class MolGrid:
             Number of rows per page
         border : str
             Styling of the border around each cell (CSS)
-        gap : int or str
+        gap : int
             Size of the margin around each cell (CSS)
         fontsize : str
             Font size of the text displayed in each cell (CSS)
