@@ -1,7 +1,13 @@
 from functools import wraps
 from importlib.util import find_spec
+from jinja2 import Environment, FileSystemLoader
+from pathlib import Path
 from rdkit import Chem
 import pandas as pd
+
+
+env = Environment(loader=FileSystemLoader(Path(__file__).parent / 'templates'),
+                  autoescape=False)
 
 def requires(module):
     def inner(func):
@@ -58,3 +64,26 @@ def remove_coordinates(mol):
     modified inplace"""
     mol.RemoveAllConformers()
     return mol
+
+def make_popup_callback(title, html, js="", style=""):
+    """Creates a JavaScript callback that displays a popup window
+    
+    Parameters
+    ----------
+    title : str
+        Title of the popup. Use `title='${data["Name"]}'` to use the value
+        of the column "Name" as a title
+    html : str
+        Content of the popup window
+    js : str
+        JavaScript code executed before making the content of the popup window.
+        This allows you to create variables and reuse them later in the `html`
+        content of the popup, using the `${my_variable}` syntax
+    style : str
+        CSS style assigned to the popup window
+    """
+    return (env.get_template('js/popup.js')
+               .render(js=js,
+                       html=html,
+                       title=title,
+                       style=style))

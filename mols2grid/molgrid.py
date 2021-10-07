@@ -2,13 +2,12 @@ import warnings
 from base64 import b64encode
 from html import escape
 import json
-from pathlib import Path
 import pandas as pd
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem import Draw
-from jinja2 import Environment, FileSystemLoader
-from .utils import (requires,
+from .utils import (env,
+                    requires,
                     tooltip_formatter,
                     mol_to_record,
                     mol_to_smiles,
@@ -22,10 +21,6 @@ except ModuleNotFoundError:
 else:
     warnings.filterwarnings("ignore",
                             "Consider using IPython.display.IFrame instead")
-
-
-env = Environment(loader=FileSystemLoader(Path(__file__).parent / 'templates'),
-                  autoescape=False)
 
 
 class MolGrid:
