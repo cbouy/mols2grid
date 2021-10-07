@@ -10,7 +10,7 @@ listObj.on("updated", function (list) {
             data[name] = this.innerHTML;
         });
         {% if callback_type == "python" %}
-        // call python func
+        // call custom python callback
         if (kernel_env === "jupyter") {
             kernel.execute("{{ callback }}("+JSON.stringify(data)+")");
         } else if (kernel_env === "colab") {
@@ -18,9 +18,11 @@ listObj.on("updated", function (list) {
                 const result = await kernel.invokeFunction("{{ callback }}",
                                                            [data], {});
             })();
+        } else {
+            // no kernel detected for callback
         }
         {% else %}
-        // custom js callback
+        // call custom js callback
         {{ callback }}
         {% endif %}
     });

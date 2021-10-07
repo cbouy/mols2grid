@@ -221,6 +221,7 @@ def test_render_wrong_template(grid):
     dict(transform={"ID": lambda x: f"Id. #{x}"}),
     dict(custom_css="* {color: red;}"),
     dict(callback="console.log(JSON.stringify(data));"),
+    dict(custom_header='<script src="https://unpkg.com/@rdkit/rdkit@2021.3.2/Code/MinimalLib/dist/RDKit_minimal.js"></script>'),
 ])
 def test_integration_pages(grid, kwargs):
     grid.to_pages(**kwargs)
@@ -235,5 +236,16 @@ def test_integration_pages(grid, kwargs):
 ])
 def test_integration_table(grid, kwargs):
     grid.to_table(**kwargs)
+
+def test_python_callback(grid):
+    def myfunc():
+        pass
+    html = grid.to_pages(subset=["ID"], callback=myfunc)
+    assert "// call custom python callback" in html
+    assert "// no kernel detected for callback"
+
+def test_python_callback_lambda(grid):
+    with pytest.raises(TypeError, match="Lambda functions are not supported"):
+        grid.to_pages(subset=["ID"], callback=lambda x: None)
 
 # TODO: test filters and display

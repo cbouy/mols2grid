@@ -1,3 +1,4 @@
+from typing import Type
 import warnings
 from base64 import b64encode
 from html import escape
@@ -408,6 +409,10 @@ class MolGrid:
 
         # callback
         if callable(callback):
+            if callback.__name__ == "<lambda>":
+                raise TypeError(
+                    "Lambda functions are not supported as callbacks. Please "
+                    "use a regular function instead.")
             callback_type = "python"
             callback = callback.__name__
         else:
