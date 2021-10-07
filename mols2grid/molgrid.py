@@ -406,6 +406,13 @@ class MolGrid:
                     '{checkbox}{content}</div>')
         item = item.format(checkbox=checkbox, content="".join(content))
 
+        # callback
+        if callable(callback):
+            callback_type = "python"
+            callback = callback.__name__
+        else:
+            callback_type = "js"
+
         df = df[final_columns].rename(columns=column_map)
 
         template = env.get_template('pages.html')
@@ -435,6 +442,7 @@ class MolGrid:
             custom_css = custom_css or "",
             custom_header = custom_header or "",
             callback = callback,
+            callback_type = callback_type,
         )
         return template.render(**template_kwargs)
 

@@ -9,6 +9,19 @@ listObj.on("updated", function (list) {
                                      .substring(5);
             data[name] = this.innerHTML;
         });
+        {% if callback_type == "python" %}
+        // call python func
+        if (kernel_env === "jupyter") {
+            kernel.execute("{{ callback }}("+JSON.stringify(data)+")");
+        } else if (kernel_env === "colab") {
+            (async function() {
+                const result = await kernel.invokeFunction("{{ callback }}",
+                                                           [data], {});
+            })();
+        }
+        {% else %}
+        // custom js callback
         {{ callback }}
+        {% endif %}
     });
 });
