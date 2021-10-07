@@ -227,7 +227,7 @@ class MolGrid:
                  textalign="center", tooltip_fmt="<strong>{key}</strong>: {value}",
                  tooltip_trigger="click hover", tooltip_placement="bottom",
                  hover_color="#e7e7e7", style=None, selection=True, transform=None,
-                 custom_css=None, callback=None):
+                 custom_css=None, custom_header=None, callback=None):
         """Returns the HTML document for the "pages" template
         
         Parameters
@@ -289,7 +289,9 @@ class MolGrid:
             before (MP) and after (°C) the value. These transformations only affect
             columns in `subset` and `tooltip`, and do not interfere with `style`.
         custom_css : str
-            Custom CSS properties applied to the content of the HTML document.
+            Custom CSS properties applied to the content of the HTML document
+        custom_header : str
+            Custom libraries to be loaded in the header of the document
         callback : str
             JavaScript callback to be executed when clicking on an image. A dictionnary
             containing the data for the full cell is available as `data`. All the values
@@ -435,7 +437,8 @@ class MolGrid:
             sort_cols = sort_cols,
             grid_id = self._grid_id,
             whole_cell_style = whole_cell_style,
-            custom_css = custom_css if custom_css else "",
+            custom_css = custom_css or "",
+            custom_header = custom_header or "",
             callback = callback,
         )
         return template.render(**template_kwargs)

@@ -64,9 +64,11 @@ listObj.on("updated", function (list) {
 });
 {% endif %}
 {% if selection %}
+// selection modifyers and export options
 {% include 'js/selection_actions.js' %}
 {% endif %}
 {% if callback %}
+// callback
 {% include 'js/callback.js' %}
 {% endif %}
 {%if tooltip or selection or whole_cell_style %}
