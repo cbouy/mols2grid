@@ -1,0 +1,11 @@
+<iframe class="mols2grid-iframe" frameborder="0" width={{ width }}
+{% if height %}
+height="{{ height }}"
+{% else %}
+height="0" 
+onload="javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+{{ padding }}+'px';}(this));"
+{% endif %}
+{% if allow %}
+allow="{{ allow }}"
+{% endif %}
+srcdoc="{{ doc }}"></iframe>

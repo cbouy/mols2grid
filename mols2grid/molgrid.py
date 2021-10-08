@@ -620,20 +620,12 @@ class MolGrid:
     @requires("IPython.display")
     def display(self, width="100%", height=None, **kwargs):
         """Render and display the grid in a Jupyter notebook"""
-        code = self.render(**kwargs)
-        if height:
-            iframe = (
-                '<iframe class="mols2grid-iframe" frameborder="0" '
-                'width={width} height="{height}" srcdoc="{code}"></iframe>')
-        else:
-            # automatically resize iframe
-            iframe = (
-                '<iframe class="mols2grid-iframe" frameborder="0" '
-                'onload="javascript:(function(o){{o.style.height=o.contentWindow.document.body.scrollHeight+18+\'px\';}}(this));" '
-                'width={width} height="10px" srcdoc="{code}"></iframe>'
-            )
-        return HTML(iframe.format(width=width, height=height,
-                                  code=escape(code)))
+        iframe_allow = kwargs.pop("iframe_allow", "clipboard-write")
+        doc = self.render(**kwargs)
+        iframe = (env.get_template("html/iframe.html")
+                     .render(width=width, height=height, padding=18,
+                             allow=iframe_allow, doc=escape(doc)))
+        return HTML(iframe)
 
     def save(self, output, **kwargs):
         """Render and save the grid in an HTML document"""
