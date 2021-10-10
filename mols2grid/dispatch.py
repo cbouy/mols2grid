@@ -129,6 +129,9 @@ def display(arg, **kwargs):
         clicking on an image. A dictionnary containing the data for the full cell is
         available as `data`. All the values are parsed as strings, except "mols2grid-id"
         which is always an integer.
+    sort_by : str or None
+        Sort the grid according to the following field (which must be present in `subset`
+        or `tooltip`).
     
     Notes
     -----

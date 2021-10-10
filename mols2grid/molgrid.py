@@ -222,7 +222,7 @@ class MolGrid:
                  textalign="center", tooltip_fmt="<strong>{key}</strong>: {value}",
                  tooltip_trigger="click hover", tooltip_placement="bottom",
                  hover_color="#e7e7e7", style=None, selection=True, transform=None,
-                 custom_css=None, custom_header=None, callback=None):
+                 custom_css=None, custom_header=None, callback=None, sort_by=None):
         """Returns the HTML document for the "pages" template
         
         Parameters
@@ -283,9 +283,9 @@ class MolGrid:
             Celsius instead of Fahrenheit with a single digit precision and some text
             before (MP) and after (°C) the value. These transformations only affect
             columns in `subset` and `tooltip`, and do not interfere with `style`.
-        custom_css : str
+        custom_css : str or None
             Custom CSS properties applied to the content of the HTML document
-        custom_header : str
+        custom_header : str or None
             Custom libraries to be loaded in the header of the document
         callback : str or callable
             JavaScript or Python callback to be executed when clicking on an image. A
@@ -293,6 +293,9 @@ class MolGrid:
             `data` in JS. For Python, the callback function must have `data` as the first
             argument to the function. All the values in the `data` dict are parsed as
             strings, except "mols2grid-id" which is always an integer.
+        sort_by : str or None
+            Sort the grid according to the following field (which must be present in
+            `subset` or `tooltip`).
         """
         if self.mol_col:
             df = self.dataframe.drop(columns=self.mol_col).copy()
@@ -418,7 +421,15 @@ class MolGrid:
         else:
             callback_type = "js"
 
-        df = df[final_columns].rename(columns=column_map)
+        if sort_by and sort_by != "mols2grid-id":
+            if sort_by in (subset + tooltip):
+                sort_by = f"data-{sort_by}"
+            else:
+                raise ValueError(f"{sort_by} is not an available field in "
+                                 "`subset` or `tooltip`")
+        else:
+            sort_by = "mols2grid-id"
+        df = df[final_columns].rename(columns=column_map).sort_values(sort_by)
 
         template = env.get_template('pages.html')
         template_kwargs = dict(
@@ -448,6 +459,7 @@ class MolGrid:
             custom_header = custom_header or "",
             callback = callback,
             callback_type = callback_type,
+            sort_by = sort_by,
         )
         return template.render(**template_kwargs)
 

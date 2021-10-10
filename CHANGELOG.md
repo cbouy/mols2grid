@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] - 2021/10/??
+## [0.1.0] - 2021/10/11
 ### Added
 - The grid can be filtered using pandas DataFrame's `query` and `loc` logic (mostly
   useful to combine with ipywidgets) with `MolGrid.filter_by_index` and `MolGrid.filter`.
@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added the `mols2grid.sdf_to_dataframe` function to easily convert an SDF file to a
   pandas DataFrame.
 - Added the `custom_css` argument to pass custom CSS for the HTML document.
+- Added the `sort_by` argument to change how the grid elements are ordered
 ### Changed
 - The functions in `style` and `transform` are now also applied to tooltips.
 - The sizing of the iframe displaying the grid is now fully automated and more precise.
