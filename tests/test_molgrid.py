@@ -74,7 +74,7 @@ def test_smi_only_makes_mol_temporary(df):
     df["SMILES"] = df["mol"].apply(Chem.MolToSmiles)
     df = df.drop(columns=["mol"])
     grid = MolGrid(df)
-    assert "mol" in grid._extra_columns
+    assert "mol" not in grid._extra_columns
     assert "mol" not in grid.dataframe.columns
 
 def test_keep_mol_col_if_input(grid):
