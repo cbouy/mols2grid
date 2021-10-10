@@ -115,22 +115,22 @@ For the `pages` template, the following parameters are available:
     ```python
     style={"__all__": lambda x: "background-color: yellow" if x["Solubility"] < -5 else ""}
     ```
-* `transform=None`: dict or None
+* `transform=None`: dict or None  
     Functions applied to specific items in all cells. The dict must follow a `key: function` structure where the key must correspond to one of the columns in `subset` or `tooltip`. The function takes the item's value as input and transforms it. For example, to round the "Solubility" to 2 decimals, and display the "Melting point" in Celsius instead of Fahrenheit with a single digit precision and some text before ("MP") and after ("°C") the value:
     ```python
     transform={"Solubility": lambda x: f"{x:.2f}",
                "Melting point": lambda x: f"MP: {5/9*(x-32):.1f}°C"}
     ```
     These transformations only affect columns in `subset` and `tooltip` and do not interfere with `style`.
-* `selection=True` : bool
+* `selection=True` : bool  
     Enables the selection of molecules using a checkbox. Only usefull in the context of a Jupyter notebook. You can retrieve your selection of molecules (index and SMILES) through `mols2grid.get_selection()`
-* `custom_css=None` : str or None
+* `custom_css=None` : str or None  
     Custom CSS properties applied to the content of the HTML document
-* `custom_header=None` : str or None
+* `custom_header=None` : str or None  
     Custom libraries (CSS or JS) to be loaded in the header of the document
-* `callback=None` : str or callable
+* `callback=None` : str or callable  
     JavaScript or Python callback to be executed when clicking on an image. A dictionnary containing the data for the full cell is directly available as `data` in JS. For Python, the callback function must have `data` as the first argument to the function. All the values in the `data` dict are parsed as strings, except "mols2grid-id" which is always an integer.
-* `sort_by` : str or None
+* `sort_by` : str or None  
     Sort the grid according to the following field (which must be present in `subset` or `tooltip`).
 
 Less options are available for the `table` template, you can check the complete list of arguments with `help(mols2grid.MolGrid.to_table)`
@@ -138,7 +138,7 @@ Less options are available for the `table` template, you can check the complete 
 #### Output parameters
 
 You can either:
-* save the grid with `mols2grid.save(input, output_path, ...)`. The file that is generated is a standalone HTML document that should work with most web browsers.
+* save the grid with `mols2grid.save(input, output="path/grid.html", ...)`. The file that is generated is a standalone HTML document that should work with most web browsers.
 * display it directly in a Jupyter notebook with `mols2grid.display(...)` (optionnal argument: `width="100%"`, `height=None`)
 
 
