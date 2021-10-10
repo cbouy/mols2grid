@@ -98,7 +98,6 @@ class MolGrid:
         if smiles_col and not mol_col:
             mol_col = "mol"
             keep_mols = False
-            self._extra_columns.append(mol_col)
             dataframe[mol_col] = dataframe[smiles_col].apply(Chem.MolFromSmiles)
         else:
             keep_mols = True
@@ -263,16 +262,16 @@ class MolGrid:
             `key: function` structure where the key must correspond to one of
             the columns in `subset` or `tooltip`. The function takes the item's value as
             input, and outputs a valid CSS styling, for example
-            `style={"Solubility": lambda x: "color: red" if x < -5 else "color: black"}`
+            `style={"Solubility": lambda x: "color: red" if x < -5 else ""}`
             if you want to color the text corresponding to the "Solubility"
             column in your dataframe. You can also style a whole cell using the `__all__`
             key, the corresponding function then has access to all values for each cell:
-            `style={"__all__": lambda x: "color: red" if x["Solubility"] < -5 else 
-            "color: black"}`
+            `style={"__all__": lambda x: "color: red" if x["Solubility"] < -5 else ""}`
         selection : bool
             Enables the selection of molecules and displays a checkbox at the top of each
             cell. This is only usefull in the context of a Jupyter notebook, which gives
-            you access to your selection (index and SMILES) through `mols2grid.selection`
+            you access to your selection (index and SMILES) through
+            `mols2grid.get_selection()`
         transform : dict or None
             Functions applied to specific items in all cells. The dict must follow a
             `key: function` structure where the key must correspond to one of the columns
@@ -288,10 +287,12 @@ class MolGrid:
             Custom CSS properties applied to the content of the HTML document
         custom_header : str
             Custom libraries to be loaded in the header of the document
-        callback : str
-            JavaScript callback to be executed when clicking on an image. A dictionnary
-            containing the data for the full cell is available as `data`. All the values
-            are parsed as strings, except "mols2grid-id" which is always an integer.
+        callback : str or callable
+            JavaScript or Python callback to be executed when clicking on an image. A
+            dictionnary containing the data for the full cell is directly available as
+            `data` in JS. For Python, the callback function must have `data` as the first
+            argument to the function. All the values in the `data` dict are parsed as
+            strings, except "mols2grid-id" which is always an integer.
         """
         if self.mol_col:
             df = self.dataframe.drop(columns=self.mol_col).copy()
@@ -326,10 +327,9 @@ class MolGrid:
             style = {}
         if transform is None:
             transform = {}
-        if tooltip:
-            value_names = list(set(subset + [smiles] + tooltip))
-        else:
-            value_names = list(set(subset + [smiles]))
+        if tooltip is None:
+            tooltip = []
+        value_names = list(set(subset + [smiles] + tooltip))
         value_names = [f"data-{col}" for col in value_names]
 
         # force id, SMILES, and tooltip values to be present in the data
@@ -359,7 +359,7 @@ class MolGrid:
             content.append(s)
             column_map[col] = f"data-{col}"
         # add but hide SMILES div if not present
-        if smiles not in subset:
+        if smiles not in (subset + tooltip):
             s = f'<div class="data data-{smiles}" style="display: none;"></div>'
             content.append(s)
             column_map[smiles] = f"data-{smiles}"
