@@ -6,25 +6,22 @@ from .molgrid import MolGrid
 
 _SIGNATURE = {
     method: dict(inspect.signature(getattr(MolGrid, method)).parameters.items())
-    for method in ["render", "to_pages", "to_table"]
+    for method in ["render", "to_pages", "to_table", "display"]
 }
-for method in ["render", "to_pages", "to_table"]:
+for method in ["render", "to_pages", "to_table", "display"]:
     _SIGNATURE[method].pop("self")
-_SIGNATURE["render"].pop("kwargs")
+    if method in ["render", "display"]:
+        _SIGNATURE[method].pop("kwargs")
 
 
 def _prepare_kwargs(kwargs, kind):
     """Separate kwargs for the init and render methods of MolGrid"""
     template = kwargs.pop("template", _SIGNATURE["render"]["template"].default)
-    render_kwargs = {key: value
-                     for key, value in kwargs.items()
-                     if key in _SIGNATURE[f'to_{template}'].keys()}
-    for key in render_kwargs.keys():
-        kwargs.pop(key)
+    render_kwargs = {param: kwargs.pop(param, sig.default)
+                     for param, sig in _SIGNATURE[f'to_{template}'].items()}
     if kind == "display":
-        render_kwargs = {"width": kwargs.pop("width", "100%"),
-                         "height": kwargs.pop("height", None),
-                         **render_kwargs}
+        render_kwargs.update({param: kwargs.pop(param, sig.default)
+                              for param, sig in _SIGNATURE["display"].items()})
     return template, kwargs, render_kwargs
 
 @singledispatch
