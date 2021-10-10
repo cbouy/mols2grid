@@ -242,7 +242,7 @@ def test_python_callback(grid):
         pass
     html = grid.to_pages(subset=["ID"], callback=myfunc)
     assert "// call custom python callback" in html
-    assert "// no kernel detected for callback"
+    assert "// no kernel detected for callback" in html
 
 def test_python_callback_lambda(grid):
     with pytest.raises(TypeError, match="Lambda functions are not supported"):
