@@ -70,7 +70,7 @@ class MolGrid:
         The list of supported MolDrawOptions attributes are available in
         https://www.rdkit.org/docs/source/rdkit.Chem.Draw.rdMolDraw2D.html#rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions
 
-        ..versionchanged: 0.0.7
+        ..versionchanged: 0.1.0
             Added `rename` argument to replace `mapping`
         """
         if not (smiles_col or mol_col):

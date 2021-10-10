@@ -4,32 +4,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.0.7] - 2021/09/??
+## [0.1.0] - 2021/10/??
 ### Added
 - The grid can be filtered using pandas DataFrame's `query` and `loc` logic (mostly
-  useful to combine with ipywidgets).
-- Selections can now be modified (select all, or invert) and exported (to clipboard or a
-  SMILES file) even without a notebook kernel. Fixes: Issue #16.
+  useful to combine with ipywidgets) with `MolGrid.filter_by_index` and `MolGrid.filter`.
+- Selections can now be modified (select and unselect all, or invert) and exported (to
+  clipboard or a SMILES file) even without a notebook kernel. Fixes: Issue #16.
 - The grid can be sorted according to the selection status and to values in the tooltips.
 - Added tracking the selection in multiple grids at the same time (i.e. it's not a
   global object that get's overwritten anymore).
-- Added support for executing custom JavaScript code when clicking on a molecule's image
-  through the `callback` argument.
+- Added support for executing custom JavaScript code or Python function when clicking on
+  a molecule's image through the `callback` argument.
+- Added the `mols2grid.make_popup_callback` helper function to create a popup-like window
+  as a JavaScript callback.
 - Added styling for the whole cell through `style={"__all__": userfunction}`.
 - Added `mols2grid.get_selection()` allowing users to specify which grid selection should
   be returned. Without argument, the most recently updated grid is returned.
 - Added `mols2grid.list_grids()` to return a list of grid names available.
-- Added a function to easily convert an SDF file to a pandas DataFrame.
+- Added the `mols2grid.sdf_to_dataframe` function to easily convert an SDF file to a
+  pandas DataFrame.
 - Added the `custom_css` argument to pass custom CSS for the HTML document.
 ### Changed
 - The functions in `style` and `transform` are now also applied to tooltips.
 - The sizing of the iframe displaying the grid is now fully automated and more precise.
+- Reorganized the code to separate the JS, CSS and HTML templates.
 ### Fixed
 - Fixed `mols2grid.save` that returned an error about missing the `output` argument.
 - The tooltip is now compatible with the "focus" mode: `tooltip_trigger="focus"`.
 - Fixed rendering SVG images in tooltips.
 ### Deprecated
 - Deprecated `mols2grid.selection` in favor of `mols2grid.get_selection()`.
+- Deprecated `mapping` in favor of `rename` in the MolGrid class and `mols2grid.display`.
 
 ## [0.0.6] - 2021/05/14
 ### Changed
