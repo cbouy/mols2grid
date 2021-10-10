@@ -2,246 +2,57 @@
   <meta charset="utf-8">
   <head>
     <style>
-      #mols2grid.gridcontainer {
-        display: block;
-        padding-left: 1em;
-        max-width: {{ width }}px;
-        width: {{ width }}px;
-      }
-      #mols2grid .cell {
-        border: {{ border }};
-        text-align: {{ textalign }};
-        vertical-align: top;
-        max-width: {{ cell_width }}px;
-        width: {{ cell_width }}px;
-        font-family: {{ fontfamily }};
-        font-size: {{ fontsize }};
-        padding: 0;
-        margin: {{ gap }};
-        float: left;
-      }
-      #mols2grid .cell:hover {
-        background-color: {{ hover_color }};
-      }
-      #mols2grid .cell img, #mols2grid .cell svg {
-        max-width: 100%;
-        height: auto;
-        padding: 0;
-      }
-      #mols2grid .data {
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        display: block;
-      }
-      #mols2grid .arrow-asc:after {
-        content: '↑';
-        text-align: right;
-        float:right;
-      }
-      #mols2grid .arrow-desc:after {
-        content: '↓';
-        text-align: right;
-        float:right;
-      }
+    {% include 'css/pages.css' %}
+    /* custom CSS */
+    {{ custom_css }}
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/@rdkit/rdkit@2021.3.2/Code/MinimalLib/dist/RDKit_minimal.js"></script>
+    {% include 'html/pages_header.html' %}
+    <!-- custom header -->
+    {{ custom_header }}
   </head>
   <body>
-    <div id="mols2grid" class="gridcontainer">
-      <div class="row">
+    <div id="mols2grid" class="gridcontainer grid-{{ grid_id }}">
+      <div class="row mb-3">
         <div class="list">{{ item }}</div>
       </div>
-      <div class="row">
-        <ul class="pagination pt-3 pl-3 col"></ul>
-        <div class="dropdown float-right col-1 py-3 mr-4">
-          <button class="btn btn-light dropdown-toggle" type="button" id="sortDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Sort by
-          </button>
-          <div class="dropdown-menu" aria-labelledby="sortDropdownMenu">
-            {% for name in sort_cols %}
-            {% if loop.first %}
-            <button class="dropdown-item sort-btn arrow-asc active" type="button" data-name="mols2grid-id">Index</button>
-            {% else %}
-            <button class="dropdown-item sort-btn" type="button" data-name="{{ name }}">{{ name | replace("data-", "", 1) | capitalize }}</button>
-            {% endif %}
-            {% endfor %}
+      <div class="d-inline">
+        <ul class="pagination float-left"></ul>
+        <div id="controls" class="d-flex flex-row float-right">
+          <div id="sort-dropdown" class="dropdown pl-2">
+            <button class="btn btn-light dropdown-toggle" type="button" id="sortDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Sort by
+            </button>
+            <div class="dropdown-menu" aria-labelledby="sortDropdownMenu">
+              {% set default_sort = sort_by.replace("data-", "", 1) %}
+              {% for name in sort_cols %}
+              {% set col_name = name.replace("data-", "", 1) %}
+              {% set is_active = "arrow-asc active" if default_sort == col_name else "" %}
+              {% if loop.first %}
+              <button class="dropdown-item sort-btn {{ is_active }}" type="button" data-name="mols2grid-id">Index</button>
+              {% else %}
+              <button class="dropdown-item sort-btn {{ is_active }}" type="button" data-name="{{ name }}">{{ col_name | capitalize }}</button>
+              {% endif %}
+              {% endfor %}
+              {% if selection %}
+              <button class="dropdown-item sort-btn" type="button" data-name="checkbox">Selected</button>
+              {% endif %}
+            </div>
           </div>
-        </div>
-        <div class="input-group float-right col-4 py-3 mr-3 ml-2">
-          <input type="text" id="searchbar" class="form-control" placeholder="Search" aria-label="Search" aria-describedby="basic-addon1">
-          <div class="input-group-append">
-            <button id="searchBtn" class="btn btn-light dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">🔎</button>
-            <div class="dropdown-menu dropdown-menu-right">
-              <button id="txtSearch" class="search-btn dropdown-item active">Text</button>
-              <button id="smartsSearch" class="search-btn dropdown-item">SMARTS</button>
+          <div class="input-group row pl-4">
+            <input type="text" id="searchbar" class="form-control" placeholder="Search" aria-label="Search" aria-describedby="basic-addon1">
+            <div class="input-group-append">
+              <button id="searchBtn" class="btn btn-light dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">🔎</button>
+              <div class="dropdown-menu dropdown-menu-right">
+                <button id="txtSearch" class="search-btn dropdown-item active">Text</button>
+                <button id="smartsSearch" class="search-btn dropdown-item">SMARTS</button>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
     <script>
-      // RDKit
-      onRuntimeInitialized: initRDKitModule().then(function(instance) {
-        RDKitModule = instance;
-        console.log('RDKit version: ' + RDKitModule.version());
-      });
-      // pages
-      var listObj = new List('mols2grid',
-        {
-          valueNames: {{ value_names }},
-          item: {{ item_repr }},
-          page: {{ n_items_per_page }},
-          pagination: {
-            name: "pagination",
-            item: '<li class="page-item"><a class="page page-link" href="#" onclick="event.preventDefault()"></a></li>',
-            innerWindow: 1,
-            outerWindow: 1,
-          },
-        }
-      );
-      listObj.remove("mols2grid-id", "0")
-      listObj.add({{ data }})
-      {% if selection %}
-      // checkbox
-      if (window.parent.IPython !== undefined) {
-        // Jupyter notebook
-        var kernel = window.parent.IPython.notebook.kernel;
-        kernel.execute('import mols2grid')
-        kernel.execute('mols2grid.reset_selection()')
-        function set_selection(_id, smiles) {
-          kernel.execute("mols2grid.set_selection("+_id+",'"+smiles+"')")
-        }
-        function del_selection(_id) {
-          kernel.execute("mols2grid.del_selection("+_id+")");
-        }
-      } else if (window.parent.google !== undefined) {
-        // Google colab
-        var kernel = window.parent.google.colab.kernel;
-        (async function() {
-          const result = await kernel.invokeFunction('m2g.reset_selection', [], {});
-        })();
-        function set_selection(_id, smiles) {
-          (async function() {
-            const result = await kernel.invokeFunction('m2g.set_selection', [_id, smiles], {});
-          })();
-        }
-        function del_selection(_id) {
-          (async function() {
-            const result = await kernel.invokeFunction('m2g.del_selection', [_id], {});
-          })();
-        }
-      }
-      
-      {% endif %}
-      // sort
-      var sort_field = "mols2grid-id";
-      var sort_order = "asc";
-      function coerce_type(str) {
-        if (isNaN(str)) return null;
-        var num = parseFloat(str)
-        return isNaN(num) ? str : num;
-      }
-      function mols2gridSortFunction(itemA, itemB, options) {
-        var x = coerce_type(itemA.values()[options.valueName]);
-        var y = coerce_type(itemB.values()[options.valueName]);
-        if (x > y) { 
-          return 1;
-        } else if (x < y) {
-          return -1;
-        } else {
-          return 0;
-        }
-      }
-      $('#mols2grid button.sort-btn').click(function(e) {
-        var _field = $(this).attr("data-name");
-        if (_field == sort_field) {
-          $(this).removeClass("arrow-" + sort_order)
-          sort_order = (sort_order === "desc") ? "asc" : "desc";
-        } else {
-          $('#mols2grid button.sort-btn.active').removeClass("active "+"arrow-"+sort_order);
-          sort_order = "asc";
-          sort_field = _field;
-          $(this).addClass("active");
-        }
-        $(this).addClass("arrow-" + sort_order)
-        listObj.sort(_field, {order: sort_order, sortFunction: mols2gridSortFunction});
-      });
-      // search bar
-      function SmartsSearch(query, columns) {
-        query = $('#mols2grid #searchbar').val();
-        var smiles = columns[0];
-        var qmol = RDKitModule.get_qmol(query);
-        if (qmol.is_valid()) {
-          for (var k = 0, kl = listObj.items.length; k < kl; k++) {
-            var item = listObj.items[k];
-            var mol = RDKitModule.get_mol(item.values()[smiles]);
-            var results = JSON.parse(mol.get_substruct_match(qmol));
-            if (results.atoms) {
-              item.found = true;
-            } else {
-              item.found = false;
-            }
-            mol.delete();
-          }
-        }
-        qmol.delete();
-      }
-      var search_type = "Text";
-      $('#mols2grid .search-btn').click(function() {
-        search_type = $(this).text();
-        $('#mols2grid button.search-btn.active').removeClass("active");
-        $(this).addClass("active");
-      });
-      $('#mols2grid #searchbar').on("keyup", function(e) {
-        var query = e.target.value;
-        if (search_type === "Text") {
-          listObj.search(query, {{ search_cols }});
-        } else {
-          listObj.search(query, ["data-"+"{{ smiles_col }}"], SmartsSearch);
-        }
-      });
-      {% if tooltip %}
-      // tooltips
-      $.fn.tooltip.Constructor.Default.whiteList.span = ['style']
-      listObj.on("updated", function (list) {
-        $(function () {
-          // hide previous popovers
-          $('#mols2grid a.page-link').click(function(e) {
-            $('.mols2grid-tooltip[data-toggle="popover"]').popover('hide')
-          });
-          // create new popover
-          $('.mols2grid-tooltip[data-toggle="popover"]').popover({
-            placement: {{ tooltip_placement }},
-            trigger: {{ tooltip_trigger }},
-            html: true,
-          });
-        })
-      });
-      {% endif %}
-      {% if selection %}
-      // update selection on checkbox click
-      if (kernel !== undefined) {
-        listObj.on("updated", function (list) {
-          $("input:checkbox").change(function() {
-            var _id = parseInt($(this).closest(".cell").attr("data-mols2grid-id"));
-            var _smiles = $($(this).siblings(".data-{{ smiles_col }}")[0]).text();
-            if (this.checked) {
-              set_selection(_id, _smiles)
-            } else {
-              del_selection(_id)
-            }
-          }); 
-        });
-      }
-      {% endif %}
-      {% if tooltip or selection %}
-      listObj.update();
-      {% endif %}
+    {% include 'js/pages.js' %}
     </script>
   </body>
 </html>

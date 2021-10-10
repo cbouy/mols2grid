@@ -6,27 +6,22 @@ from .molgrid import MolGrid
 
 _SIGNATURE = {
     method: dict(inspect.signature(getattr(MolGrid, method)).parameters.items())
-    for method in ["render", "to_pages", "to_table"]
+    for method in ["render", "to_pages", "to_table", "display"]
 }
-for method in ["render", "to_pages", "to_table"]:
+for method in ["render", "to_pages", "to_table", "display"]:
     _SIGNATURE[method].pop("self")
-_SIGNATURE["render"].pop("kwargs")
+    if method in ["render", "display"]:
+        _SIGNATURE[method].pop("kwargs")
 
 
 def _prepare_kwargs(kwargs, kind):
+    """Separate kwargs for the init and render methods of MolGrid"""
     template = kwargs.pop("template", _SIGNATURE["render"]["template"].default)
-    render_kwargs = {key: value
-                     for key, value in kwargs.items()
-                     if key in _SIGNATURE[f'to_{template}'].keys()}
-    for key in render_kwargs.keys():
-        kwargs.pop(key)
+    render_kwargs = {param: kwargs.pop(param, sig.default)
+                     for param, sig in _SIGNATURE[f'to_{template}'].items()}
     if kind == "display":
-        render_kwargs = {"width": kwargs.pop("width", "100%"),
-                         "height": kwargs.pop("height", None),
-                         **render_kwargs}
-    elif kind == "save":
-        render_kwargs = {"output": kwargs.pop("output"),
-                         **render_kwargs}
+        render_kwargs.update({param: kwargs.pop(param, sig.default)
+                              for param, sig in _SIGNATURE["display"].items()})
     return template, kwargs, render_kwargs
 
 @singledispatch
@@ -46,15 +41,18 @@ def display(arg, **kwargs):
     coordGen : bool (True)
         Use the coordGen library instead of the RDKit one to depict the
         molecules in 2D
-    use_coords : bool
+    use_coords : bool (True)
         Use the coordinates of the molecules (only relevant when an SDF file, a
         list of molecules or a DataFrame of RDKit molecules were used as input)
-    remove_Hs : bool
+    remove_Hs : bool (False)
         Remove hydrogen atoms from the drawings
     size : tuple ((160, 120))
         Size of each image
-    mapping : dict (None)
+    rename : dict (None)
         Rename the properties in the final document
+    name : str ("default")
+        Name of the grid. Used when retrieving selections from multiple grids
+        at the same time
     template : str ("pages")
         One of {pages, table}
     width : str ("100%)
@@ -65,7 +63,8 @@ def display(arg, **kwargs):
     subset: list (None)
         Columns to be displayed in each cell of the grid. Each column's value
         will be displayed from top to bottom in the same order given here.
-        Use "img" for the image of the molecule.
+        Use "img" for the image of the molecule, and "mols2grid-id" for the
+        molecule's index in your input file.
         Default: all columns (with "img" in first position)
     tooltip : list (None)
         Columns to be displayed as a tooltip when hovering/clicking on the
@@ -79,7 +78,7 @@ def display(arg, **kwargs):
     n_cols : int (5)
         Number of columns per page
     n_rows` : int (3)
-        Number of rows per page (only available for the "pages" template)
+        Only available for the "pages" template. Number of rows per page
     border : str ("1px solid #cccccc")
         Styling of the border around each cell (CSS)
     gap : int or str (0)
@@ -102,6 +101,37 @@ def display(arg, **kwargs):
         ```python
         style={"Solubility": lambda x: "color: red" if x < -5 else "color: black"}
         ```
+        You can also style a whole cell using the `__all__` key, the corresponding function then has access to all values for each cell:
+        ```python
+        style={"__all__": lambda x: "color: red" if x["Solubility"] < -5 else "color: black"}`
+        ```
+    selection : bool (True)
+        Only available for the "pages" template. Enables the selection of molecules and
+        displays a checkbox at the top of each cell. To access your selection (index and
+        SMILES), use `mols2grid.get_selection()` or the export options in the bottom
+        checkbox dropdown menu.
+    transform : dict (None)
+        Functions applied to specific items in all cells. The dict must follow a
+        `key: function` structure where the key must correspond to one of the columns
+        in `subset` or `tooltip`. The function takes the item's value as input and 
+        transforms it, for example:
+        `transform={"Solubility": lambda x: f"{x:.2f}",
+                    "Melting point": lambda x: f"MP: {5/9*(x-32):.1f}°C"}`
+        will round the solubility to 2 decimals, and display the melting point in
+        Celsius instead of Fahrenheit with a single digit precision and some text
+        before (MP) and after (°C) the value. These transformations only affect
+        columns in `subset` and `tooltip`, and do not interfere with `style`.
+    custom_css : str
+        Only available for the "pages" template. Custom CSS properties applied to the
+        content of the HTML document.
+    callback : str
+        Only available for the "pages" template. JavaScript callback to be executed when
+        clicking on an image. A dictionnary containing the data for the full cell is
+        available as `data`. All the values are parsed as strings, except "mols2grid-id"
+        which is always an integer.
+    sort_by : str or None
+        Sort the grid according to the following field (which must be present in `subset`
+        or `tooltip`).
     
     Notes
     -----
@@ -135,27 +165,33 @@ def save(arg, **kwargs):
     
     Parameters
     ----------
+    arg : pandas.DataFrame, SDF file or list of molecules
+        The input containing your molecules
     output : str
         Name and path of the output document
     
     See `mols2grid.display` for the full list of arguments
     """
-    raise TypeError(f"No display method registered for type {type(arg)!r}")
+    raise TypeError(f"No save method registered for type {type(arg)!r}")
 
 @save.register(DataFrame)
 def _(df, **kwargs):
     template, kwargs, render_kwargs = _prepare_kwargs(kwargs, "save")
-    return MolGrid(df, **kwargs).save(template=template, **render_kwargs)
+    output = kwargs.pop("output")
+    return MolGrid(df, **kwargs).save(output, template=template,
+                                      **render_kwargs)
 
 @save.register(str)
 def _(sdf, **kwargs):
     template, kwargs, render_kwargs = _prepare_kwargs(kwargs, "save")
-    return MolGrid.from_sdf(sdf, **kwargs).save(template=template,
+    output = kwargs.pop("output")
+    return MolGrid.from_sdf(sdf, **kwargs).save(output, template=template,
                                                 **render_kwargs)
 
 @save.register(Series)
 @save.register(list)
 def _(mols, **kwargs):
     template, kwargs, render_kwargs = _prepare_kwargs(kwargs, "save")
-    return MolGrid.from_mols(mols, **kwargs).save(template=template,
+    output = kwargs.pop("output")
+    return MolGrid.from_mols(mols, **kwargs).save(output, template=template,
                                                   **render_kwargs)
