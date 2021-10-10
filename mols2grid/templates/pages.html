@@ -23,11 +23,14 @@
               Sort by
             </button>
             <div class="dropdown-menu" aria-labelledby="sortDropdownMenu">
+              {% set default_sort = sort_by.replace("data-", "", 1) %}
               {% for name in sort_cols %}
+              {% set col_name = name.replace("data-", "", 1) %}
+              {% set is_active = "arrow-asc active" if default_sort == col_name else "" %}
               {% if loop.first %}
-              <button class="dropdown-item sort-btn arrow-asc active" type="button" data-name="mols2grid-id">Index</button>
+              <button class="dropdown-item sort-btn {{ is_active }}" type="button" data-name="mols2grid-id">Index</button>
               {% else %}
-              <button class="dropdown-item sort-btn" type="button" data-name="{{ name }}">{{ name | replace("data-", "", 1) | capitalize }}</button>
+              <button class="dropdown-item sort-btn {{ is_active }}" type="button" data-name="{{ name }}">{{ col_name | capitalize }}</button>
               {% endif %}
               {% endfor %}
               {% if selection %}

@@ -1,19 +1,18 @@
-var sort_field = "mols2grid-id";
+var sort_field = "{{ sort_by }}";
 var sort_order = "asc";
-function coerce_type(str) {
-    if (isNaN(str)) return null;
-    var num = parseFloat(str)
-    return isNaN(num) ? str : num;
-}
 function mols2gridSortFunction(itemA, itemB, options) {
-    var x = coerce_type(itemA.values()[options.valueName]);
-    var y = coerce_type(itemB.values()[options.valueName]);
-    if (x > y) { 
-        return 1;
-    } else if (x < y) {
-        return -1;
+    var x = itemA.values()[options.valueName];
+    var y = itemB.values()[options.valueName];
+    if (typeof x === "number") {
+        if (isFinite(x - y)) {
+            return x - y; 
+        } else {
+            return isFinite(x) ? -1 : 1;
+        }
     } else {
-        return 0;
+        x = x.toLowerCase();
+        y = y.toLowerCase();
+        return (x < y) ? -1: (x > y) ? 1: 0;
     }
 }
 function checkboxSort(itemA, itemB, options) {
