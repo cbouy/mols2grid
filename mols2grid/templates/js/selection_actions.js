@@ -7,8 +7,22 @@ $('#btn-chkbox-all').click(function (e) {
     var last_page = parseInt($("li.page-item > a").last().text());
     for (let i = 0; i < last_page; i++) {
         listObj.show(i * n_items + 1, n_items);
-        $("input:checkbox").each(function() {
+        $("input:checkbox:not(:checked)").each(function() {
             this.checked = true;
+            $(this).trigger("change");
+        });
+    }
+    listObj.show((current_page - 1) * n_items + 1, n_items);
+});
+// uncheck all
+$('#btn-chkbox-none').click(function (e) {
+    var current_page = parseInt($("li.page-item.active > a").text());
+    var n_items = {{ n_items_per_page }};
+    var last_page = parseInt($("li.page-item > a").last().text());
+    for (let i = 0; i < last_page; i++) {
+        listObj.show(i * n_items + 1, n_items);
+        $("input:checkbox:checked").each(function() {
+            this.checked = false;
             $(this).trigger("change");
         });
     }
