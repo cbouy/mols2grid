@@ -39,9 +39,9 @@ mols2grid.display("path/to/molecules.sdf",
                   # RDKit's MolDrawOptions parameters
                   fixedBondLength=25,
                   # rename fields for the output document
-                  mapping={"SOL": "Solubility",
-                           "SOL_classification": "Class",
-                           "NAME": "Name"},
+                  rename={"SOL": "Solubility",
+                          "SOL_classification": "Class",
+                          "NAME": "Name"},
                   # set what's displayed on the grid
                   subset=["ID", "img", "Solubility"],
                   # set what's displayed on the tooltips
@@ -59,12 +59,13 @@ You can setup the grid from various inputs:
 * a list of **RDKit molecules** (with properties accessible through the `mol.GetPropsAsDict()` method),
 * or an **SDF file**
 
-You can also rename each field of your input with the `mapping` parameter. Please note that 3 fields are automatically added regardless of your input: `mols2grid-id`, `SMILES` and `img`. If a "SMILES" field already exists, it will not be overwritten.
+You can also rename each field of your input with the `rename` parameter. Please note that 3 fields are automatically added regardless of your input: `mols2grid-id`, `SMILES` and `img`. If a "SMILES" field already exists, it will not be overwritten.
 
 #### Parameters for the drawing of each molecule
 
 * `useSVG=True`: use SVG images or PNG
 * `coordGen=True`: use the coordGen library instead of the RDKit one to depict the molecules in 2D
+* `removeHs=False`: remove explicit hydrogen atoms from the drawings
 * `size=(160, 120)`: size of each image
 * `use_coords=True`: use the coordinates of the input molecules if available
 * `MolDrawOptions=None`: RDKit's [MolDrawOptions](https://www.rdkit.org/docs/source/rdkit.Chem.Draw.rdMolDraw2D.html#rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions) class. Useful for making highly customized drawings. You can also leave this to `None`, and directly use the attributes of this class as parameters like `addStereoAnnotation=True`
@@ -75,7 +76,8 @@ You can control the general look of the document through the `template` argument
 * `template="pages"` (default) which is displayed above. It integrates nicely with Jupyter notebooks and has a search bar
 * `template="table"`, which displays the full list of molecules (no pages). Useful if you ever need to print the full list of molecules on paper (or print to PDF)
 
-Both templates can be configured with the same parameters (a lot of which are [CSS](https://www.w3schools.com/cssref/) declarations):
+Both templates can be configured with the same parameters (a lot of which are [CSS](https://www.w3schools.com/cssref/) declarations).
+For the `pages` template, the following parameters are available:
 
 * `subset=None`: list or None  
     Columns to be displayed in each cell of the grid. Each column's value will be displayed from top to bottom in the same order given here. Use `"img"` for the image of the molecule. Default: all columns (with "img" in first position)
@@ -89,6 +91,8 @@ Both templates can be configured with the same parameters (a lot of which are [C
     Position of the tooltip: auto, top, bottom, left, right
 * `n_cols=5`: int  
     Number of columns per page
+* `n_rows=3` : int  
+    Number of rows per page
 * `border="1px solid #cccccc"`: str  
     Styling of the border around each cell (CSS)
 * `gap=0`: int or str  
@@ -105,29 +109,36 @@ Both templates can be configured with the same parameters (a lot of which are [C
     CSS styling applied to each item in a cell. The dict must follow a `key: function` structure where the key must correspond to one of the columns in `subset` or `tooltip`. The function takes the item's value as input, and outputs a valid CSS styling. For example, if you want to color the text corresponding to the "Solubility"
     column in your dataframe:
     ```python
-    style={"Solubility": lambda x: "color: red" if x < -3 else "color: black"}
+    style={"Solubility": lambda x: "color: red" if x < -3 else ""}
+    ```
+    You can also style a whole cell using `__all__` as a key, the corresponding function then has access to all values for each cell:
+    ```python
+    style={"__all__": lambda x: "background-color: yellow" if x["Solubility"] < -5 else ""}
     ```
 * `transform=None`: dict or None
-    Functions applied to specific items in all cells. The dict must follow a `key: function` structure where the key must correspond to one of the columns in `subset`. The function takes the item's value as input and transforms it. For example, to round the "Solubility" to 2 decimals, and display the "Melting point" in Celsius instead of Fahrenheit with a single digit precision and some text before ("MP") and after ("°C") the value:
+    Functions applied to specific items in all cells. The dict must follow a `key: function` structure where the key must correspond to one of the columns in `subset` or `tooltip`. The function takes the item's value as input and transforms it. For example, to round the "Solubility" to 2 decimals, and display the "Melting point" in Celsius instead of Fahrenheit with a single digit precision and some text before ("MP") and after ("°C") the value:
     ```python
     transform={"Solubility": lambda x: f"{x:.2f}",
                "Melting point": lambda x: f"MP: {5/9*(x-32):.1f}°C"}
     ```
-    These transformations only affect columns in `subset` (not `tooltip`) and are applied independantly from `style`.
-
-The `pages` template comes with additional parameters:
-
-* `n_rows=3` : int  
-    Number of rows per page
+    These transformations only affect columns in `subset` and `tooltip` and do not interfere with `style`.
 * `selection=True` : bool
-    Enables the selection of molecules using a checkbox. Only usefull in the context of a Jupyter notebook. You can retrieve your selection of molecules (index and SMILES) through `mols2grid.selection`
+    Enables the selection of molecules using a checkbox. Only usefull in the context of a Jupyter notebook. You can retrieve your selection of molecules (index and SMILES) through `mols2grid.get_selection()`
+* `custom_css=None` : str or None
+    Custom CSS properties applied to the content of the HTML document
+* `custom_header=None` : str or None
+    Custom libraries (CSS or JS) to be loaded in the header of the document
+* `callback=None` : str or callable
+    JavaScript or Python callback to be executed when clicking on an image. A dictionnary containing the data for the full cell is directly available as `data` in JS. For Python, the callback function must have `data` as the first argument to the function. All the values in the `data` dict are parsed as strings, except "mols2grid-id" which is always an integer.
+* `sort_by` : str or None
+    Sort the grid according to the following field (which must be present in `subset` or `tooltip`).
 
-The `pages` template also allows searching (by text or SMARTS) and sorting the grid.
+Less options are available for the `table` template, you can check the complete list of arguments with `help(mols2grid.MolGrid.to_table)`
 
 #### Output parameters
 
 You can either:
-* save the grid with `mols2grid.save(output_path, ...)`. The file that is generated is a standalone HTML document that should work with most web browsers.
+* save the grid with `mols2grid.save(input, output_path, ...)`. The file that is generated is a standalone HTML document that should work with most web browsers.
 * display it directly in a Jupyter notebook with `mols2grid.display(...)` (optionnal argument: `width="100%"`, `height=None`)
 
 
