@@ -3,6 +3,7 @@ listObj.on("updated", function (list) {
         var data = {}
         data["mols2grid-id"] = parseInt($(this).closest(".cell")
                                                .attr("data-mols2grid-id"));
+        data["img"] = this.innerHTML;
         $(this).siblings(".data").each(function() {
             let name = this.className.split(" ")
                                      .filter(cls => cls.startsWith("data-"))[0]
