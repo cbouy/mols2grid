@@ -47,14 +47,15 @@ def test_unset_selection():
 
 def test_add_selection():
     register._init_grid("bar")
-    register.add_selection("foo", 0, "C")
+    register.add_selection("foo", [0, 1], ["C", "CC"])
     assert register.get_selection()[0] == "C"
+    assert register.get_selection()[1] == "CC"
 
 def test_del_selection():
-    register._set_selection(0, "C")
     register._init_grid("bar")
-    register.del_selection("foo", 0)
-    assert register.get_selection() == {}
+    register.add_selection("foo", [0, 1], ["C", "CC"])
+    register.del_selection("foo", [1])
+    assert register.get_selection() == {0: "C"}
 
 def test_get_selection():
     assert register.get_selection() == {}

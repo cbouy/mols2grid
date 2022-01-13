@@ -23,7 +23,7 @@ def test_requires():
     (["Activity"], "{value}", {}, {"Activity": lambda x: f"{x:.2f}"},
      "42.01"),
     (["Activity"], "{key}: {value}",
-     {"Activity": lambda x: "color: red" if x.endswith("1") else ""},
+     {"Activity": lambda x: "color: red" if x > 40 else ""},
      {"Activity": lambda x: f"{x:.2f}"},
      'Activity: <span style="color: red">42.01</span>'),
 ])
