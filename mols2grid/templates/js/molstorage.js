@@ -1,4 +1,14 @@
 class MolStorage extends Map {
+    multi_set(_id, _smiles) {
+        for (let i=0; i < _id.length; i++) {
+            this.set(_id[i], _smiles[i]);
+        }
+    }
+    multi_del(_id) {
+        for (let i=0; i < _id.length; i++) {
+            this.delete(_id[i]);
+        };
+    }
     to_dict() {
         var content = "{";
         for (let [key, value] of this) {
