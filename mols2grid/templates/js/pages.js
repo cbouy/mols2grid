@@ -26,6 +26,8 @@ window.parent.mols2grid_lists[{{ grid_id | tojson }}] = listObj;
 // selection
 {% include 'js/molstorage.js' %}
 var SELECTION = new MolStorage();
+{% endif %}
+{% if selection or callback %}
 {% include 'js/kernel.js' %}
 {% endif %}
 // sort
@@ -71,6 +73,6 @@ listObj.on("updated", function (list) {
 // callback
 {% include 'js/callback.js' %}
 {% endif %}
-{%if tooltip or selection or whole_cell_style %}
+{%if tooltip or selection or whole_cell_style or callback %}
 listObj.update();
 {% endif %}
