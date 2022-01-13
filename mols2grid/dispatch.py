@@ -124,6 +124,8 @@ def display(arg, **kwargs):
     custom_css : str
         Only available for the "pages" template. Custom CSS properties applied to the
         content of the HTML document.
+    custom_header : str or None
+        Custom libraries to be loaded in the header of the document
     callback : str
         Only available for the "pages" template. JavaScript callback to be executed when
         clicking on an image. A dictionnary containing the data for the full cell is
