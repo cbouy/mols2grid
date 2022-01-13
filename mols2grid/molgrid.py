@@ -416,6 +416,13 @@ class MolGrid:
                 raise TypeError(
                     "Lambda functions are not supported as callbacks. Please "
                     "use a regular function instead.")
+            # automatically register callback in Google Colab
+            try:
+                from google import colab
+            except:
+                pass
+            else:
+                colab.output.register_callback(callback.__name__, callback)
             callback_type = "python"
             callback = callback.__name__
         else:
