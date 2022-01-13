@@ -39,8 +39,8 @@ def tooltip_formatter(s, subset, fmt, style, transform):
     """
     items = []
     for k, v in s[subset].to_dict().items():
-        v = transform[k](v) if transform.get(k) else v
-        v = f'<span style="{style[k](v)}">{v}</span>' if style.get(k) else v
+        displayed = transform[k](v) if transform.get(k) else v
+        v = f'<span style="{style[k](v)}">{displayed}</span>' if style.get(k) else displayed
         items.append(fmt.format(key=k, value=v))
     return "<br>".join(items)
 
