@@ -4,7 +4,7 @@ from threading import Lock
 
 class SelectionRegister:
     """Register for grid selections
-    
+
     Attributes
     ----------
     SELECTIONS : dict

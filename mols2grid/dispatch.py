@@ -27,7 +27,7 @@ def _prepare_kwargs(kwargs, kind):
 @singledispatch
 def display(arg, **kwargs):
     """Display molecules on an interactive grid
-    
+
     Parameters
     ----------
     arg : pandas.DataFrame, SDF file or list of molecules
@@ -134,7 +134,7 @@ def display(arg, **kwargs):
     sort_by : str or None
         Sort the grid according to the following field (which must be present in `subset`
         or `tooltip`).
-    
+
     Notes
     -----
     You can also directly use RDKit's MolDrawOptions parameters as arguments.
@@ -164,14 +164,14 @@ def _(mols, **kwargs):
 @singledispatch
 def save(arg, **kwargs):
     """Generate an interactive grid of molecules and save it
-    
+
     Parameters
     ----------
     arg : pandas.DataFrame, SDF file or list of molecules
         The input containing your molecules
     output : str
         Name and path of the output document
-    
+
     See `mols2grid.display` for the full list of arguments
     """
     raise TypeError(f"No save method registered for type {type(arg)!r}")

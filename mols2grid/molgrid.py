@@ -137,7 +137,7 @@ class MolGrid:
     def from_mols(cls, mols, **kwargs):
         """Set up the dataframe used by mols2grid directly from a list of RDKit
         molecules
-        
+
         Parameters
         ----------
         mols : list
@@ -153,7 +153,7 @@ class MolGrid:
     @classmethod
     def from_sdf(cls, sdf_file, **kwargs):
         """Set up the dataframe used by mols2grid directly from an SDFile
-        
+
         Parameters
         ----------
         sdf_file : str
@@ -201,20 +201,21 @@ class MolGrid:
     def render(self, template="pages", **kwargs):
         """Returns the HTML document corresponding to the "pages" or "table"
         template. See `to_pages` and `to_table` for the list of arguments
-        
+
         Parameters
         ----------
         template : str
             Kind of grid to draw:
-                * "table" is a very simple table where all molecules are
-                  displayed on the document, the main usecase is printing to
-                  PDF or on paper.
-                * "pages" is a more interactive version that splits the
-                  original data into several pages.
+
+            * "table" is a very simple table where all molecules are
+                displayed on the document, the main usecase is printing to
+                PDF or on paper.
+            * "pages" is a more interactive version that splits the
+                original data into several pages.
         """
         self.template = template
         return getattr(self, f"to_{self.template}")(**kwargs)
-    
+
     def to_pages(self, subset=None, tooltip=None,
                  cell_width=160, n_cols=5, n_rows=3,
                  border="1px solid #cccccc", gap=0,
@@ -224,7 +225,7 @@ class MolGrid:
                  hover_color="#e7e7e7", style=None, selection=True, transform=None,
                  custom_css=None, custom_header=None, callback=None, sort_by=None):
         """Returns the HTML document for the "pages" template
-        
+
         Parameters
         ----------
         subset : list or None
@@ -483,7 +484,7 @@ class MolGrid:
 
     def filter(self, mask):
         """Filters the grid using a mask (boolean array)
-        
+
         Parameters
         ----------
         mask : list, pd.Series, np.ndarray
@@ -499,7 +500,7 @@ class MolGrid:
         # convert index to mols2grid-id
         ids = self.dataframe.loc[self.dataframe.index.isin(indices)]["mols2grid-id"]
         return self._filter_by_id(ids)
-        
+
     def _filter_by_id(self, ids):
         """Filters the grid using the values in the `mols2grid-id` column"""
         if isinstance(ids, (pd.Series, np.ndarray)):
@@ -508,7 +509,7 @@ class MolGrid:
             grid_id = self._grid_id,
             ids = ids)
         return Javascript(code)
-    
+
     def to_table(self, subset=None, tooltip=None, n_cols=6,
                  cell_width=160, border="1px solid #cccccc", gap=0,
                  fontsize="12pt", fontfamily="'DejaVu', sans-serif",
@@ -516,7 +517,7 @@ class MolGrid:
                  tooltip_trigger="click hover", tooltip_placement="bottom",
                  hover_color="#e7e7e7", style=None, transform=None):
         """Returns the HTML document for the "table" template
-        
+
         Parameters
         ----------
         subset : list or None
@@ -612,7 +613,7 @@ class MolGrid:
             td.append("\n".join(div))
             td.append("</td>")
             tr.append("\n".join(td))
-            
+
             if (ncell % n_cols == 0) or (ncell == len(df)):
                 cell = [f'<tr class="row-{nrow}">']
                 cell.append("\n".join(tr))

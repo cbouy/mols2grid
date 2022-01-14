@@ -23,7 +23,7 @@ def requires(module):
 
 def tooltip_formatter(s, subset, fmt, style, transform):
     """Function to generate tooltips from a pandas Series
-    
+
     Parameters
     ----------
     s : pandas.Series
@@ -67,7 +67,7 @@ def remove_coordinates(mol):
 
 def make_popup_callback(title, html, js="", style=""):
     """Creates a JavaScript callback that displays a popup window
-    
+
     Parameters
     ----------
     title : str
