@@ -30,6 +30,12 @@ var SELECTION = new MolStorage();
 {% if selection or callback %}
 {% include 'js/kernel.js' %}
 {% endif %}
+{% if selection and cached_selection %}
+// restore checkbox state
+listObj.on("updated", function (list) {
+    $('#mols2grid .cell input[checked="false"]').prop("checked", false);
+});
+{% endif %}
 // sort
 {% include 'js/sort.js' %}
 // search bar

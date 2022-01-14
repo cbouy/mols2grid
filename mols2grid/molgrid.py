@@ -31,7 +31,8 @@ class MolGrid:
 
     def __init__(self, df, smiles_col="SMILES", mol_col=None, removeHs=False,
         use_coords=True, coordGen=True, useSVG=True, size=(160, 120),
-        MolDrawOptions=None, rename=None, name="default", **kwargs):
+        MolDrawOptions=None, rename=None, name="default", cache_selection=False,
+        **kwargs):
         """
         Parameters
         ----------
@@ -62,6 +63,8 @@ class MolGrid:
         name : str
             Name of the grid. Used when retrieving selections from multiple
             grids at the same time
+        cache_selection : bool
+            Restores the selection from a previous grid with the same name
         kwargs : object
             MolDrawOptions attributes
 
@@ -131,7 +134,15 @@ class MolGrid:
         self.mol_col = mol_col
         # register instance
         self._grid_id = name
-        register._init_grid(name)
+        if cache_selection:
+            try:
+                self._cached_selection = register.get_selection(name)
+            except KeyError:
+                self._cached_selection = None
+                register._init_grid(name)
+        else:
+            self._cached_selection = None
+            register._init_grid(name)
 
     @classmethod
     def from_mols(cls, mols, **kwargs):
@@ -354,7 +365,7 @@ class MolGrid:
         for col in subset:
             if col == "img" and tooltip:
                 s = (f'<a tabindex="0" class="data data-{col} mols2grid-tooltip" '
-                     'data-toggle="popover" data-content="foo"></a>')  
+                     'data-toggle="popover" data-content="."></a>')  
             else:
                 if style.get(col):
                     s = f'<div class="data data-{col} style-{col}" style=""></div>'
@@ -391,7 +402,7 @@ class MolGrid:
             df["mols2grid-tooltip"] = df.apply(tooltip_formatter, axis=1,
                                                args=(tooltip, tooltip_fmt, style,
                                                      transform))
-            final_columns = final_columns + ["mols2grid-tooltip"]
+            final_columns += ["mols2grid-tooltip"]
             value_names = (value_names[:-1] +
                            ", {attr: 'data-content', name: 'mols2grid-tooltip'}]")
 
@@ -400,7 +411,14 @@ class MolGrid:
             df[col] = df[col].apply(func)
 
         if selection:
-            checkbox = '<input type="checkbox" class="position-relative float-left">'
+            if self._cached_selection:
+                df["cached_checkbox"] = False
+                df.loc[df["mols2grid-id"].isin(self._cached_selection.keys()), "cached_checkbox"] = True
+                final_columns += ["cached_checkbox"]
+                value_names = (value_names[:-1] +
+                           ", {attr: 'checked', name: 'cached_checkbox'}]")
+            checkbox = ('<input type="checkbox" '
+                        'class="position-relative float-left cached_checkbox">')
         else:
             checkbox = ""
         if whole_cell_style:
@@ -459,6 +477,7 @@ class MolGrid:
             search_cols = search_cols,
             data = json.dumps(df.to_dict("records")),
             selection = selection,
+            cached_selection = bool(self._cached_selection),
             smiles_col = smiles,
             sort_cols = sort_cols,
             grid_id = self._grid_id,
