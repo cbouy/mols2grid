@@ -17,7 +17,7 @@ def _make_df():
 default_df = _make_df()
 
 def _make_grid(**kwargs):
-    kwargs["mol_col"] = kwargs.pop("mol_col", "mol")
+    kwargs.setdefault("mol_col", "mol")
     return MolGrid(default_df, **kwargs)
 
 @pytest.fixture(scope="module")
@@ -247,5 +247,23 @@ def test_python_callback(grid):
 def test_python_callback_lambda(grid):
     with pytest.raises(TypeError, match="Lambda functions are not supported"):
         grid.to_pages(subset=["ID"], callback=lambda x: None)
+
+def test_cache_selection():
+    grid = _make_grid(name="cache")
+    register.add_selection("cache", [0], ["CCO"])
+    grid = _make_grid(name="cache", cache_selection=True)
+    assert hasattr(grid, "_cached_selection")
+    assert register.get_selection("cache") == grid._cached_selection
+
+def test_cache_no_init():
+    grid = _make_grid(name="new_cache", cache_selection=True)
+    assert hasattr(grid, "_cached_selection")
+    assert grid._cached_selection is None
+    assert "new_cache" in register.list_grids()
+
+def test_no_cache_selection():
+    grid = _make_grid(name="no_cache", cache_selection=False)
+    assert grid._cached_selection is None
+    assert "no_cache" in register.list_grids()
 
 # TODO: test filters and display
