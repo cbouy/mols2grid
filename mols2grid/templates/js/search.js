@@ -1,14 +1,23 @@
 function SmartsSearch(query, columns) {
     query = $('#mols2grid #searchbar').val();
-    var smiles = columns[0];
-    var qmol = RDKitModule.get_qmol(query);
+    var smiles_col = columns[0];
+    var qmol = RDKit.get_qmol(query);
+    smarts_matches = {};
     if (qmol.is_valid()) {
         for (var k = 0, kl = listObj.items.length; k < kl; k++) {
             var item = listObj.items[k];
-            var mol = RDKitModule.get_mol(item.values()[smiles]);
-            var results = JSON.parse(mol.get_substruct_match(qmol));
-            if (results.atoms) {
-                item.found = true;
+            var smiles = item.values()[smiles_col]
+            var mol = RDKit.get_mol(smiles);
+            if (mol.is_valid()) {
+                var results = JSON.parse(mol.get_substruct_match(qmol));
+                if (results.atoms) {
+                    item.found = true;
+                    {% if onthefly %}
+                    smarts_matches[smiles] = results;
+                    {% endif %}
+                } else {
+                    item.found = false;
+                }
             } else {
                 item.found = false;
             }

@@ -26,7 +26,7 @@ def df():
 
 @pytest.fixture(scope="module")
 def grid():
-    return _make_grid()
+    return _make_grid(prerender=True)
 
 @pytest.fixture(scope="module")
 def mols():
@@ -48,7 +48,7 @@ def test_uses_svg(grid):
     assert "<svg " in data[:100]
 
 def test_uses_png():
-    grid = _make_grid(useSVG=False)
+    grid = _make_grid(useSVG=False, prerender=True)
     assert grid.useSVG == False
     data = grid.dataframe.loc[0, "img"]
     assert data.startswith('<img src="data:image/png;base64')
@@ -85,7 +85,7 @@ def test_remove_hydrogens():
     mol =  Chem.MolFromSmiles("C")
     mol = Chem.AddHs(mol)
     data = [{"mol": mol, "ID": 0}]
-    grid = MolGrid(data, mol_col="mol", removeHs=True)
+    grid = MolGrid(data, mol_col="mol", removeHs=True, prerender=True)
     new = grid.dataframe.loc[0, "mol"]
     assert new.GetNumAtoms() == 1
 
@@ -94,31 +94,31 @@ def test_remove_coordinates():
     mol = Chem.AddHs(mol)
     Compute2DCoords(mol)
     data = [{"mol": mol, "ID": 0}]
-    grid = MolGrid(data, mol_col="mol", use_coords=False)
+    grid = MolGrid(data, mol_col="mol", use_coords=False, prerender=True)
     new = grid.dataframe.loc[0, "mol"]
     with pytest.raises(ValueError, match="Bad Conformer Id"):
         new.GetConformer()
 
 def test_generate_smi_from_mol_col(df):
     df = df.drop(columns=["SMILES"])
-    grid = MolGrid(df, mol_col="mol")
+    grid = MolGrid(df, mol_col="mol", prerender=True)
     assert "SMILES" in grid.dataframe.columns
 
 def test_index_when_none_molecules(df):
     df = df.copy()
     df.loc[1, "mol"] = None
-    grid = MolGrid(df, mol_col="mol")
+    grid = MolGrid(df, mol_col="mol", prerender=True)
     assert len(grid.dataframe) == len(df) - 1
     assert_equal(grid.dataframe["mols2grid-id"].values, [0, 2, 3, 4])
 
 def test_custom_moldrawoptions():
     opts = Draw.MolDrawOptions()
     opts.fixedBondLength = 42
-    grid = _make_grid(MolDrawOptions=opts)
+    grid = _make_grid(MolDrawOptions=opts, prerender=True)
     assert grid.MolDrawOptions.fixedBondLength == 42
 
 def test_moldrawoptions_as_kwargs():
-    grid = _make_grid(fixedBondLength=42)
+    grid = _make_grid(fixedBondLength=42, prerender=True)
     assert grid.MolDrawOptions.fixedBondLength == 42
 
 def test_update_current_grid_on_init():
@@ -137,12 +137,21 @@ def test_from_mols_custom_mol_col(mols):
     assert "mol" not in grid.dataframe.columns
 
 @pytest.mark.parametrize(["param", "attr", "value"], [
-    ("useSVG", "useSVG", False),
-    ("size", "img_size", (42, 42)),
     ("name", "_grid_id", "foobar"),
+    ("coordGen", "prefer_coordGen", False),
+    ("removeHs", "removeHs", True),
+    ("useSVG", "useSVG", False),
+    ("use_coords", "use_coords", False),
+    ("size", "img_size", (42, 42)),
+    ("prerender", "prerender", True),
+    ("smiles_col", "smiles_col", "smi"),
+    ("mol_col", "mol_col", "rdmol"),
 ])
 def test_from_mols_kwargs(mols, param, attr, value):
-    grid = MolGrid.from_mols(mols, **{param: value})
+    if param in ["useSVG"]:
+        grid = MolGrid.from_mols(mols, prerender=True, **{param: value})
+    else:
+        grid = MolGrid.from_mols(mols, **{param: value})
     assert getattr(grid, attr) == value
 
 def test_from_sdf():
@@ -150,17 +159,26 @@ def test_from_sdf():
     assert "mol" in grid.dataframe.columns
 
 def test_from_sdf_custom_mol_col():
-    grid = MolGrid.from_sdf(sdf, mol_col="rdmol")
+    grid = MolGrid.from_sdf(sdf, mol_col="rdmol", prerender=True)
     assert "rdmol" in grid.dataframe.columns
     assert "mol" not in grid.dataframe.columns
 
 @pytest.mark.parametrize(["param", "attr", "value"], [
-    ("useSVG", "useSVG", False),
-    ("size", "img_size", (42, 42)),
     ("name", "_grid_id", "foobar"),
+    ("coordGen", "prefer_coordGen", False),
+    ("removeHs", "removeHs", True),
+    ("useSVG", "useSVG", False),
+    ("use_coords", "use_coords", False),
+    ("size", "img_size", (42, 42)),
+    ("prerender", "prerender", True),
+    ("smiles_col", "smiles_col", "smi"),
+    ("mol_col", "mol_col", "rdmol"),
 ])
 def test_from_sdf_kwargs(param, attr, value):
-    grid = MolGrid.from_sdf(sdf, **{param: value})
+    if param in ["useSVG"]:
+        grid = MolGrid.from_sdf(sdf, prerender=True, **{param: value})
+    else:
+        grid = MolGrid.from_sdf(sdf, **{param: value})
     assert getattr(grid, attr) == value
 
 def test_template(grid):
@@ -174,19 +192,19 @@ def test_template_setter(grid):
 def test_substruct_highlight():
     mol = Chem.MolFromSmiles("C")
     mol.__sssAtoms = [0]
-    grid = MolGrid.from_mols([mol])
+    grid = MolGrid.from_mols([mol], prerender=True)
     svg = grid.dataframe.loc[0, "img"]
     assert "<ellipse" in svg
 
 def test_mol_to_img_svg():
     mol = Chem.MolFromSmiles("C")
-    grid = MolGrid.from_mols([mol])
+    grid = MolGrid.from_mols([mol], prerender=True)
     img = grid.mol_to_img(mol)
     assert "<svg " in img[:100]
 
 def test_mol_to_img_png():
     mol = Chem.MolFromSmiles("C")
-    grid = MolGrid.from_mols([mol])
+    grid = MolGrid.from_mols([mol], prerender=True)
     grid.useSVG = False
     grid._MolDraw2D = Draw.MolDraw2DCairo
     img = grid.mol_to_img(mol)
@@ -265,5 +283,10 @@ def test_no_cache_selection():
     grid = _make_grid(name="no_cache", cache_selection=False)
     assert grid._cached_selection is None
     assert "no_cache" in register.list_grids()
+
+def test_onthefly_render_png_error(df):
+    with pytest.raises(ValueError,
+                       match="On-the-fly rendering of PNG images not supported"):
+        grid = MolGrid(df, prerender=False, useSVG=False)
 
 # TODO: test filters and display

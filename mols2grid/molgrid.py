@@ -31,7 +31,8 @@ class MolGrid:
 
     def __init__(self, df, smiles_col="SMILES", mol_col=None, removeHs=False,
         use_coords=True, coordGen=True, useSVG=True, size=(160, 120),
-        MolDrawOptions=None, rename=None, name="default", cache_selection=False,
+        MolDrawOptions=None, rename=None, name="default", prerender=False,
+        cache_selection=False,
         **kwargs):
         """
         Parameters
@@ -65,13 +66,21 @@ class MolGrid:
             grids at the same time
         cache_selection : bool
             Restores the selection from a previous grid with the same name
+        prerender : bool
+            Prerender images for the entire dataset, or generate them
+            on-the-fly when needed
         kwargs : object
-            MolDrawOptions attributes
+            MolDrawOptions attributes, and the additional `atomColourPalette`
 
         Notes
         -----
         The list of supported MolDrawOptions attributes are available in
         https://www.rdkit.org/docs/source/rdkit.Chem.Draw.rdMolDraw2D.html#rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions
+
+        On-the-fly rendering of images does not read the atom colour palette
+        from the MolDrawOptions passed. If this is needed, use the following::
+
+            >>> MolGrid(df, atomColourPalette={1: (.8, 0, 1)})
 
         ..versionchanged: 0.1.0
             Added `rename` argument to replace `mapping`
@@ -81,7 +90,17 @@ class MolGrid:
         if not isinstance(name, str):
             raise TypeError(
                 f"`name` must be a string. Currently of type {type(name).__name__}")
-        Draw.rdDepictor.SetPreferCoordGen(coordGen)
+        if not prerender and not useSVG:
+            raise ValueError(
+                "On-the-fly rendering of PNG images not supported")
+        self.prefer_coordGen = coordGen
+        self.removeHs = removeHs
+        self.useSVG = useSVG
+        self.use_coords = use_coords
+        self.img_size = size
+        self.prerender = prerender
+        self.smiles_col = smiles_col
+        self.mol_col = mol_col
         if isinstance(df, pd.DataFrame):
             dataframe = df.copy()
         else:
@@ -97,41 +116,32 @@ class MolGrid:
         if rename:
             dataframe.rename(columns=rename, inplace=True)
         self._extra_columns = ["img", "mols2grid-id"]
-        # generate temporary RDKit molecules
-        if smiles_col and not mol_col:
-            mol_col = "mol"
-            keep_mols = False
-            dataframe[mol_col] = dataframe[smiles_col].apply(Chem.MolFromSmiles)
-        else:
-            keep_mols = True
-        # remove hydrogens
-        if removeHs:
-            dataframe[mol_col] = dataframe[mol_col].apply(Chem.RemoveHs)
-        if not use_coords:
-            dataframe[mol_col] = dataframe[mol_col].apply(remove_coordinates)
-        # generate smiles col
-        if mol_col and (smiles_col not in dataframe.columns):
-            dataframe[smiles_col] = dataframe[mol_col].apply(mol_to_smiles)
         # add index
         dataframe["mols2grid-id"] = list(range(len(dataframe)))
-        # drop None
-        dataframe.dropna(axis=0, subset=[mol_col], inplace=True)
         # generate drawings
-        self.useSVG = useSVG
-        opts = MolDrawOptions or Draw.MolDrawOptions()
-        for key, value in kwargs.items():
-            setattr(opts, key, value)
-        self.MolDrawOptions = opts
-        self._MolDraw2D = Draw.MolDraw2DSVG if useSVG else Draw.MolDraw2DCairo
-        self.img_size = size
-        dataframe["img"] = dataframe[mol_col].apply(self.mol_to_img)
-        if keep_mols:
-            self.dataframe = dataframe
+        if prerender:
+            Draw.rdDepictor.SetPreferCoordGen(coordGen)
+            opts = MolDrawOptions or Draw.MolDrawOptions()
+            for key, value in kwargs.items():
+                setattr(opts, key, value)
+            self.MolDrawOptions = opts
+            self._MolDraw2D = Draw.MolDraw2DSVG if useSVG else Draw.MolDraw2DCairo
+            self._prerender_mols(dataframe)
         else:
-            self.dataframe = dataframe.drop(columns=mol_col)
-            mol_col = None
-        self.smiles_col = smiles_col
-        self.mol_col = mol_col
+            opts = {}
+            if MolDrawOptions:
+                for key in dir(MolDrawOptions):
+                    value = getattr(MolDrawOptions, key)
+                    if not (key.startswith("_")
+                            or callable(value)
+                            or value.__class__.__module__ != "builtins"):
+                        opts[key] = value
+            opts.update(kwargs)
+            opts.update({"width": self.img_size[0],
+                         "height": self.img_size[1]})
+            self.json_draw_opts = json.dumps(opts)
+            dataframe["img"] = None
+        self.dataframe = dataframe
         # register instance
         self._grid_id = name
         if cache_selection:
@@ -208,6 +218,32 @@ class MolGrid:
             return img
         data = b64encode(img).decode()
         return f'<img src="data:image/png;base64,{data}">'
+    
+    def _prerender_mols(self, dataframe):
+        # generate temporary RDKit molecules
+        if self.smiles_col and not self.mol_col:
+            self.mol_col = mol_col = "mol"
+            keep_mols = False
+            dataframe[mol_col] = dataframe[self.smiles_col].apply(Chem.MolFromSmiles)
+        else:
+            keep_mols = True
+            mol_col = self.mol_col
+        # remove hydrogens
+        if self.removeHs:
+            dataframe[mol_col] = dataframe[mol_col].apply(Chem.RemoveHs)
+        if not self.use_coords:
+            dataframe[mol_col] = dataframe[mol_col].apply(remove_coordinates)
+        # generate smiles col
+        if mol_col and (self.smiles_col not in dataframe.columns):
+            dataframe[self.smiles_col] = dataframe[mol_col].apply(mol_to_smiles)
+        # drop empty mols
+        dataframe.dropna(axis=0, subset=[mol_col], inplace=True)
+        # render
+        dataframe["img"] = dataframe[mol_col].apply(self.mol_to_img)
+        # cleanup
+        if not keep_mols:
+            dataframe.drop(columns=mol_col, inplace=True)
+            self.mol_col = None
 
     def render(self, template="pages", **kwargs):
         """Returns the HTML document corresponding to the "pages" or "table"
@@ -487,6 +523,10 @@ class MolGrid:
             callback = callback,
             callback_type = callback_type,
             sort_by = sort_by,
+            removeHs = self.removeHs,
+            prefer_coordGen = self.prefer_coordGen,
+            onthefly = not self.prerender,
+            json_draw_opts = getattr(self, "json_draw_opts", ""),
         )
         return template.render(**template_kwargs)
 
