@@ -49,7 +49,7 @@ $('#btn-chkbox-invert').click(function (e) {
             var _id = parseInt($(this).closest(".cell").attr("data-mols2grid-id"));
             if (this.checked) {
                 _id_add.push(_id);
-                _smiles.push($($(this).siblings(".data-{{ smiles_col }}")[0]).text());
+                _smiles.push($(this).siblings(".data-{{ smiles_col }}").first().text());
             } else {
                 _id_del.push(_id);
             }
