@@ -1,8 +1,8 @@
 function SmartsSearch(query, columns) {
-    query = $('#mols2grid #searchbar').val();
     var smiles_col = columns[0];
-    var qmol = RDKit.get_qmol(query);
     smarts_matches = {};
+    var query = $('#mols2grid #searchbar').val();
+    var qmol = RDKit.get_qmol(query);
     if (qmol.is_valid()) {
         for (var k = 0, kl = listObj.items.length; k < kl; k++) {
             var item = listObj.items[k];
@@ -12,7 +12,7 @@ function SmartsSearch(query, columns) {
                 var results = JSON.parse(mol.get_substruct_match(qmol));
                 if (results.atoms) {
                     item.found = true;
-                    {% if onthefly %}
+                    {% if onthefly and substruct_highlight %}
                     smarts_matches[smiles] = results;
                     {% endif %}
                 } else {

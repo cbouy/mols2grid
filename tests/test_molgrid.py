@@ -29,6 +29,10 @@ def grid():
     return _make_grid(prerender=True)
 
 @pytest.fixture(scope="module")
+def grid_otf():
+    return _make_grid()
+
+@pytest.fixture(scope="module")
 def mols():
     return default_df["mol"]
 
@@ -217,18 +221,18 @@ def test_get_selection(df):
     assert_equal(new.values,
                  df.iloc[0:1].values)
 
-def test_save(grid):
+def test_save(grid_otf):
     with NamedTemporaryFile("w", suffix=".html") as f:
-        grid.save(f.name)
+        grid_otf.save(f.name)
         assert Path(f.name).is_file()
 
 @pytest.mark.parametrize("kind", ["pages", "table"])
-def test_render(grid, kind):
-    grid.render(template=kind)
+def test_render(grid_otf, kind):
+    grid_otf.render(template=kind)
 
-def test_render_wrong_template(grid):
+def test_render_wrong_template(grid_otf):
     with pytest.raises(ValueError, match="template='foo' not supported"):
-        grid.render(template="foo")
+        grid_otf.render(template="foo")
 
 @pytest.mark.parametrize("kwargs", [
     dict(),
@@ -240,9 +244,10 @@ def test_render_wrong_template(grid):
     dict(custom_css="* {color: red;}"),
     dict(callback="console.log(JSON.stringify(data));"),
     dict(custom_header='<script src="https://unpkg.com/@rdkit/rdkit@2021.3.2/Code/MinimalLib/dist/RDKit_minimal.js"></script>'),
+    dict(substruct_highlight=False),
 ])
-def test_integration_pages(grid, kwargs):
-    grid.to_pages(**kwargs)
+def test_integration_pages(grid_otf, kwargs):
+    grid_otf.to_pages(**kwargs)
 
 @pytest.mark.parametrize("kwargs", [
     dict(),
@@ -255,16 +260,16 @@ def test_integration_pages(grid, kwargs):
 def test_integration_table(grid, kwargs):
     grid.to_table(**kwargs)
 
-def test_python_callback(grid):
+def test_python_callback(grid_otf):
     def myfunc():
         pass
-    html = grid.to_pages(subset=["ID"], callback=myfunc)
+    html = grid_otf.to_pages(subset=["ID"], callback=myfunc)
     assert "// call custom python callback" in html
     assert "// no kernel detected for callback" in html
 
-def test_python_callback_lambda(grid):
+def test_python_callback_lambda(grid_otf):
     with pytest.raises(TypeError, match="Lambda functions are not supported"):
-        grid.to_pages(subset=["ID"], callback=lambda x: None)
+        grid_otf.to_pages(subset=["ID"], callback=lambda x: None)
 
 def test_cache_selection():
     grid = _make_grid(name="cache")
@@ -287,6 +292,12 @@ def test_no_cache_selection():
 def test_onthefly_render_png_error(df):
     with pytest.raises(ValueError,
                        match="On-the-fly rendering of PNG images not supported"):
-        grid = MolGrid(df, prerender=False, useSVG=False)
+        MolGrid(df, prerender=False, useSVG=False)
+
+def test_substruct_highlight_prerender_error(grid):
+    with pytest.raises(ValueError,
+                       match="Cannot highlight substructure search with "
+                             "prerendered images"):
+        grid.display()
 
 # TODO: test filters and display

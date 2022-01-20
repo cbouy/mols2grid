@@ -270,7 +270,8 @@ class MolGrid:
                  textalign="center", tooltip_fmt="<strong>{key}</strong>: {value}",
                  tooltip_trigger="click hover", tooltip_placement="bottom",
                  hover_color="#e7e7e7", style=None, selection=True, transform=None,
-                 custom_css=None, custom_header=None, callback=None, sort_by=None):
+                 custom_css=None, custom_header=None, callback=None, sort_by=None,
+                 substruct_highlight=True):
         """Returns the HTML document for the "pages" template
 
         Parameters
@@ -344,7 +345,16 @@ class MolGrid:
         sort_by : str or None
             Sort the grid according to the following field (which must be present in
             `subset` or `tooltip`).
+        substruct_highlight : bool
+            Highlight substructure when using the SMARTS search. Only available when
+            `prerender=False`
+
+        .. versionadded:: 0.2.0
+            Added `substruct_highlight` argument
         """
+        if substruct_highlight and self.prerender:
+            raise ValueError(
+                "Cannot highlight substructure search with prerendered images")
         if self.mol_col:
             df = self.dataframe.drop(columns=self.mol_col).copy()
         else:
@@ -526,6 +536,7 @@ class MolGrid:
             removeHs = self.removeHs,
             prefer_coordGen = self.prefer_coordGen,
             onthefly = not self.prerender,
+            substruct_highlight = substruct_highlight,
             json_draw_opts = getattr(self, "json_draw_opts", ""),
         )
         return template.render(**template_kwargs)
