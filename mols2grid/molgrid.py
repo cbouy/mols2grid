@@ -1,4 +1,3 @@
-from typing import Type
 import warnings
 from base64 import b64encode
 from html import escape
