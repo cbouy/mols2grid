@@ -1,3 +1,5 @@
+from tempfile import NamedTemporaryFile
+import gzip
 import pytest
 import pandas as pd
 from rdkit import RDConfig, Chem
@@ -108,6 +110,15 @@ def test_sdf_to_dataframe_custom_mol_col():
     df = utils.sdf_to_dataframe(sdf, mol_col="foo")
     assert "mol" not in df.columns
     assert "foo" in df.columns
+
+def test_sdf_to_df_gz():
+    with NamedTemporaryFile("wb", suffix=".gz") as tf, open(sdf, "rb") as fi:
+        gz = gzip.compress(fi.read(), compresslevel=1)
+        tf.write(gz)
+        tf.flush()
+        df = utils.sdf_to_dataframe(tf.name).drop(columns=["mol"])
+        ref = utils.sdf_to_dataframe(sdf).drop(columns=["mol"])
+        assert (df == ref).values.all()
 
 def test_remove_coordinates():
     mol = Chem.MolFromSmiles("CCO")

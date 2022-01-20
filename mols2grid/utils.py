@@ -1,4 +1,4 @@
-from functools import wraps
+from functools import wraps, partial
 from importlib.util import find_spec
 from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
@@ -55,9 +55,15 @@ def mol_to_record(mol, mol_col="mol"):
             mol_col: mol} if mol else {}
 
 def sdf_to_dataframe(sdf_path, mol_col="mol"):
-    """Returns a dataframe of molecules from an SDF file"""
-    return pd.DataFrame([mol_to_record(mol, mol_col)
-                         for mol in Chem.SDMolSupplier(sdf_path)])
+    """Returns a dataframe of molecules from an SDfile (.sdf or .sdf.gz)"""
+    if sdf_path.endswith(".gz"):
+        import gzip
+        read_file = gzip.open
+    else:
+        read_file = partial(open, mode="rb")
+    with read_file(sdf_path) as f:
+        return pd.DataFrame([mol_to_record(mol, mol_col)
+                             for mol in Chem.ForwardSDMolSupplier(f)])
 
 def remove_coordinates(mol):
     """Removes the existing coordinates from the molecule. The molecule is
