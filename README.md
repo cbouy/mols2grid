@@ -14,7 +14,7 @@ mols2grid is an interactive chemical viewer for 2D structures of small molecules
 
 ![Demo showing mols2grid's integration in a Jupyter notebook](https://raw.githubusercontent.com/cbouy/mols2grid/master/demo.png)
 
-➡️ Try the demo notebook on [Google Colab](https://colab.research.google.com/github/cbouy/mols2grid/blob/master/demo.ipynb)
+➡️ Try the [demo notebook](https://colab.research.google.com/github/cbouy/mols2grid/blob/master/demo.ipynb) on Google Colab, or the more [advanced notebook](https://colab.research.google.com/github/rdkit/UGM_2021/blob/main/Notebooks/Bouysset_mols2grid.ipynb) from the RDKit UGM 2021.
 
 ## 🐍 Installation
 ---
@@ -60,7 +60,7 @@ mols2grid.display("path/to/molecules.sdf",
 You can setup the grid from various inputs:
 * a pandas **DataFrame** (with a column of SMILES or RDKit molecules, controlled by the `smiles_col` and `mol_col` parameters),
 * a list of **RDKit molecules** (with properties accessible through the `mol.GetPropsAsDict()` method),
-* or an **SDF file**
+* or an **SDF file** (`.sdf` or `.sdf.gz`)
 
 You can also rename each field of your input with the `rename` parameter. Please note that 3 fields are automatically added regardless of your input: `mols2grid-id`, `SMILES` and `img`. If a "SMILES" field already exists, it will not be overwritten.
 
@@ -71,7 +71,9 @@ You can also rename each field of your input with the `rename` parameter. Please
 * `removeHs=False`: remove explicit hydrogen atoms from the drawings
 * `size=(160, 120)`: size of each image
 * `use_coords=True`: use the coordinates of the input molecules if available
-* `MolDrawOptions=None`: RDKit's [MolDrawOptions](https://www.rdkit.org/docs/source/rdkit.Chem.Draw.rdMolDraw2D.html#rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions) class. Useful for making highly customized drawings. You can also leave this to `None`, and directly use the attributes of this class as parameters like `addStereoAnnotation=True`
+* `MolDrawOptions=None`: RDKit's [MolDrawOptions](https://www.rdkit.org/docs/source/rdkit.Chem.Draw.rdMolDraw2D.html#rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions) class. Useful for making highly customized drawings. You can also leave this to `None`, and directly use the attributes of this class as parameters like `addStereoAnnotation=True`. Additionally, `atomColourPalette` is made available to modify the color palette if you are not prerendering images.
+* `prerender=False`: Prerender images for the entire dataset, or generate them on-the-fly when needed
+* `cache_selection=False` : Restores the selection from a previous grid with the same name.
 
 #### Parameters for the grid
   
@@ -127,14 +129,18 @@ For the `pages` template, the following parameters are available:
     These transformations only affect columns in `subset` and `tooltip` and do not interfere with `style`.
 * `selection=True` : bool  
     Enables the selection of molecules using a checkbox. Only usefull in the context of a Jupyter notebook. You can retrieve your selection of molecules (index and SMILES) through `mols2grid.get_selection()`
+* `cache_selection=False` : bool
+    Restores the selection from a previous grid with the same name if `True`
 * `custom_css=None` : str or None  
     Custom CSS properties applied to the content of the HTML document
 * `custom_header=None` : str or None  
     Custom libraries (CSS or JS) to be loaded in the header of the document
 * `callback=None` : str or callable  
     JavaScript or Python callback to be executed when clicking on an image. A dictionnary containing the data for the full cell is directly available as `data` in JS. For Python, the callback function must have `data` as the first argument to the function. All the values in the `data` dict are parsed as strings, except "mols2grid-id" which is always an integer.
-* `sort_by` : str or None  
+* `sort_by=None` : str or None  
     Sort the grid according to the following field (which must be present in `subset` or `tooltip`).
+* `substruct_highlight=True` : bool
+    Highlight the query when using a SMARTS substructure search. Only available when `prerender=False`.
 
 Less options are available for the `table` template, you can check the complete list of arguments with `help(mols2grid.MolGrid.to_table)`
 
@@ -151,6 +157,7 @@ You can either:
   * [Blog post](https://blog.reverielabs.com/building-web-applications-from-python-scripts-with-streamlit/) by Justin Chavez
   * [Video tutorial](https://www.youtube.com/watch?v=0rqIwSeUImo) by Data Professor
 * [Viewing clustered chemical structures](https://practicalcheminformatics.blogspot.com/2021/07/viewing-clustered-chemical-structures.html) by Pat Walters
+* [RDKit UGM 2021 notebook](https://colab.research.google.com/github/rdkit/UGM_2021/blob/main/Notebooks/Bouysset_mols2grid.ipynb)
 
 ## 👏 Acknowledgments
 ---

@@ -48,6 +48,14 @@ def display(arg, **kwargs):
         Remove hydrogen atoms from the drawings
     size : tuple ((160, 120))
         Size of each image
+    prerender : bool (False)
+        Prerender images for the entire dataset, or generate them on-the-fly
+        when needed
+    substruct_highlight : bool
+        Highlight substructure when using the SMARTS search. Only available
+        when `prerender=False`
+    MolDrawOptions : rdkit.Chem.Draw.MolDrawOptions (None)
+        Drawing options. Useful for making highly customized drawings
     rename : dict (None)
         Rename the properties in the final document
     name : str ("default")
@@ -110,6 +118,8 @@ def display(arg, **kwargs):
         displays a checkbox at the top of each cell. To access your selection (index and
         SMILES), use `mols2grid.get_selection()` or the export options in the bottom
         checkbox dropdown menu.
+    cache_selection : bool
+        Restores the selection from a previous grid with the same name
     transform : dict (None)
         Functions applied to specific items in all cells. The dict must follow a
         `key: function` structure where the key must correspond to one of the columns
@@ -139,6 +149,8 @@ def display(arg, **kwargs):
     -----
     You can also directly use RDKit's MolDrawOptions parameters as arguments.
     For more info, see https://www.rdkit.org/docs/source/rdkit.Chem.Draw.rdMolDraw2D.html#rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions
+    Additionally, `atomColourPalette` is available to customize the atom
+    palette if you're not prerendering image (`prerender=False`).
     """
     raise TypeError(f"No display method registered for type {type(arg)!r}")
 

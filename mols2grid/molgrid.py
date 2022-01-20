@@ -82,8 +82,11 @@ class MolGrid:
 
             >>> MolGrid(df, atomColourPalette={1: (.8, 0, 1)})
 
-        ..versionchanged: 0.1.0
+        .. versionchanged:: 0.1.0
             Added `rename` argument to replace `mapping`
+
+        .. versionadded:: 0.2.0
+            Added `prerender` and `cache_selection` arguments
         """
         if not (smiles_col or mol_col):
             raise ValueError("One of `smiles_col` or `mol_col` must be set")
@@ -178,9 +181,12 @@ class MolGrid:
         Parameters
         ----------
         sdf_file : str
-            Path to the SDF file
+            Path to the SDF file (.sdf or .sdf.gz)
         kwargs : object
             Other arguments passed on initialization
+        
+        .. versionchanged:: 0.2.0
+            Added support for `.sdf.gz` files
         """
         mol_col = kwargs.pop("mol_col", "mol")
         df = sdf_to_dataframe(sdf_file, mol_col=mol_col)
@@ -220,6 +226,7 @@ class MolGrid:
         return f'<img src="data:image/png;base64,{data}">'
     
     def _prerender_mols(self, dataframe):
+        """Prepares the dataframe for prerendering images of molecules"""
         # generate temporary RDKit molecules
         if self.smiles_col and not self.mol_col:
             self.mol_col = mol_col = "mol"
@@ -348,6 +355,11 @@ class MolGrid:
         substruct_highlight : bool
             Highlight substructure when using the SMARTS search. Only available when
             `prerender=False`
+
+        .. versionadded:: 0.1.0
+            Added `sort_by`, `custom_css`, `custom_header` and `callback` arguments.
+            Added the ability to style an entire cell with
+            `style={"__all__": <function>}`.
 
         .. versionadded:: 0.2.0
             Added `substruct_highlight` argument
