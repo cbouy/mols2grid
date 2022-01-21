@@ -89,25 +89,22 @@ var smarts_matches = {};
 
 // Load RDKit
 window
-    .initRDKitModule()
-    .then(function(RDKit) {
-        console.log('RDKit version: ', RDKit.version());
-        window.RDKit = RDKit;
+.initRDKitModule()
+.then(function(RDKit) {
+    console.log('RDKit version: ', RDKit.version());
+    window.RDKit = RDKit;
 
-        // search bar
-        {% include 'js/search.js' %}
+    // search bar
+    {% include 'js/search.js' %}
 
-        {% if onthefly %}
-        {% include 'js/draw_mol.js' %}
-        {% endif %}
+    {% if onthefly %}
+    {% include 'js/draw_mol.js' %}
+    {% endif %}
 
-        listObj.update();
-        // resize if iframe
-        if (window.frameElement) {
-            window.top.fit_height(window.frameElement);
-        }
-
-    })
-    .catch(() => {
-        console.log("Error loading RDKit");
-    });
+    // trigger update to activate tooltips, draw images, setup callbacks...
+    listObj.update();
+    // resize iframe to fit content
+    if (window.frameElement) {
+        window.parent.fit_height(window.frameElement);
+    }
+});
