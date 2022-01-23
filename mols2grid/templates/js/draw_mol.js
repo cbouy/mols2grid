@@ -12,10 +12,10 @@ function draw_mol(smiles) {
             var details = json_draw_opts;
         }
         svg = mol.get_svg_with_highlights(details);
-    }    
+    }
     mol.delete();
     if (svg == "") {
-        return "<img/>";
+        return '<svg width="{{ cell_width }}" height="{{ height }}" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 {{ cell_width }} {{ height }}"></svg>';
     }
     return svg;
 }

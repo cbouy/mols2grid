@@ -516,6 +516,7 @@ class MolGrid:
         template = env.get_template('pages.html')
         template_kwargs = dict(
             width = width,
+            height = self.img_size[1],
             border = border,
             textalign = textalign,
             cell_width = cell_width,
