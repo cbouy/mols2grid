@@ -79,7 +79,7 @@ def test_style(driver, grid):
         "_Name": lambda x: "color: blue",
         }})
     driver.get(doc)
-    wait = WebDriverWait(driver, 3)
+    wait = WebDriverWait(driver, 8)
     el = wait.until(
         expected_conditions.presence_of_element_located((By.CSS_SELECTOR, "#mols2grid .cell .data-img svg"))
     )

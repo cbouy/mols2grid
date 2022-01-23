@@ -19,7 +19,7 @@ mols2grid is an interactive chemical viewer for 2D structures of small molecules
 ## 🐍 Installation
 ---
 
-mols2grid was developped for Python 3.6+ and requires rdkit (>=2020.03.1), pandas and jinja2 as dependencies.  
+mols2grid was developped for Python 3.7+ and requires rdkit (>=2020.03.1), pandas and jinja2 as dependencies.  
 The easiest way to install it is from conda:
 ```shell
 conda install -c conda-forge mols2grid
@@ -30,7 +30,7 @@ Alternatively, you can also use pip:
 pip install mols2grid
 ```
 
-It is compatible with Jupyter Notebook and Google Colab (Visual Studio notebooks and Jupyterlab are not supported) and can run on Streamlit.
+It is compatible with Jupyter Notebook and Google Colab (Visual Studio notebooks and Jupyterlab are not fully supported) and can run on Streamlit.
 
 ## 📜 Usage
 ---
