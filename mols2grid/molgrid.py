@@ -29,7 +29,7 @@ class MolGrid:
     """
 
     def __init__(self, df, smiles_col="SMILES", mol_col=None, removeHs=False,
-        use_coords=True, coordGen=True, useSVG=True, size=(160, 120),
+        use_coords=False, coordGen=True, useSVG=True, size=(160, 120),
         MolDrawOptions=None, rename=None, name="default", prerender=False,
         cache_selection=False,
         **kwargs):
@@ -88,7 +88,8 @@ class MolGrid:
             Added `prerender` and `cache_selection` arguments
 
         .. versionchanged:: 0.2.0
-            Images are now generated on-the-fly
+            Images are now generated on-the-fly. `use_coords` is now `False` by
+            default to avoid a systematic error when using `MolGrid.from_sdf`
         """
         if not (smiles_col or mol_col):
             raise ValueError("One of `smiles_col` or `mol_col` must be set")
@@ -98,7 +99,7 @@ class MolGrid:
         if not prerender:
             if not useSVG:
                 raise ValueError("On-the-fly rendering of PNG images not supported")
-            if use_coords:
+            if use_coords and mol_col:
                 raise ValueError("Cannot use coordinates with on-the-fly rendering")
         self.prefer_coordGen = coordGen
         self.removeHs = removeHs

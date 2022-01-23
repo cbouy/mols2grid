@@ -41,7 +41,7 @@ def display(arg, **kwargs):
     coordGen : bool (True)
         Use the coordGen library instead of the RDKit one to depict the
         molecules in 2D
-    use_coords : bool (True)
+    use_coords : bool (False)
         Use the coordinates of the molecules (only relevant when an SDF file, a
         list of molecules or a DataFrame of RDKit molecules were used as input)
     removeHs : bool (False)

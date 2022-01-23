@@ -70,7 +70,7 @@ You can also rename each field of your input with the `rename` parameter. Please
 * `coordGen=True`: use the coordGen library instead of the RDKit one to depict the molecules in 2D
 * `removeHs=False`: remove explicit hydrogen atoms from the drawings
 * `size=(160, 120)`: size of each image
-* `use_coords=True`: use the coordinates of the input molecules if available
+* `use_coords=False`: use the coordinates of the input molecules if available
 * `MolDrawOptions=None`: RDKit's [MolDrawOptions](https://www.rdkit.org/docs/source/rdkit.Chem.Draw.rdMolDraw2D.html#rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions) class. Useful for making highly customized drawings. You can also leave this to `None`, and directly use the attributes of this class as parameters like `addStereoAnnotation=True`. Additionally, `atomColourPalette` is made available to modify the color palette if you are not prerendering images.
 * `prerender=False`: Prerender images for the entire dataset, or generate them on-the-fly when needed
 * `cache_selection=False` : Restores the selection from a previous grid with the same name.
