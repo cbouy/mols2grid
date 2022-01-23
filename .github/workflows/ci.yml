@@ -34,6 +34,16 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install Firefox
+        uses: browser-actions/setup-firefox@latest
+      
+      - run: firefox --version
+
+      - name: Prepare Selenium
+        uses: browser-actions/setup-geckodriver@latest
+      
+      - run: geckodriver --version
+
       - name: Cache conda
         uses: actions/cache@v2
         env:
