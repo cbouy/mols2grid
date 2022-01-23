@@ -1,7 +1,7 @@
 // generate images for the currently displayed molecules
 RDKit.prefer_coordgen({{ prefer_coordGen | tojson }});
 function draw_mol(smiles) {
-    var mol = RDKit.get_mol(smiles);
+    var mol = RDKit.get_mol(smiles, '{"removeHs": {{ removeHs | tojson }} }');
     var svg = "";
     if (mol.is_valid()) {
         var highlights = smarts_matches[smiles];

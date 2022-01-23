@@ -86,15 +86,20 @@ class MolGrid:
 
         .. versionadded:: 0.2.0
             Added `prerender` and `cache_selection` arguments
+
+        .. versionchanged:: 0.2.0
+            Images are now generated on-the-fly
         """
         if not (smiles_col or mol_col):
             raise ValueError("One of `smiles_col` or `mol_col` must be set")
         if not isinstance(name, str):
             raise TypeError(
                 f"`name` must be a string. Currently of type {type(name).__name__}")
-        if not prerender and not useSVG:
-            raise ValueError(
-                "On-the-fly rendering of PNG images not supported")
+        if not prerender:
+            if not useSVG:
+                raise ValueError("On-the-fly rendering of PNG images not supported")
+            if use_coords:
+                raise ValueError("Cannot use coordinates with on-the-fly rendering")
         self.prefer_coordGen = coordGen
         self.removeHs = removeHs
         self.useSVG = useSVG
@@ -120,7 +125,7 @@ class MolGrid:
         self._extra_columns = ["img", "mols2grid-id"]
         # add index
         dataframe["mols2grid-id"] = list(range(len(dataframe)))
-        # generate drawings
+        # generate drawing options
         if prerender:
             Draw.rdDepictor.SetPreferCoordGen(coordGen)
             opts = MolDrawOptions or Draw.MolDrawOptions()
@@ -128,7 +133,6 @@ class MolGrid:
                 setattr(opts, key, value)
             self.MolDrawOptions = opts
             self._MolDraw2D = Draw.MolDraw2DSVG if useSVG else Draw.MolDraw2DCairo
-            self._prerender_mols(dataframe)
         else:
             opts = {}
             if MolDrawOptions:
@@ -142,7 +146,8 @@ class MolGrid:
             opts.update({"width": self.img_size[0],
                          "height": self.img_size[1]})
             self.json_draw_opts = json.dumps(opts)
-            dataframe["img"] = None
+        # prepare smiles and images
+        self._prepare_dataframe(dataframe)
         self.dataframe = dataframe
         # register instance
         self._grid_id = name
@@ -223,33 +228,39 @@ class MolGrid:
             return img
         data = b64encode(img).decode()
         return f'<img src="data:image/png;base64,{data}">'
-    
-    def _prerender_mols(self, dataframe):
-        """Prepares the dataframe for prerendering images of molecules"""
-        # generate temporary RDKit molecules
-        if self.smiles_col and not self.mol_col:
-            self.mol_col = mol_col = "mol"
-            keep_mols = False
-            dataframe[mol_col] = dataframe[self.smiles_col].apply(Chem.MolFromSmiles)
-        else:
-            keep_mols = True
-            mol_col = self.mol_col
-        # remove hydrogens
-        if self.removeHs:
-            dataframe[mol_col] = dataframe[mol_col].apply(Chem.RemoveHs)
-        if not self.use_coords:
-            dataframe[mol_col] = dataframe[mol_col].apply(remove_coordinates)
-        # generate smiles col
-        if mol_col and (self.smiles_col not in dataframe.columns):
-            dataframe[self.smiles_col] = dataframe[mol_col].apply(mol_to_smiles)
-        # drop empty mols
-        dataframe.dropna(axis=0, subset=[mol_col], inplace=True)
+
+    def _prepare_dataframe(self, dataframe):
+        """Prepares the dataframe with SMILES and images depending on user input. The 
+        dataframe is modified inplace."""
+        if self.prerender:
+            if self.mol_col:
+                keep_mols = True
+            else:
+                # make temporary mol column if not present
+                self.mol_col = "mol"
+                keep_mols = False
+                dataframe[self.mol_col] = (
+                    dataframe[self.smiles_col].apply(Chem.MolFromSmiles))
+            # drop empty mols
+            dataframe.dropna(axis=0, subset=[self.mol_col], inplace=True)
+            # modify mol according to user pref
+            if not self.use_coords:
+                dataframe[self.mol_col] = (
+                    dataframe[self.mol_col].apply(remove_coordinates))
+            if self.removeHs:
+                dataframe[self.mol_col] = dataframe[self.mol_col].apply(Chem.RemoveHs)
+            # cleanup
+            if not keep_mols:
+                dataframe.drop(columns=self.mol_col, inplace=True)
+                self.mol_col = None
+        # generate smiles col if not present or needs to be updated
+        if self.mol_col and self.smiles_col not in dataframe.columns:
+            dataframe[self.smiles_col] = dataframe[self.mol_col].apply(mol_to_smiles)
         # render
-        dataframe["img"] = dataframe[mol_col].apply(self.mol_to_img)
-        # cleanup
-        if not keep_mols:
-            dataframe.drop(columns=mol_col, inplace=True)
-            self.mol_col = None
+        if self.prerender:
+            dataframe["img"] = dataframe[self.mol_col].apply(self.mol_to_img)
+        else:
+            dataframe["img"] = None
 
     def render(self, template="pages", **kwargs):
         """Returns the HTML document corresponding to the "pages" or "table"

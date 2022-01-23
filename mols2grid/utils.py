@@ -50,8 +50,7 @@ def mol_to_smiles(mol):
 
 def mol_to_record(mol, mol_col="mol"):
     """Function to create a dict of data from an RDKit molecule"""
-    return {"SMILES": Chem.MolToSmiles(mol),
-            **mol.GetPropsAsDict(includePrivate=True),
+    return {**mol.GetPropsAsDict(includePrivate=True),
             mol_col: mol} if mol else {}
 
 def sdf_to_dataframe(sdf_path, mol_col="mol"):

@@ -66,9 +66,8 @@ def test_mol_to_record():
         else:
             mol.SetProp(prop, value)
     new = utils.mol_to_record(mol)
-    for default_col in ["mol", "SMILES"]:
-        assert default_col in new.keys()
-        new.pop(default_col)
+    assert "mol" in new.keys()
+    new.pop("mol")
     assert new == props
 
 def test_mol_to_record_none():

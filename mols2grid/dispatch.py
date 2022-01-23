@@ -44,7 +44,7 @@ def display(arg, **kwargs):
     use_coords : bool (True)
         Use the coordinates of the molecules (only relevant when an SDF file, a
         list of molecules or a DataFrame of RDKit molecules were used as input)
-    remove_Hs : bool (False)
+    removeHs : bool (False)
         Remove hydrogen atoms from the drawings
     size : tuple ((160, 120))
         Size of each image
@@ -118,7 +118,7 @@ def display(arg, **kwargs):
         displays a checkbox at the top of each cell. To access your selection (index and
         SMILES), use `mols2grid.get_selection()` or the export options in the bottom
         checkbox dropdown menu.
-    cache_selection : bool
+    cache_selection : bool (False)
         Restores the selection from a previous grid with the same name
     transform : dict (None)
         Functions applied to specific items in all cells. The dict must follow a
@@ -131,7 +131,7 @@ def display(arg, **kwargs):
         Celsius instead of Fahrenheit with a single digit precision and some text
         before (MP) and after (°C) the value. These transformations only affect
         columns in `subset` and `tooltip`, and do not interfere with `style`.
-    custom_css : str
+    custom_css : str or None
         Only available for the "pages" template. Custom CSS properties applied to the
         content of the HTML document.
     custom_header : str or None
