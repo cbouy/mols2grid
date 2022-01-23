@@ -534,7 +534,9 @@ class MolGrid:
             search_cols = search_cols,
             data = json.dumps(df.to_dict("records")),
             selection = selection,
-            cached_selection = bool(self._cached_selection),
+            cached_selection = ([list(self._cached_selection.keys()),
+                                 list(self._cached_selection.values())]
+                                if self._cached_selection else False),
             smiles_col = smiles,
             sort_cols = sort_cols,
             grid_id = self._grid_id,

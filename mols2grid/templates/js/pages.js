@@ -31,6 +31,7 @@ var SELECTION = new MolStorage();
 
 {% if selection and cached_selection %}
 // restore checkbox state
+SELECTION.multi_set({{ cached_selection[0] }}, {{ cached_selection[1] }});
 listObj.on("updated", function (list) {
     $('#mols2grid .cell input[checked="false"]').prop("checked", false);
 });
