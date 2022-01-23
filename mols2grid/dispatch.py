@@ -89,8 +89,8 @@ def display(arg, **kwargs):
         Only available for the "pages" template. Number of rows per page
     border : str ("1px solid #cccccc")
         Styling of the border around each cell (CSS)
-    gap : int or str (0)
-        Size of the margin around each cell (CSS)
+    gap : int (0)
+        Size of the margin around each cell in px
     fontsize : str ("12pt")
         Font size of the text displayed in each cell (CSS)
     fontfamily : str ("'DejaVu', sans-serif")

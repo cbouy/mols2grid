@@ -269,8 +269,7 @@ class MolGrid:
         self.template = template
         return getattr(self, f"to_{self.template}")(**kwargs)
 
-    def to_pages(self, subset=None, tooltip=None,
-                 cell_width=160, n_cols=5, n_rows=3,
+    def to_pages(self, subset=None, tooltip=None, n_cols=5, n_rows=3,
                  border="1px solid #cccccc", gap=0,
                  fontsize="12pt", fontfamily="'DejaVu', sans-serif",
                  textalign="center", tooltip_fmt="<strong>{key}</strong>: {value}",
@@ -303,7 +302,7 @@ class MolGrid:
         border : str
             Styling of the border around each cell (CSS)
         gap : int
-            Size of the margin around each cell (CSS)
+            Size of the margin around each cell in px
         fontsize : str
             Font size of the text displayed in each cell (CSS)
         fontfamily : str
@@ -522,7 +521,7 @@ class MolGrid:
             cell_width = cell_width,
             fontfamily = fontfamily,
             fontsize = fontsize,
-            gap = gap,
+            gap = f"{gap}px",
             hover_color = hover_color,
             item = item,
             item_repr = repr(item),

@@ -100,8 +100,8 @@ For the `pages` template, the following parameters are available:
     Number of rows per page
 * `border="1px solid #cccccc"`: str  
     Styling of the border around each cell (CSS)
-* `gap=0`: int or str  
-    Size of the margin around each cell (CSS)
+* `gap=0`: int
+    Size of the margin around each cell in px
 * `fontsize="12pt"`: str  
     Font size of the text displayed in each cell (CSS)
 * `fontfamily"'DejaVu', sans-serif"`: str  
