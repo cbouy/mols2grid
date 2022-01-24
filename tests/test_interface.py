@@ -10,6 +10,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import NoSuchElementException
 import geckodriver_autoinstaller
+from rdkit import __version__ as rdkit_version
 from rdkit import Chem, RDConfig
 from rdkit.Chem import AllChem
 from PIL import Image
@@ -222,7 +223,10 @@ def test_image_use_coords(driver, df):
     img = driver.find_element_by_css_selector("#mols2grid .cell .data-img *")
     im = Image.open(BytesIO(b64decode(img.get_attribute("src")[22:])))
     md5_hash = md5(im.tobytes()).hexdigest()
-    assert md5_hash == "6909ba43f86003cea9b0fd8d723cddfe"
+    if rdkit_version == "2020.03.1":
+        assert md5_hash == "aed60ed28347831d24f02dbb5be19007"
+    else:
+        assert md5_hash == "6909ba43f86003cea9b0fd8d723cddfe"
 
 @pytest.mark.parametrize(["coordGen", "prerender", "expected"], [
     (True,  True, "acf7cf7cd5cfaa5eaf4a4f257e290e49"),
@@ -251,7 +255,9 @@ def test_coordgen(driver, mols, coordGen, prerender, expected):
 
 @pytest.mark.parametrize(["removeHs", "prerender", "expected"], [
     (True, True, "acf7cf7cd5cfaa5eaf4a4f257e290e49"),
-    (False, True, "b01c2146523b8a006bb34621839668eb"),
+    (False, True, ("2d30379732d312409d1d93ad5b3c3e60"
+                   if rdkit_version == "2020.03.1"
+                   else "b01c2146523b8a006bb34621839668eb")),
     (True, False, "d8227a9948b6f801193085e5a8b257a2"),
     (False, False, "e7b837b4d0c5f1ed8e1cd79734b6845e"),
 ])
