@@ -81,8 +81,16 @@ jobs:
           pip list
       
       - name: Run tests
-        run: |
-          pytest --color=yes --disable-pytest-warnings --cov=mols2grid --cov-report=xml tests/
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 5
+          max_attempts: 2
+          retry_on: timeout
+          shell: bash
+          command: |
+            source /usr/share/miniconda/etc/profile.d/conda.sh
+            conda activate test
+            pytest --color=yes --disable-pytest-warnings --cov=mols2grid --cov-report=xml tests/
 
       - name: Measure tests coverage
         uses: codecov/codecov-action@v1
