@@ -61,6 +61,27 @@ def wait_for_img_load(driver):
         expected_conditions.presence_of_element_located((By.CSS_SELECTOR,
             "#mols2grid .cell .data-img svg")))
 
+# make sure non-parametrized test is ran first
+@pytest.mark.order(1)
+def test_no_subset_all_visible(driver, grid):
+    doc = get_doc(grid, {"selection": False})
+    driver.get(doc)
+    columns = set(grid.dataframe.columns.drop("mol").to_list())
+    cell = driver.find_element_by_css_selector("#mols2grid .cell")
+    data_el = cell.find_elements_by_class_name("data")
+    classes = [c.replace("data-", "").replace("-copy", "")
+               for x in data_el
+               for c in x.get_attribute("class").split(" ")
+               if c.startswith("data-")]
+    classes = set(classes)
+    assert classes == columns
+
+def test_smiles_hidden(driver, grid):
+    doc = get_doc(grid, {"subset": ["_Name", "img"]})
+    driver.get(doc)
+    el = driver.find_element_by_css_selector("#mols2grid .cell .data-SMILES")
+    assert not el.is_displayed()
+
 @pytest.mark.parametrize("page", [1, 2, 3])
 @pytest.mark.parametrize("n_cols", [1, 3])
 @pytest.mark.parametrize("n_rows", [1, 3])
@@ -91,25 +112,6 @@ def test_css_properties(driver, grid, name, css_prop, value, expected):
     driver.get(doc)
     computed = driver.execute_script(f"return getComputedStyle(document.querySelector('#mols2grid .cell')).getPropertyValue({css_prop!r});")
     assert computed == expected
-
-def test_no_subset_all_visible(driver, grid):
-    doc = get_doc(grid, {"selection": False})
-    driver.get(doc)
-    columns = set(grid.dataframe.columns.drop("mol").to_list())
-    cell = driver.find_element_by_css_selector("#mols2grid .cell")
-    data_el = cell.find_elements_by_class_name("data")
-    classes = [c.replace("data-", "").replace("-copy", "")
-               for x in data_el
-               for c in x.get_attribute("class").split(" ")
-               if c.startswith("data-")]
-    classes = set(classes)
-    assert classes == columns
-
-def test_smiles_hidden(driver, grid):
-    doc = get_doc(grid, {"subset": ["_Name", "img"]})
-    driver.get(doc)
-    el = driver.find_element_by_css_selector("#mols2grid .cell .data-SMILES")
-    assert not el.is_displayed()
 
 def test_text_search(driver, grid):
     doc = get_doc(grid, {"n_rows": 1})
