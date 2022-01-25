@@ -158,6 +158,8 @@ class MolGrid:
             except KeyError:
                 self._cached_selection = None
                 register._init_grid(name)
+            else:
+                register._update_current_grid(name)
         else:
             self._cached_selection = None
             register._init_grid(name)
