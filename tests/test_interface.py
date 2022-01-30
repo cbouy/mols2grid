@@ -25,7 +25,7 @@ geckodriver_autoinstaller.install()
 @pytest.fixture(scope="module")
 def driver():
     options = webdriver.FirefoxOptions()
-    options.headless = False
+    options.headless = True
     d = webdriver.Firefox(options=options)
     yield d
     d.quit()
