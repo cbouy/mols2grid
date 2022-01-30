@@ -521,7 +521,7 @@ class MolGrid:
             if sort_by in (subset + tooltip):
                 sort_by = f"data-{sort_by}"
             else:
-                raise ValueError(f"{sort_by} is not an available field in "
+                raise ValueError(f"{sort_by!r} is not an available field in "
                                  "`subset` or `tooltip`")
         else:
             sort_by = "mols2grid-id"

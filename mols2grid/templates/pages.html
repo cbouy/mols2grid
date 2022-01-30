@@ -30,7 +30,7 @@
               {% if loop.first %}
               <button class="dropdown-item sort-btn {{ is_active }}" type="button" data-name="mols2grid-id">Index</button>
               {% else %}
-              <button class="dropdown-item sort-btn {{ is_active }}" type="button" data-name="{{ name }}">{{ col_name | capitalize }}</button>
+              <button class="dropdown-item sort-btn {{ is_active }}" type="button" data-name="{{ name }}">{{ col_name }}</button>
               {% endif %}
               {% endfor %}
               {% if selection %}
