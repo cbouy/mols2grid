@@ -22,6 +22,14 @@ from mols2grid.select import register
 
 geckodriver_autoinstaller.install()
 
+@pytest.fixture(scope="module")
+def driver():
+    options = webdriver.FirefoxOptions()
+    options.headless = False
+    d = webdriver.Firefox(options=options)
+    yield d
+    d.quit()
+
 sdf_path = f"{RDConfig.RDDocsDir}/Book/data/solubility.test.sdf"
 
 def get_grid(df, **kwargs):
@@ -32,14 +40,6 @@ def get_doc(grid, kwargs):
     html = grid.render(**kwargs)
     html = b64encode(html.encode()).decode()
     return "data:text/html;base64,{}".format(html)
-
-@pytest.fixture(scope="module")
-def driver():
-    options = webdriver.FirefoxOptions()
-    options.headless = False
-    d = webdriver.Firefox(options=options)
-    yield d
-    d.quit()
 
 @pytest.fixture(scope="module")
 def df():
@@ -55,11 +55,7 @@ def grid(df):
 
 @pytest.fixture(scope="module")
 def html_doc(grid):
-    return get_doc(grid)
-
-@pytest.fixture(scope="module")
-def small_doc(grid):
-    return get_doc(grid, n_rows=1, subset=["_Name", "img"])
+    return get_doc(grid, dict(n_rows=1, subset=["_Name", "img"]))
 
 def wait_for_img_load(driver):
     WebDriverWait(driver, 8).until(
@@ -81,8 +77,8 @@ def test_no_subset_all_visible(driver, grid):
     classes = set(classes)
     assert classes == columns
 
-def test_smiles_hidden(driver, small_doc):
-    driver.get(small_doc)
+def test_smiles_hidden(driver, html_doc):
+    driver.get(html_doc)
     el = driver.find_element_by_css_selector("#mols2grid .cell .data-SMILES")
     assert not el.is_displayed()
 
@@ -117,8 +113,8 @@ def test_css_properties(driver, grid, name, css_prop, value, expected):
     computed = driver.execute_script(f"return getComputedStyle(document.querySelector('#mols2grid .cell')).getPropertyValue({css_prop!r});")
     assert computed == expected
 
-def test_text_search(driver, small_doc):
-    driver.get(small_doc)
+def test_text_search(driver, html_doc):
+    driver.get(html_doc)
     text_box = driver.find_element_by_id("searchbar")
     wait_for_img_load(driver)
     (ActionChains(driver)
@@ -126,11 +122,11 @@ def test_text_search(driver, small_doc):
         .key_up(Keys.TAB)
         .perform())
     el = driver.find_element_by_css_selector("#mols2grid .cell .data-SMILES")
-    assert el.text == "CC(I)C"
+    assert el.get_attribute("innerHTML") == "CC(I)C"
 
 @flaky(max_runs=3, min_passes=1)
-def test_smarts_search(driver, small_doc):
-    driver.get(small_doc)
+def test_smarts_search(driver, html_doc):
+    driver.get(html_doc)
     text_box = driver.find_element_by_id("searchbar")
     wait_for_img_load(driver)
     (ActionChains(driver)
@@ -175,8 +171,8 @@ def test_selection_with_cache_check_and_uncheck(driver, df):
     assert sel == {}
     register._clear()
 
-def test_selection_check_uncheck_invert(driver, small_doc):
-    driver.get(small_doc)
+def test_selection_check_uncheck_invert(driver, html_doc):
+    driver.get(html_doc)
     wait_for_img_load(driver)
     (ActionChains(driver)
         .click(driver.find_element_by_id("chkboxDropdown"))
@@ -205,8 +201,8 @@ def test_selection_check_uncheck_invert(driver, small_doc):
     assert len(sel) == 29
     register._clear()
 
-def test_check_all_selects_only_not_hidden(driver, small_doc):
-    driver.get(small_doc)
+def test_check_all_selects_only_not_hidden(driver, html_doc):
+    driver.get(html_doc)
     text_box = driver.find_element_by_id("searchbar")
     wait_for_img_load(driver)
     (ActionChains(driver)
@@ -473,8 +469,8 @@ def test_sort_by(driver, grid):
     el = driver.find_element_by_css_selector("#mols2grid .cell .data-_Name")
     assert el.text == "1,1,2,2-tetrachloroethane"
 
-def test_sort_button(driver, small_doc):
-    driver.get(small_doc)
+def test_sort_button(driver, html_doc):
+    driver.get(html_doc)
     sort_dropdown = driver.find_element_by_id("sortDropdown")
     wait_for_img_load(driver)
     (ActionChains(driver)
