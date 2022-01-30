@@ -300,4 +300,12 @@ def test_substruct_highlight_prerender_error(grid):
                              "prerendered images"):
         grid.display()
 
-# TODO: test filters and display
+def test_use_coords_onthefly_error():
+    with pytest.raises(ValueError,
+                       match="Cannot use coordinates with on-the-fly rendering"):
+        _make_grid(use_coords=True, prerender=False)
+
+def test_sort_by_not_in_subset_or_tooltip(grid_otf):
+    with pytest.raises(ValueError,
+                       match="'_Name' is not an available field"):
+        grid_otf.to_pages(subset=["ID"], sort_by="_Name")

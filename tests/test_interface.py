@@ -1,6 +1,5 @@
 import pytest
 from flaky import flaky
-from functools import partial
 from base64 import b64encode, b64decode
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -18,18 +17,26 @@ from io import BytesIO
 from hashlib import md5
 from cairosvg import svg2png
 import mols2grid
+from mols2grid.utils import env
 from mols2grid.select import register
 
 geckodriver_autoinstaller.install()
 
 sdf_path = f"{RDConfig.RDDocsDir}/Book/data/solubility.test.sdf"
 
-get_grid = partial(mols2grid.MolGrid.from_sdf, sdf_path)
+def get_grid(df, **kwargs):
+    kwargs.setdefault("mol_col", "mol")
+    return mols2grid.MolGrid(df, **kwargs)
+
+def get_doc(grid, kwargs):
+    html = grid.render(**kwargs)
+    html = b64encode(html.encode()).decode()
+    return "data:text/html;base64,{}".format(html)
 
 @pytest.fixture(scope="module")
 def driver():
     options = webdriver.FirefoxOptions()
-    options.headless = True
+    options.headless = False
     d = webdriver.Firefox(options=options)
     yield d
     d.quit()
@@ -44,18 +51,15 @@ def mols(df):
 
 @pytest.fixture(scope="module")
 def grid(df):
-    return mols2grid.MolGrid(df, mol_col="mol")
+    return get_grid(df)
 
 @pytest.fixture(scope="module")
 def html_doc(grid):
-    html = grid.render()
-    html = b64encode(html.encode()).decode()
-    return "data:text/html;base64,{}".format(html)
+    return get_doc(grid)
 
-def get_doc(grid, kwargs):
-    html = grid.render(**kwargs)
-    html = b64encode(html.encode()).decode()
-    return "data:text/html;base64,{}".format(html)
+@pytest.fixture(scope="module")
+def small_doc(grid):
+    return get_doc(grid, n_rows=1, subset=["_Name", "img"])
 
 def wait_for_img_load(driver):
     WebDriverWait(driver, 8).until(
@@ -77,9 +81,8 @@ def test_no_subset_all_visible(driver, grid):
     classes = set(classes)
     assert classes == columns
 
-def test_smiles_hidden(driver, grid):
-    doc = get_doc(grid, {"subset": ["_Name", "img"]})
-    driver.get(doc)
+def test_smiles_hidden(driver, small_doc):
+    driver.get(small_doc)
     el = driver.find_element_by_css_selector("#mols2grid .cell .data-SMILES")
     assert not el.is_displayed()
 
@@ -114,10 +117,9 @@ def test_css_properties(driver, grid, name, css_prop, value, expected):
     computed = driver.execute_script(f"return getComputedStyle(document.querySelector('#mols2grid .cell')).getPropertyValue({css_prop!r});")
     assert computed == expected
 
-def test_text_search(driver, grid):
-    doc = get_doc(grid, {"n_rows": 1})
-    driver.get(doc)
-    text_box = driver.find_element_by_css_selector("#searchbar")
+def test_text_search(driver, small_doc):
+    driver.get(small_doc)
+    text_box = driver.find_element_by_id("searchbar")
     wait_for_img_load(driver)
     (ActionChains(driver)
         .send_keys_to_element(text_box, "iodopropane")
@@ -127,9 +129,8 @@ def test_text_search(driver, grid):
     assert el.text == "CC(I)C"
 
 @flaky(max_runs=3, min_passes=1)
-def test_smarts_search(driver, grid):
-    doc = get_doc(grid, {"subset": ["_Name", "img"]})
-    driver.get(doc)
+def test_smarts_search(driver, small_doc):
+    driver.get(small_doc)
     text_box = driver.find_element_by_id("searchbar")
     wait_for_img_load(driver)
     (ActionChains(driver)
@@ -153,11 +154,12 @@ def test_selection_click(driver, html_doc):
     sel = driver.execute_script("return SELECTION.to_dict();")
     sel = eval(sel)
     assert sel == {0: "CCC(C)CC"}
+    register._clear()
 
-def test_selection_with_cache_check_and_uncheck(driver):
+def test_selection_with_cache_check_and_uncheck(driver, df):
     register._init_grid("cached_sel")
     register._set_selection(0, "CCC(C)CC")
-    grid = get_grid(name="cached_sel", cache_selection=True)
+    grid = get_grid(df, name="cached_sel", cache_selection=True)
     doc = get_doc(grid, {})
     driver.get(doc)
     wait_for_img_load(driver)
@@ -173,9 +175,8 @@ def test_selection_with_cache_check_and_uncheck(driver):
     assert sel == {}
     register._clear()
 
-def test_selection_check_uncheck_invert(driver, grid):
-    doc = get_doc(grid, {"subset": ["_Name", "img"]})
-    driver.get(doc)
+def test_selection_check_uncheck_invert(driver, small_doc):
+    driver.get(small_doc)
     wait_for_img_load(driver)
     (ActionChains(driver)
         .click(driver.find_element_by_id("chkboxDropdown"))
@@ -202,10 +203,32 @@ def test_selection_check_uncheck_invert(driver, grid):
     sel = driver.execute_script("return SELECTION.to_dict();")
     sel = eval(sel)
     assert len(sel) == 29
+    register._clear()
+
+def test_check_all_selects_only_not_hidden(driver, small_doc):
+    driver.get(small_doc)
+    text_box = driver.find_element_by_id("searchbar")
+    wait_for_img_load(driver)
+    (ActionChains(driver)
+        .send_keys_to_element(text_box, "iodopropane")
+        .key_up(Keys.TAB)
+        .click(driver.find_element_by_id("chkboxDropdown"))
+        .pause(.3)
+        .click(driver.find_element_by_id("btn-chkbox-all"))
+        .perform())
+    text_box.clear()
+    (ActionChains(driver)
+        .send_keys_to_element(text_box, Keys.BACKSPACE)
+        .key_up(Keys.TAB)
+        .perform())
+    sel = driver.execute_script("return SELECTION.to_dict();")
+    sel = eval(sel)
+    assert sel == {27: 'CC(I)C'}
+    register._clear()
 
 @pytest.mark.parametrize("prerender", [True, False])
-def test_image_size(driver, prerender):
-    grid = get_grid(size=(100, 100), prerender=prerender)
+def test_image_size(driver, df, prerender):
+    grid = get_grid(df, size=(100, 100), prerender=prerender)
     doc = get_doc(grid, {"selection": False, "border": "0", "substruct_highlight": False})
     driver.get(doc)
     if not prerender:
@@ -283,6 +306,23 @@ def test_removeHs(driver, df, removeHs, prerender, expected):
     md5_hash = md5(im.tobytes()).hexdigest()
     assert md5_hash == expected
 
+@pytest.mark.parametrize(["kwargs", "expected"], [
+    (dict(addAtomIndices=True), "d9611dd45ff82ab73cf31dfc3a33706d"),
+    (dict(fixedBondLength=10), "1dfa2a5c43022ce66a2ff26a517698cf"),
+    (dict(atomColourPalette={6: (0, .8, .8)}), "91d114d421fc6a05e4537d19ad4b8324"),
+    (dict(legend="foo"), "bb5bc6ae713cfaea4e6374fc35e4be4e"),
+])
+def test_moldrawoptions(driver, df, kwargs, expected):
+    grid = get_grid(df, **kwargs)
+    doc = get_doc(grid, dict(n_rows=1, n_cols=1, subset=["img"]))
+    driver.get(doc)
+    wait_for_img_load(driver)
+    img = driver.find_element_by_css_selector("#mols2grid .cell .data-img")
+    im = svg2png(bytestring=(img.get_attribute("innerHTML")))
+    im = Image.open(BytesIO(im))
+    md5_hash = md5(im.tobytes()).hexdigest()
+    assert md5_hash == expected
+
 def test_hover_color(driver, grid):
     doc = get_doc(grid, {"hover_color": "red"})
     driver.get(doc)
@@ -336,6 +376,18 @@ def test_tooltip_fmt(driver, grid):
     tooltip = driver.find_element_by_css_selector('div.popover[role="tooltip"]')
     el = tooltip.find_element_by_class_name("popover-body")
     assert el.get_attribute("innerHTML") == "<em>3-methylpentane</em>"
+
+def test_tooltip_not_in_subset(driver, grid):
+    doc = get_doc(grid, {"tooltip": ["_Name"], "subset": ["ID", "img"]})
+    driver.get(doc)
+    wait_for_img_load(driver)
+    img = driver.find_element_by_css_selector("#mols2grid .cell .data-img *")
+    (ActionChains(driver)
+     .move_to_element(img)
+     .perform())
+    tooltip = driver.find_element_by_css_selector('div.popover[role="tooltip"]')
+    el = tooltip.find_element_by_class_name("popover-body")
+    assert el.get_attribute("innerHTML") == "<strong>_Name</strong>: 3-methylpentane"
 
 @flaky(max_runs=3, min_passes=1)
 def test_style(driver, grid):
@@ -421,6 +473,25 @@ def test_sort_by(driver, grid):
     el = driver.find_element_by_css_selector("#mols2grid .cell .data-_Name")
     assert el.text == "1,1,2,2-tetrachloroethane"
 
+def test_sort_button(driver, small_doc):
+    driver.get(small_doc)
+    sort_dropdown = driver.find_element_by_id("sortDropdown")
+    wait_for_img_load(driver)
+    (ActionChains(driver)
+        .click(sort_dropdown)
+        .pause(.3)
+        .click(driver.find_element_by_css_selector('button.sort-btn[data-name="data-_Name"]'))
+        .perform())
+    el = driver.find_element_by_css_selector("#mols2grid .cell .data-_Name")
+    assert el.text == "1,1,2,2-tetrachloroethane"
+    (ActionChains(driver)
+        .click(sort_dropdown)
+        .pause(.3)
+        .click(driver.find_element_by_css_selector('button.sort-btn[data-name="data-_Name"]'))
+        .perform())
+    el = driver.find_element_by_css_selector("#mols2grid .cell .data-_Name")
+    assert el.text == "tetrachloromethane"
+
 @pytest.mark.parametrize(["substruct_highlight", "expected"], [
     (True,  "6a1ae3fc97cbe003c86db3c624e5ff09"),
     (False, "4884c75977e8c3e0fa2e6a1607275406")
@@ -470,3 +541,15 @@ def test_substruct_clear_removes_highlight(driver, grid):
     md5_hash = md5(im.tobytes()).hexdigest()
     assert md5_hash != md5_hash_hl
     assert md5_hash == "d8227a9948b6f801193085e5a8b257a2"
+
+def test_filter(driver, grid):
+    doc = get_doc(grid, {})
+    driver.get(doc)
+    mask = grid.dataframe["_Name"].str.contains("iodopropane")
+    ids = grid.dataframe.loc[mask]["mols2grid-id"].to_list()
+    filter_code = env.get_template('js/filter.js').render(
+        grid_id = grid._grid_id,
+        ids = ids)
+    driver.execute_script(filter_code)
+    el = driver.find_element_by_css_selector("#mols2grid .cell .data-_Name")
+    assert el.text == "2-iodopropane"
