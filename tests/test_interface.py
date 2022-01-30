@@ -21,6 +21,7 @@ from mols2grid.utils import env
 from mols2grid.select import register
 
 geckodriver_autoinstaller.install()
+pytestmark = pytest.mark.webdriver
 
 @pytest.fixture(scope="module")
 def driver():

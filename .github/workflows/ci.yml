@@ -81,16 +81,24 @@ jobs:
           pip list
       
       - name: Run tests
+        run: |
+          pytest --color=yes --disable-pytest-warnings \
+                 --cov=mols2grid --cov-report=xml \
+                 tests/ -m "not webdriver"
+
+      - name: Run webdriver tests
         uses: nick-invision/retry@v2
         with:
-          timeout_minutes: 4
-          max_attempts: 5
+          timeout_minutes: 3
+          max_attempts: 6
           retry_on: timeout
           shell: bash
           command: |
             source /usr/share/miniconda/etc/profile.d/conda.sh
             conda activate test
-            pytest --color=yes --disable-pytest-warnings --cov=mols2grid --cov-report=xml tests/
+            pytest --color=yes --disable-pytest-warnings \
+                   --cov=mols2grid --cov-report=xml --cov-append \
+                   tests/ -m "webdriver"
 
       - name: Measure tests coverage
         uses: codecov/codecov-action@v1
