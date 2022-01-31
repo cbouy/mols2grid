@@ -86,11 +86,14 @@ jobs:
                  --cov=mols2grid --cov-report=xml \
                  tests/ -m "not webdriver"
 
+      - name: profiling
+        run: pyinstrument run_test.py
+
       - name: Run webdriver tests
         uses: nick-invision/retry@v2
         with:
-          timeout_minutes: 3
-          max_attempts: 6
+          timeout_minutes: 4
+          max_attempts: 5
           retry_on: timeout
           shell: bash
           command: |
