@@ -86,22 +86,28 @@ jobs:
                  --cov=mols2grid --cov-report=xml \
                  tests/ -m "not webdriver"
 
-      - name: profiling
-        run: pyinstrument run_test.py
+      # - name: Run webdriver tests
+      #   uses: nick-invision/retry@v2
+      #   with:
+      #     timeout_minutes: 4
+      #     max_attempts: 5
+      #     retry_on: timeout
+      #     shell: bash
+      #     command: |
+      #       source /usr/share/miniconda/etc/profile.d/conda.sh
+      #       conda activate test
+      #       pytest --color=yes --disable-pytest-warnings \
+      #              --cov=mols2grid --cov-report=xml --cov-append \
+      #              tests/ -m "webdriver"
 
       - name: Run webdriver tests
-        uses: nick-invision/retry@v2
-        with:
-          timeout_minutes: 4
-          max_attempts: 5
-          retry_on: timeout
-          shell: bash
-          command: |
-            source /usr/share/miniconda/etc/profile.d/conda.sh
-            conda activate test
-            pytest --color=yes --disable-pytest-warnings \
-                   --cov=mols2grid --cov-report=xml --cov-append \
-                   tests/ -m "webdriver"
+        run: |
+          source /usr/share/miniconda/etc/profile.d/conda.sh
+          conda activate test
+          pytest --color=yes --disable-pytest-warnings \
+                 --cov=mols2grid --cov-report=xml --cov-append \
+                 --durations=0 \
+                 tests/ -m "webdriver"
 
       - name: Measure tests coverage
         uses: codecov/codecov-action@v1
