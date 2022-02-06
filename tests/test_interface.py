@@ -52,7 +52,7 @@ class FirefoxDriver(webdriver.Firefox):
         return self.wait(condition, **kwargs)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def driver():
     options = webdriver.FirefoxOptions()
     options.headless = True
