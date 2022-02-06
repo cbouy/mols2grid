@@ -89,8 +89,8 @@ jobs:
       - name: Run webdriver tests
         uses: nick-invision/retry@v2
         with:
-          timeout_minutes: 3.5
-          max_attempts: 8
+          timeout_minutes: 5
+          max_attempts: 5
           retry_on: timeout
           shell: bash
           command: |
