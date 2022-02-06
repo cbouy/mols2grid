@@ -53,7 +53,7 @@ class FirefoxDriver(webdriver.Firefox):
         return self.wait(condition, **kwargs)
 
 
-def determine_scope():
+def determine_scope(fixture_name, config):
     if os.environ.get("GITHUB_ACTIONS", False):
         return "function"
     return "module"
