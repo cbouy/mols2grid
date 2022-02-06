@@ -94,7 +94,7 @@ def test_no_subset_all_visible(driver, grid):
     driver.get(doc)
     columns = set(grid.dataframe.columns.drop("mol").to_list())
     cell = driver.find_by_css_selector("#mols2grid .cell")
-    data_el = cell.find_all_by_class_name("data")
+    data_el = cell.find_elements_by_class_name("data")
     classes = [c.replace("data-", "").replace("-copy", "")
                for x in data_el
                for c in x.get_attribute("class").split(" ")
@@ -118,7 +118,7 @@ def test_page_click(driver, grid, page, n_cols, n_rows):
         next_page.click()
     first_cell = driver.find_by_class_name('cell')
     mols2grid_id = n_cols * n_rows * (page - 1)
-    name = first_cell.find_by_class_name('data-_Name')
+    name = first_cell.find_element_by_class_name('data-_Name')
     ref = grid.dataframe.iloc[mols2grid_id]
     assert name.text == ref["_Name"]
 
@@ -319,7 +319,7 @@ def test_removeHs(driver, df, removeHs, prerender, expected):
     img = driver.find_by_css_selector("#mols2grid .cell .data-img *")
     if useSVG:
         im = svg2png(bytestring=(img
-                                 .find_by_xpath("..")
+                                 .find_element_by_xpath("..")
                                  .get_attribute("innerHTML")))
         im = Image.open(BytesIO(im))
     else:
@@ -364,7 +364,7 @@ def test_tooltip(driver, grid):
      .move_to_element(img)
      .perform())
     tooltip = driver.find_by_css_selector('div.popover[role="tooltip"]')
-    el = tooltip.find_by_class_name("popover-body")
+    el = tooltip.find_element_by_class_name("popover-body")
     assert el.get_attribute("innerHTML") == "<strong>_Name</strong>: 3-methylpentane"
 
 @flaky(max_runs=3, min_passes=1)
@@ -382,7 +382,7 @@ def test_tooltip_trigger(driver, grid):
      .click(img)
      .perform())
     tooltip = driver.find_by_css_selector('div.popover[role="tooltip"]')
-    el = tooltip.find_by_class_name("popover-body")
+    el = tooltip.find_element_by_class_name("popover-body")
     assert el.get_attribute("innerHTML") == "<strong>_Name</strong>: 3-methylpentane"
 
 @flaky(max_runs=3, min_passes=1)
@@ -395,7 +395,7 @@ def test_tooltip_fmt(driver, grid):
      .move_to_element(img)
      .perform())
     tooltip = driver.find_by_css_selector('div.popover[role="tooltip"]')
-    el = tooltip.find_by_class_name("popover-body")
+    el = tooltip.find_element_by_class_name("popover-body")
     assert el.get_attribute("innerHTML") == "<em>3-methylpentane</em>"
 
 def test_tooltip_not_in_subset(driver, grid):
@@ -407,7 +407,7 @@ def test_tooltip_not_in_subset(driver, grid):
      .move_to_element(img)
      .perform())
     tooltip = driver.find_by_css_selector('div.popover[role="tooltip"]')
-    el = tooltip.find_by_class_name("popover-body")
+    el = tooltip.find_element_by_class_name("popover-body")
     assert el.get_attribute("innerHTML") == "<strong>_Name</strong>: 3-methylpentane"
 
 @flaky(max_runs=3, min_passes=1)
@@ -429,7 +429,7 @@ def test_style(driver, grid):
      .move_to_element(img)
      .perform())
     tooltip = driver.find_by_css_selector('div.popover[role="tooltip"]')
-    el = tooltip.find_by_class_name("popover-body")
+    el = tooltip.find_element_by_class_name("popover-body")
     assert el.get_attribute("innerHTML") == '<strong>_Name</strong>: <span style="color: blue">3-methylpentane</span>'
 
 @flaky(max_runs=3, min_passes=1)
@@ -448,7 +448,7 @@ def test_transform(driver, grid):
      .pause(.5)
      .perform())
     tooltip = driver.find_by_css_selector('div.popover[role="tooltip"]')
-    el = tooltip.find_by_class_name("popover-body")
+    el = tooltip.find_element_by_class_name("popover-body")
     assert el.get_attribute("innerHTML") == '<strong>_Name</strong>: 3-METHYLPENTANE'
 
 @flaky(max_runs=3, min_passes=1)
@@ -464,7 +464,7 @@ def test_transform_style_tooltip(driver, grid):
     driver.wait_for_img_load()
     cell = driver.find_by_css_selector("#mols2grid .cell")
     assert cell.value_of_css_property("background-color") == "rgb(255, 0, 0)"
-    name = cell.find_by_class_name("data-_Name")
+    name = cell.find_element_by_class_name("data-_Name")
     assert name.text == "foo"   
     img = driver.find_by_css_selector("#mols2grid .cell .data-img *")
     (ActionChains(driver)
@@ -472,7 +472,7 @@ def test_transform_style_tooltip(driver, grid):
      .pause(.5)
      .perform())
     tooltip = driver.find_by_css_selector('div.popover[role="tooltip"]')
-    el = tooltip.find_by_class_name("popover-body")
+    el = tooltip.find_element_by_class_name("popover-body")
     assert el.get_attribute("innerHTML") == '<strong>_Name</strong>: <span style="color: blue">foo</span>'
 
 def test_callback_js(driver, grid):
