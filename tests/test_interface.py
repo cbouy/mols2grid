@@ -38,7 +38,7 @@ class FirefoxDriver(webdriver.Firefox):
     def find_by_id(self, element_id, **kwargs):
         condition = EC.presence_of_element_located((By.ID, element_id))
         return self.wait(condition, **kwargs)
-    
+
     def find_by_css_selector(self, css_selector, **kwargs):
         condition = EC.presence_of_element_located((By.CSS_SELECTOR, css_selector))
         return self.wait(condition, **kwargs)
@@ -46,11 +46,11 @@ class FirefoxDriver(webdriver.Firefox):
     def find_by_class_name(self, name, **kwargs):
         condition = EC.presence_of_element_located((By.CLASS_NAME, name))
         return self.wait(condition, **kwargs)
-    
+
     def find_all_by_class_name(self, name, **kwargs):
         condition = EC.presence_of_all_elements_located((By.CLASS_NAME, name))
         return self.wait(condition, **kwargs)
-    
+
 
 @pytest.fixture(scope="module")
 def driver():
@@ -378,7 +378,7 @@ def test_tooltip_trigger(driver, grid):
      .move_to_element(img)
      .perform())
     with pytest.raises(NoSuchElementException):
-        driver.find_by_css_selector('div.popover[role="tooltip"]')
+        driver.find_element_by_css_selector('div.popover[role="tooltip"]')
     (ActionChains(driver)
      .click(img)
      .perform())
