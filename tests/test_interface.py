@@ -57,7 +57,7 @@ def driver():
     options = webdriver.FirefoxOptions()
     options.headless = True
     d = FirefoxDriver(options=options)
-    d.set_page_load_timeout(30)
+    d.set_page_load_timeout(10)
     yield d
     d.quit()
 
