@@ -7,6 +7,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.common.exceptions import (NoSuchElementException,
                                         StaleElementReferenceException)
 import geckodriver_autoinstaller
@@ -56,10 +57,12 @@ class FirefoxDriver(webdriver.Firefox):
 def driver():
     options = webdriver.FirefoxOptions()
     options.headless = True
-    d = FirefoxDriver(options=options)
-    d.set_page_load_timeout(10)
-    yield d
-    d.quit()
+    dc = DesiredCapabilities().FIREFOX
+    dc["pageLoadStrategy"] = "none"  # default is 'normal'
+    driver = FirefoxDriver(options=options, desired_capabilities=dc)
+    driver.set_page_load_timeout(10)
+    yield driver
+    driver.quit()
 
 sdf_path = f"{RDConfig.RDDocsDir}/Book/data/solubility.test.sdf"
 
@@ -136,6 +139,7 @@ def test_page_click(driver, grid, page, n_cols, n_rows):
 def test_css_properties(driver, grid, name, css_prop, value, expected):
     doc = get_doc(grid, {name: value})
     driver.get(doc)
+    driver.wait_for_img_load()
     computed = driver.execute_script(f"return getComputedStyle(document.querySelector('#mols2grid .cell')).getPropertyValue({css_prop!r});")
     assert computed == expected
 
@@ -572,6 +576,7 @@ def test_filter(driver, grid):
     filter_code = env.get_template('js/filter.js').render(
         grid_id = grid._grid_id,
         ids = ids)
+    driver.wait_for_img_load()
     driver.execute_script(filter_code)
     el = driver.find_by_css_selector("#mols2grid .cell .data-_Name")
     assert el.text == "2-iodopropane"
