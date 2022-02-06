@@ -1,5 +1,6 @@
 import pytest
 from flaky import flaky
+import os
 from base64 import b64encode, b64decode
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -52,7 +53,12 @@ class FirefoxDriver(webdriver.Firefox):
         return self.wait(condition, **kwargs)
 
 
-@pytest.fixture(scope="function")
+def determine_scope():
+    if os.environ.get("GITHUB_ACTIONS", False):
+        return "function"
+    return "module"
+
+@pytest.fixture(scope=determine_scope)
 def driver():
     options = webdriver.FirefoxOptions()
     options.headless = True
