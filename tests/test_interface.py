@@ -7,7 +7,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.common.exceptions import (NoSuchElementException,
                                         StaleElementReferenceException)
 import geckodriver_autoinstaller
@@ -57,9 +56,7 @@ class FirefoxDriver(webdriver.Firefox):
 def driver():
     options = webdriver.FirefoxOptions()
     options.headless = True
-    dc = DesiredCapabilities().FIREFOX
-    dc["pageLoadStrategy"] = "none"  # default is 'normal'
-    driver = FirefoxDriver(options=options, desired_capabilities=dc)
+    driver = FirefoxDriver(options=options)
     driver.set_page_load_timeout(10)
     yield driver
     driver.quit()
@@ -139,7 +136,6 @@ def test_page_click(driver, grid, page, n_cols, n_rows):
 def test_css_properties(driver, grid, name, css_prop, value, expected):
     doc = get_doc(grid, {name: value})
     driver.get(doc)
-    driver.wait_for_img_load()
     computed = driver.execute_script(f"return getComputedStyle(document.querySelector('#mols2grid .cell')).getPropertyValue({css_prop!r});")
     assert computed == expected
 
@@ -149,6 +145,7 @@ def test_text_search(driver, html_doc):
     (ActionChains(driver)
         .send_keys_to_element(driver.find_by_id("searchbar"), "iodopropane")
         .key_up(Keys.TAB)
+        .pause(.5)
         .perform())
     el = driver.find_by_css_selector("#mols2grid .cell .data-SMILES")
     assert el.get_attribute("innerHTML") == "CC(I)C"
@@ -163,6 +160,7 @@ def test_smarts_search(driver, html_doc):
         .click(driver.find_by_id("smartsSearch"))
         .send_keys_to_element(driver.find_by_id("searchbar"), "CC(I)C")
         .key_up(Keys.TAB)
+        .pause(.5)
         .perform())
     el = driver.find_by_css_selector("#mols2grid .cell .data-_Name")
     assert el.text == "2-iodopropane"
@@ -287,14 +285,15 @@ def test_coordgen(driver, mols, coordGen, prerender, expected):
     driver.get(doc)
     if not prerender:
         driver.wait_for_img_load()
-    img = driver.find_by_css_selector("#mols2grid .cell .data-img *")
     if useSVG:
-        im = svg2png(bytestring=(img
-                                 .find_element_by_xpath("..")
-                                 .get_attribute("innerHTML")))
+        img = driver.find_by_css_selector("#mols2grid .cell .data-img")
+        img_data = img.get_attribute("innerHTML")
+        im = svg2png(bytestring=img_data)
         im = Image.open(BytesIO(im))
     else:
-        im = Image.open(BytesIO(b64decode(img.get_attribute("src")[22:])))
+        img = driver.find_by_css_selector("#mols2grid .cell .data-img *")
+        img_data = img.get_attribute("src")[22:]
+        im = Image.open(BytesIO(b64decode(img_data)))
     md5_hash = md5(im.tobytes()).hexdigest()
     assert md5_hash == expected
 
@@ -317,14 +316,15 @@ def test_removeHs(driver, df, removeHs, prerender, expected):
     driver.get(doc)
     if not prerender:
         driver.wait_for_img_load()
-    img = driver.find_by_css_selector("#mols2grid .cell .data-img *")
     if useSVG:
-        im = svg2png(bytestring=(img
-                                 .find_element_by_xpath("..")
-                                 .get_attribute("innerHTML")))
+        img = driver.find_by_css_selector("#mols2grid .cell .data-img")
+        img_data = img.get_attribute("innerHTML")
+        im = svg2png(bytestring=img_data)
         im = Image.open(BytesIO(im))
     else:
-        im = Image.open(BytesIO(b64decode(img.get_attribute("src")[22:])))
+        img = driver.find_by_css_selector("#mols2grid .cell .data-img *")
+        img_data = img.get_attribute("src")[22:]
+        im = Image.open(BytesIO(b64decode(img_data)))
     md5_hash = md5(im.tobytes()).hexdigest()
     assert md5_hash == expected
 
