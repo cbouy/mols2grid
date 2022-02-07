@@ -24,7 +24,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         python-version: [3.8, 3.9]
-        rdkit-version: ["'boost-cpp=1.74.0=h359cf19_5' rdkit>2020.03.1"]
+        rdkit-version: ["rdkit>2020.03.1"]
         include:
         - name: CI min version
           os: ubuntu-latest
@@ -53,6 +53,14 @@ jobs:
           key:
             ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{
             hashFiles('etc/example-environment.yml') }}
+
+      - name: Cache pip
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Setup Conda
         uses: conda-incubator/setup-miniconda@v2
