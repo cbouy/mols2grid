@@ -349,8 +349,8 @@ def test_hover_color(driver, grid):
     doc = get_doc(grid, {"hover_color": "red"})
     driver.get(doc)
     (ActionChains(driver)
-     .move_to_element(driver.find_by_css_selector("#mols2grid .cell"))
-     .perform())
+        .move_to_element(driver.find_by_css_selector("#mols2grid .cell"))
+        .perform())
     color = driver.execute_script(f"return getComputedStyle(document.querySelector('#mols2grid .cell')).getPropertyValue('background-color');")
     assert color == "rgb(255, 0, 0)"
 
@@ -360,8 +360,8 @@ def test_tooltip(driver, grid):
     driver.get(doc)
     driver.wait_for_img_load()
     (ActionChains(driver)
-     .move_to_element(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
-     .perform())
+        .move_to_element(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
+        .perform())
     tooltip = driver.find_by_css_selector('div.popover[role="tooltip"]')
     el = tooltip.find_element_by_class_name("popover-body")
     assert el.get_attribute("innerHTML") == "<strong>_Name</strong>: 3-methylpentane"
@@ -372,13 +372,13 @@ def test_tooltip_trigger(driver, grid):
     driver.get(doc)
     driver.wait_for_img_load()
     (ActionChains(driver)
-     .move_to_element(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
-     .perform())
+        .move_to_element(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
+        .perform())
     with pytest.raises(NoSuchElementException):
         driver.find_element_by_css_selector('div.popover[role="tooltip"]')
     (ActionChains(driver)
-     .click(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
-     .perform())
+        .click(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
+        .perform())
     tooltip = driver.find_by_css_selector('div.popover[role="tooltip"]')
     el = tooltip.find_element_by_class_name("popover-body")
     assert el.get_attribute("innerHTML") == "<strong>_Name</strong>: 3-methylpentane"
@@ -389,8 +389,8 @@ def test_tooltip_fmt(driver, grid):
     driver.get(doc)
     driver.wait_for_img_load()
     (ActionChains(driver)
-     .move_to_element(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
-     .perform())
+        .move_to_element(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
+        .perform())
     tooltip = driver.find_by_css_selector('div.popover[role="tooltip"]')
     el = tooltip.find_element_by_class_name("popover-body")
     assert el.get_attribute("innerHTML") == "<em>3-methylpentane</em>"
@@ -400,8 +400,8 @@ def test_tooltip_not_in_subset(driver, grid):
     driver.get(doc)
     driver.wait_for_img_load()
     (ActionChains(driver)
-     .move_to_element(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
-     .perform())
+        .move_to_element(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
+        .perform())
     tooltip = driver.find_by_css_selector('div.popover[role="tooltip"]')
     el = tooltip.find_element_by_class_name("popover-body")
     assert el.get_attribute("innerHTML") == "<strong>_Name</strong>: 3-methylpentane"
@@ -421,8 +421,8 @@ def test_style(driver, grid):
     el = driver.find_by_css_selector("#mols2grid .cell .data-_Name")
     assert el.value_of_css_property("color") == "rgb(0, 0, 255)"
     (ActionChains(driver)
-     .move_to_element(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
-     .perform())
+        .move_to_element(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
+        .perform())
     tooltip = driver.find_by_css_selector('div.popover[role="tooltip"]')
     el = tooltip.find_element_by_class_name("popover-body")
     assert el.get_attribute("innerHTML") == '<strong>_Name</strong>: <span style="color: blue">3-methylpentane</span>'
@@ -438,9 +438,9 @@ def test_transform(driver, grid):
     assert name.text == "3-METHYLPENTANE"
     driver.wait_for_img_load()
     (ActionChains(driver)
-     .move_to_element(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
-     .pause(.5)
-     .perform())
+        .move_to_element(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
+        .pause(.5)
+        .perform())
     tooltip = driver.find_by_css_selector('div.popover[role="tooltip"]')
     el = tooltip.find_element_by_class_name("popover-body")
     assert el.get_attribute("innerHTML") == '<strong>_Name</strong>: 3-METHYLPENTANE'
@@ -461,9 +461,9 @@ def test_transform_style_tooltip(driver, grid):
     name = cell.find_element_by_class_name("data-_Name")
     assert name.text == "foo"   
     (ActionChains(driver)
-     .move_to_element(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
-     .pause(.5)
-     .perform())
+        .move_to_element(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
+        .pause(.5)
+        .perform())
     tooltip = driver.find_by_css_selector('div.popover[role="tooltip"]')
     el = tooltip.find_element_by_class_name("popover-body")
     assert el.get_attribute("innerHTML") == '<strong>_Name</strong>: <span style="color: blue">foo</span>'
@@ -477,9 +477,9 @@ def test_callback_js(driver, grid, selection):
     driver.get(doc)
     driver.wait_for_img_load()
     (ActionChains(driver)
-     .click(driver.find_by_css_selector("#mols2grid .cell .data-img"))
-     .pause(.5)
-     .perform())
+        .click(driver.find_by_css_selector("#mols2grid .cell .data-img"))
+        .pause(.5)
+        .perform())
     el = driver.find_by_css_selector("#mols2grid .cell .data-_Name")
     assert el.text == "foo"
 
