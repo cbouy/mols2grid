@@ -35,6 +35,7 @@ $('#mols2grid .search-btn').click(function() {
 $('#mols2grid #searchbar').on("keyup", function(e) {
     var query = e.target.value;
     if (search_type === "Text") {
+        smarts_matches = {};
         listObj.search(query, {{ search_cols }});
     } else {
         listObj.search(query, ["data-{{ smiles_col }}"], SmartsSearch);

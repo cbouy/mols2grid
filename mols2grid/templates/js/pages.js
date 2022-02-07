@@ -85,8 +85,8 @@ listObj.on("updated", function (list) {
 // generate images for the currently displayed molecules
 var draw_opts = {{ json_draw_opts }};
 var json_draw_opts = JSON.stringify(draw_opts);
-var smarts_matches = {};
 {% endif %}
+var smarts_matches = {};
 
 // Load RDKit
 window

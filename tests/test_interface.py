@@ -52,6 +52,17 @@ class FirefoxDriver(webdriver.Firefox):
         condition = EC.presence_of_all_elements_located((By.CLASS_NAME, name))
         return self.wait(condition, **kwargs)
 
+    def get_svg_md5_hash(self, selector="#mols2grid .cell .data-img"):
+        img = self.find_by_css_selector(selector)
+        im = svg2png(bytestring=(img.get_attribute("innerHTML")))
+        im = Image.open(BytesIO(im))
+        return md5(im.tobytes()).hexdigest()
+
+    def get_png_md5_hash(self, selector="#mols2grid .cell .data-img *"):
+        img = self.find_by_css_selector(selector)
+        im = Image.open(BytesIO(b64decode(img.get_attribute("src")[22:])))
+        return md5(im.tobytes()).hexdigest()
+
 
 def determine_scope(fixture_name, config):
     if os.environ.get("GITHUB_ACTIONS", False):
@@ -269,9 +280,7 @@ def test_image_use_coords(driver, df):
         mols, use_coords=True, prerender=True, useSVG=False)
     doc = get_doc(grid, {"substruct_highlight": False})
     driver.get(doc)
-    img = driver.find_by_css_selector("#mols2grid .cell .data-img *")
-    im = Image.open(BytesIO(b64decode(img.get_attribute("src")[22:])))
-    md5_hash = md5(im.tobytes()).hexdigest()
+    md5_hash = driver.get_png_md5_hash()
     if rdkit_version == "2020.03.1":
         assert md5_hash == "aed60ed28347831d24f02dbb5be19007"
     else:
@@ -292,15 +301,9 @@ def test_coordgen(driver, mols, coordGen, prerender, expected):
     if not prerender:
         driver.wait_for_img_load()
     if useSVG:
-        img = driver.find_by_css_selector("#mols2grid .cell .data-img")
-        img_data = img.get_attribute("innerHTML")
-        im = svg2png(bytestring=img_data)
-        im = Image.open(BytesIO(im))
+        md5_hash = driver.get_svg_md5_hash()
     else:
-        img = driver.find_by_css_selector("#mols2grid .cell .data-img *")
-        img_data = img.get_attribute("src")[22:]
-        im = Image.open(BytesIO(b64decode(img_data)))
-    md5_hash = md5(im.tobytes()).hexdigest()
+        md5_hash = driver.get_png_md5_hash()
     assert md5_hash == expected
 
 @pytest.mark.parametrize(["removeHs", "prerender", "expected"], [
@@ -323,15 +326,9 @@ def test_removeHs(driver, df, removeHs, prerender, expected):
     if not prerender:
         driver.wait_for_img_load()
     if useSVG:
-        img = driver.find_by_css_selector("#mols2grid .cell .data-img")
-        img_data = img.get_attribute("innerHTML")
-        im = svg2png(bytestring=img_data)
-        im = Image.open(BytesIO(im))
+        md5_hash = driver.get_svg_md5_hash()
     else:
-        img = driver.find_by_css_selector("#mols2grid .cell .data-img *")
-        img_data = img.get_attribute("src")[22:]
-        im = Image.open(BytesIO(b64decode(img_data)))
-    md5_hash = md5(im.tobytes()).hexdigest()
+        md5_hash = driver.get_png_md5_hash()
     assert md5_hash == expected
 
 @pytest.mark.parametrize(["kwargs", "expected"], [
@@ -345,10 +342,7 @@ def test_moldrawoptions(driver, df, kwargs, expected):
     doc = get_doc(grid, dict(n_rows=1, n_cols=1, subset=["img"]))
     driver.get(doc)
     driver.wait_for_img_load()
-    img = driver.find_by_css_selector("#mols2grid .cell .data-img")
-    im = svg2png(bytestring=(img.get_attribute("innerHTML")))
-    im = Image.open(BytesIO(im))
-    md5_hash = md5(im.tobytes()).hexdigest()
+    md5_hash = driver.get_svg_md5_hash()
     assert md5_hash == expected
 
 def test_hover_color(driver, grid):
@@ -474,9 +468,11 @@ def test_transform_style_tooltip(driver, grid):
     el = tooltip.find_element_by_class_name("popover-body")
     assert el.get_attribute("innerHTML") == '<strong>_Name</strong>: <span style="color: blue">foo</span>'
 
-def test_callback_js(driver, grid):
+@pytest.mark.parametrize("selection", [True, False])
+def test_callback_js(driver, grid, selection):
     doc = get_doc(grid, {
-        "callback": "$('#mols2grid .cell .data-_Name').html('foo')"
+        "callback": "$('#mols2grid .cell .data-_Name').html('foo')",
+        "selection": selection
     })
     driver.get(doc)
     driver.wait_for_img_load()
@@ -527,10 +523,7 @@ def test_substruct_highlight(driver, grid, substruct_highlight, expected):
         .send_keys_to_element(text_box, "CC(I)C")
         .key_up(Keys.TAB)
         .perform())
-    img = driver.find_by_css_selector("#mols2grid .cell .data-img")
-    im = svg2png(bytestring=(img.get_attribute("innerHTML")))
-    im = Image.open(BytesIO(im))
-    md5_hash = md5(im.tobytes()).hexdigest()
+    md5_hash = driver.get_svg_md5_hash()
     assert md5_hash == expected
 
 def test_substruct_clear_removes_highlight(driver, grid):
@@ -544,21 +537,38 @@ def test_substruct_clear_removes_highlight(driver, grid):
         .send_keys_to_element(driver.find_by_id("searchbar"), "C")
         .key_up(Keys.TAB)
         .perform())
-    img = driver.find_by_css_selector("#mols2grid .cell .data-img")
-    im = svg2png(bytestring=(img.get_attribute("innerHTML")))
-    im = Image.open(BytesIO(im))
-    md5_hash_hl = md5(im.tobytes()).hexdigest()
+    md5_hash_hl = driver.get_svg_md5_hash()
     driver.find_by_id("searchbar").clear()
     (ActionChains(driver)
         .send_keys_to_element(driver.find_by_id("searchbar"), Keys.BACKSPACE)
         .key_up(Keys.TAB)
         .perform())
-    img = driver.find_by_css_selector("#mols2grid .cell .data-img")
-    im = svg2png(bytestring=(img.get_attribute("innerHTML")))
-    im = Image.open(BytesIO(im))
-    md5_hash = md5(im.tobytes()).hexdigest()
+    md5_hash = driver.get_svg_md5_hash()
     assert md5_hash != md5_hash_hl
     assert md5_hash == "d8227a9948b6f801193085e5a8b257a2"
+
+def test_smarts_to_text_search_removes_highlight(driver, grid):
+    doc = get_doc(grid, {"n_rows": 1, "substruct_highlight": True})
+    driver.get(doc)
+    driver.wait_for_img_load()
+    (ActionChains(driver)
+        .click(driver.find_by_id("searchBtn"))
+        .pause(.5)
+        .click(driver.find_by_id("smartsSearch"))
+        .send_keys_to_element(driver.find_by_id("searchbar"), "I")
+        .key_up(Keys.TAB)
+        .perform())
+    md5_hash_hl = driver.get_svg_md5_hash()
+    (ActionChains(driver)
+        .click(driver.find_by_id("searchBtn"))
+        .pause(.5)
+        .click(driver.find_by_id("txtSearch"))
+        .send_keys_to_element(driver.find_by_id("searchbar"), "odopropane")
+        .key_up(Keys.TAB)
+        .perform())
+    md5_hash = driver.get_svg_md5_hash()
+    assert md5_hash != md5_hash_hl
+    assert md5_hash == "4884c75977e8c3e0fa2e6a1607275406"
 
 def test_filter(driver, grid):
     doc = get_doc(grid, {})
