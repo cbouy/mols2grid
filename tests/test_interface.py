@@ -582,3 +582,20 @@ def test_filter(driver, grid):
     driver.execute_script(filter_code)
     el = driver.find_by_css_selector("#mols2grid .cell .data-_Name")
     assert el.text == "2-iodopropane"
+
+def test_subset_gives_rows_order(driver, grid):
+    subset = ["_Name", "img", "ID"]
+    doc = get_doc(grid, {"subset": subset, "n_rows": 1})
+    driver.get(doc)
+    driver.wait_for_img_load()
+    cell = driver.find_by_css_selector("#mols2grid .cell")
+    elements = cell.find_elements_by_class_name("data")
+    for i, el in enumerate(elements):
+        class_list = el.get_attribute("class").split()
+        name = [x.replace("data-", "") for x in class_list
+                if x.startswith("data-")][0]
+        if i == len(elements) - 1:
+            assert name == "SMILES"
+            assert el.value_of_css_property("display") == "none"
+        else:
+            assert name == subset[i]
