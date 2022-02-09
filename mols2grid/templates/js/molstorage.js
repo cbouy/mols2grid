@@ -28,5 +28,6 @@ class MolStorage extends Map {
         a.href = URL.createObjectURL(file);
         a.download = fileName;
         a.click();
+        a.remove();
     }
 }

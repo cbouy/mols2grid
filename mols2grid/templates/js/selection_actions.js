@@ -1,5 +1,3 @@
-// add selection buttons
-$("#sort-dropdown").before(`{% include 'html/checkbox_dropdown.html' %}`);
 // check all
 $('#btn-chkbox-all').click(function (e) {
     var current_page = parseInt($("li.page-item.active > a").text());
@@ -66,6 +64,30 @@ $("#btn-chkbox-copy").click(function(e) {
 // export smiles
 $("#btn-chkbox-dlsmi").click(function(e) {
     SELECTION.download_smi("selection.smi");
+});
+// export CSV
+$("#btn-chkbox-dlcsv").click(function(e) {
+    var sep = ","
+    var columns = Object.keys(listObj.items[0].values());
+    columns = columns.filter((x) => (x.slice(0, 5)=="data-")
+                                    && (x !== "data-img"));
+    var header = columns.map((x) => x.slice(5));
+    header = ["index"].concat(header).join(sep);
+    var content = header + "\n";
+    for (let [index, smiles] of SELECTION.entries()) {
+        var data = listObj.items[index].values();
+        content += index;
+        columns.forEach((key) => {
+            content += sep + data[key];
+        })
+        content += "\n";
+    }
+    var a = document.createElement("a");
+    var file = new Blob([content], {type: "text/csv"});
+    a.href = URL.createObjectURL(file);
+    a.download = "selection.csv";
+    a.click();
+    a.remove();
 });
 // update selection on checkbox click
 listObj.on("updated", function (list) {
