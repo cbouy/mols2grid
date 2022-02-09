@@ -94,6 +94,7 @@ window
 .then(function(RDKit) {
     console.log('RDKit version: ', RDKit.version());
     window.RDKit = RDKit;
+    window.RDKitModule = RDKit;
 
     // search bar
     {% include 'js/search.js' %}
