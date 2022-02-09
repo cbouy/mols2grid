@@ -236,7 +236,7 @@ def test_render_wrong_template(grid_otf):
 
 @pytest.mark.parametrize("kwargs", [
     dict(),
-    dict(subset=["ID"]),
+    dict(subset=["img"]),
     dict(tooltip=["ID"]),
     dict(selection=False),
     dict(style={"ID": lambda x: "color: red" if x == 1 else ""}),
@@ -263,13 +263,13 @@ def test_integration_table(grid, kwargs):
 def test_python_callback(grid_otf):
     def myfunc():
         pass
-    html = grid_otf.to_pages(subset=["ID"], callback=myfunc)
+    html = grid_otf.to_pages(subset=["img"], callback=myfunc)
     assert "// call custom python callback" in html
     assert "// no kernel detected for callback" in html
 
 def test_python_callback_lambda(grid_otf):
     with pytest.raises(TypeError, match="Lambda functions are not supported"):
-        grid_otf.to_pages(subset=["ID"], callback=lambda x: None)
+        grid_otf.to_pages(subset=["img"], callback=lambda x: None)
 
 def test_cache_selection():
     grid = _make_grid(name="cache")
@@ -308,4 +308,9 @@ def test_use_coords_onthefly_error():
 def test_sort_by_not_in_subset_or_tooltip(grid_otf):
     with pytest.raises(ValueError,
                        match="'_Name' is not an available field"):
-        grid_otf.to_pages(subset=["ID"], sort_by="_Name")
+        grid_otf.to_pages(subset=["ID", "img"], sort_by="_Name")
+
+def test_subset_without_img_error(grid_otf):
+    with pytest.raises(KeyError,
+                       match="Please add the 'img' field in the `subset` parameter"):
+        grid_otf.display(subset=["_Name"])

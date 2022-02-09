@@ -392,6 +392,8 @@ class MolGrid:
         if subset is None:
             subset = df.columns.tolist()
             subset = [subset.pop(subset.index("img"))] + subset
+        if "img" not in subset:
+            raise KeyError("Please add the 'img' field in the `subset` parameter")
         # define fields that are searchable and sortable
         search_cols = [f"data-{col}" for col in subset if col != "img"]
         if tooltip:
