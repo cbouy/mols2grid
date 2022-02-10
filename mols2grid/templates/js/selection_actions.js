@@ -67,11 +67,13 @@ $("#btn-chkbox-dlsmi").click(function(e) {
 });
 // export CSV
 $("#btn-chkbox-dlcsv").click(function(e) {
-    var sep = ","
-    var columns = Object.keys(listObj.items[0].values());
-    columns = columns.filter((x) => (x.slice(0, 5)=="data-")
-                                    && (x !== "data-img"));
-    var header = columns.map((x) => x.slice(5));
+    var sep = "\t"
+    // same order as subset + tooltip
+    var columns = Array.from(listObj.items[0].elm.querySelectorAll("div.data"))
+                       .map(elm => elm.classList[1]);
+    // remove 'data-'
+    var header = columns.map(name => name.slice(5));
+    // csv content
     header = ["index"].concat(header).join(sep);
     var content = header + "\n";
     for (let [index, smiles] of SELECTION.entries()) {

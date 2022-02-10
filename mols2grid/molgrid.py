@@ -434,6 +434,7 @@ class MolGrid:
             final_columns.append(id_name)
             subset = [id_name if x == "mols2grid-id" else x for x in subset]
         # organize data
+        temp = []
         for col in subset:
             if col == "img" and tooltip:
                 s = (f'<a tabindex="0" class="data data-{col} mols2grid-tooltip" '
@@ -443,8 +444,9 @@ class MolGrid:
                     s = f'<div class="data data-{col} style-{col}" style=""></div>'
                 else:
                     s = f'<div class="data data-{col}"></div>'
-            content.append(s)
+            temp.append(s)
             column_map[col] = f"data-{col}"
+        content = temp + content
         # add but hide SMILES div if not present
         if smiles not in (subset + tooltip):
             s = f'<div class="data data-{smiles}" style="display: none;"></div>'
