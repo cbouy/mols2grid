@@ -1,4 +1,3 @@
-from typing import Type
 import warnings
 from base64 import b64encode
 from html import escape
@@ -30,8 +29,10 @@ class MolGrid:
     """
 
     def __init__(self, df, smiles_col="SMILES", mol_col=None, removeHs=False,
-        use_coords=True, coordGen=True, useSVG=True, size=(160, 120),
-        MolDrawOptions=None, rename=None, name="default", **kwargs):
+        use_coords=False, coordGen=True, useSVG=True, size=(160, 120),
+        MolDrawOptions=None, rename=None, name="default", prerender=False,
+        cache_selection=False,
+        **kwargs):
         """
         Parameters
         ----------
@@ -62,23 +63,52 @@ class MolGrid:
         name : str
             Name of the grid. Used when retrieving selections from multiple
             grids at the same time
+        cache_selection : bool
+            Restores the selection from a previous grid with the same name
+        prerender : bool
+            Prerender images for the entire dataset, or generate them
+            on-the-fly when needed
         kwargs : object
-            MolDrawOptions attributes
+            MolDrawOptions attributes, and the additional `atomColourPalette`
 
         Notes
         -----
         The list of supported MolDrawOptions attributes are available in
         https://www.rdkit.org/docs/source/rdkit.Chem.Draw.rdMolDraw2D.html#rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions
 
-        ..versionchanged: 0.1.0
+        On-the-fly rendering of images does not read the atom colour palette
+        from the MolDrawOptions passed. If this is needed, use the following::
+
+            >>> MolGrid(df, atomColourPalette={1: (.8, 0, 1)})
+
+        .. versionchanged:: 0.1.0
             Added `rename` argument to replace `mapping`
+
+        .. versionadded:: 0.2.0
+            Added `prerender` and `cache_selection` arguments
+
+        .. versionchanged:: 0.2.0
+            Images are now generated on-the-fly. `use_coords` is now `False` by
+            default to avoid a systematic error when using `MolGrid.from_sdf`
         """
         if not (smiles_col or mol_col):
             raise ValueError("One of `smiles_col` or `mol_col` must be set")
         if not isinstance(name, str):
             raise TypeError(
                 f"`name` must be a string. Currently of type {type(name).__name__}")
-        Draw.rdDepictor.SetPreferCoordGen(coordGen)
+        if not prerender:
+            if not useSVG:
+                raise ValueError("On-the-fly rendering of PNG images not supported")
+            if use_coords and mol_col:
+                raise ValueError("Cannot use coordinates with on-the-fly rendering")
+        self.prefer_coordGen = coordGen
+        self.removeHs = removeHs
+        self.useSVG = useSVG
+        self.use_coords = use_coords
+        self.img_size = size
+        self.prerender = prerender
+        self.smiles_col = smiles_col
+        self.mol_col = mol_col
         if isinstance(df, pd.DataFrame):
             dataframe = df.copy()
         else:
@@ -94,50 +124,51 @@ class MolGrid:
         if rename:
             dataframe.rename(columns=rename, inplace=True)
         self._extra_columns = ["img", "mols2grid-id"]
-        # generate temporary RDKit molecules
-        if smiles_col and not mol_col:
-            mol_col = "mol"
-            keep_mols = False
-            dataframe[mol_col] = dataframe[smiles_col].apply(Chem.MolFromSmiles)
-        else:
-            keep_mols = True
-        # remove hydrogens
-        if removeHs:
-            dataframe[mol_col] = dataframe[mol_col].apply(Chem.RemoveHs)
-        if not use_coords:
-            dataframe[mol_col] = dataframe[mol_col].apply(remove_coordinates)
-        # generate smiles col
-        if mol_col and (smiles_col not in dataframe.columns):
-            dataframe[smiles_col] = dataframe[mol_col].apply(mol_to_smiles)
         # add index
         dataframe["mols2grid-id"] = list(range(len(dataframe)))
-        # drop None
-        dataframe.dropna(axis=0, subset=[mol_col], inplace=True)
-        # generate drawings
-        self.useSVG = useSVG
-        opts = MolDrawOptions or Draw.MolDrawOptions()
-        for key, value in kwargs.items():
-            setattr(opts, key, value)
-        self.MolDrawOptions = opts
-        self._MolDraw2D = Draw.MolDraw2DSVG if useSVG else Draw.MolDraw2DCairo
-        self.img_size = size
-        dataframe["img"] = dataframe[mol_col].apply(self.mol_to_img)
-        if keep_mols:
-            self.dataframe = dataframe
+        # generate drawing options
+        if prerender:
+            Draw.rdDepictor.SetPreferCoordGen(coordGen)
+            opts = MolDrawOptions or Draw.MolDrawOptions()
+            for key, value in kwargs.items():
+                setattr(opts, key, value)
+            self.MolDrawOptions = opts
+            self._MolDraw2D = Draw.MolDraw2DSVG if useSVG else Draw.MolDraw2DCairo
         else:
-            self.dataframe = dataframe.drop(columns=mol_col)
-            mol_col = None
-        self.smiles_col = smiles_col
-        self.mol_col = mol_col
+            opts = {}
+            if MolDrawOptions:
+                for key in dir(MolDrawOptions):
+                    value = getattr(MolDrawOptions, key)
+                    if not (key.startswith("_")
+                            or callable(value)
+                            or value.__class__.__module__ != "builtins"):
+                        opts[key] = value
+            opts.update(kwargs)
+            opts.update({"width": self.img_size[0],
+                         "height": self.img_size[1]})
+            self.json_draw_opts = json.dumps(opts)
+        # prepare smiles and images
+        self._prepare_dataframe(dataframe)
+        self.dataframe = dataframe
         # register instance
         self._grid_id = name
-        register._init_grid(name)
+        if cache_selection:
+            try:
+                self._cached_selection = register.get_selection(name)
+            except KeyError:
+                self._cached_selection = None
+                register._init_grid(name)
+            else:
+                register._update_current_grid(name)
+        else:
+            self._cached_selection = None
+            register._init_grid(name)
 
     @classmethod
     def from_mols(cls, mols, **kwargs):
         """Set up the dataframe used by mols2grid directly from a list of RDKit
         molecules
-        
+
         Parameters
         ----------
         mols : list
@@ -153,13 +184,16 @@ class MolGrid:
     @classmethod
     def from_sdf(cls, sdf_file, **kwargs):
         """Set up the dataframe used by mols2grid directly from an SDFile
-        
+
         Parameters
         ----------
         sdf_file : str
-            Path to the SDF file
+            Path to the SDF file (.sdf or .sdf.gz)
         kwargs : object
             Other arguments passed on initialization
+        
+        .. versionchanged:: 0.2.0
+            Added support for `.sdf.gz` files
         """
         mol_col = kwargs.pop("mol_col", "mol")
         df = sdf_to_dataframe(sdf_file, mol_col=mol_col)
@@ -198,33 +232,67 @@ class MolGrid:
         data = b64encode(img).decode()
         return f'<img src="data:image/png;base64,{data}">'
 
+    def _prepare_dataframe(self, dataframe):
+        """Prepares the dataframe with SMILES and images depending on user input. The 
+        dataframe is modified inplace."""
+        if self.prerender:
+            if self.mol_col:
+                keep_mols = True
+            else:
+                # make temporary mol column if not present
+                self.mol_col = "mol"
+                keep_mols = False
+                dataframe[self.mol_col] = (
+                    dataframe[self.smiles_col].apply(Chem.MolFromSmiles))
+            # drop empty mols
+            dataframe.dropna(axis=0, subset=[self.mol_col], inplace=True)
+            # modify mol according to user pref
+            if not self.use_coords:
+                dataframe[self.mol_col] = (
+                    dataframe[self.mol_col].apply(remove_coordinates))
+            if self.removeHs:
+                dataframe[self.mol_col] = dataframe[self.mol_col].apply(Chem.RemoveHs)
+            # cleanup
+            if not keep_mols:
+                dataframe.drop(columns=self.mol_col, inplace=True)
+                self.mol_col = None
+        # generate smiles col if not present or needs to be updated
+        if self.mol_col and self.smiles_col not in dataframe.columns:
+            dataframe[self.smiles_col] = dataframe[self.mol_col].apply(mol_to_smiles)
+        # render
+        if self.prerender:
+            dataframe["img"] = dataframe[self.mol_col].apply(self.mol_to_img)
+        else:
+            dataframe["img"] = None
+
     def render(self, template="pages", **kwargs):
         """Returns the HTML document corresponding to the "pages" or "table"
         template. See `to_pages` and `to_table` for the list of arguments
-        
+
         Parameters
         ----------
         template : str
             Kind of grid to draw:
-                * "table" is a very simple table where all molecules are
-                  displayed on the document, the main usecase is printing to
-                  PDF or on paper.
-                * "pages" is a more interactive version that splits the
-                  original data into several pages.
+
+            * "table" is a very simple table where all molecules are
+                displayed on the document, the main usecase is printing to
+                PDF or on paper.
+            * "pages" is a more interactive version that splits the
+                original data into several pages.
         """
         self.template = template
         return getattr(self, f"to_{self.template}")(**kwargs)
-    
-    def to_pages(self, subset=None, tooltip=None,
-                 cell_width=160, n_cols=5, n_rows=3,
+
+    def to_pages(self, subset=None, tooltip=None, n_cols=5, n_rows=3,
                  border="1px solid #cccccc", gap=0,
                  fontsize="12pt", fontfamily="'DejaVu', sans-serif",
                  textalign="center", tooltip_fmt="<strong>{key}</strong>: {value}",
                  tooltip_trigger="click hover", tooltip_placement="bottom",
                  hover_color="#e7e7e7", style=None, selection=True, transform=None,
-                 custom_css=None, custom_header=None, callback=None, sort_by=None):
+                 custom_css=None, custom_header=None, callback=None, sort_by=None,
+                 substruct_highlight=True):
         """Returns the HTML document for the "pages" template
-        
+
         Parameters
         ----------
         subset : list or None
@@ -248,7 +316,7 @@ class MolGrid:
         border : str
             Styling of the border around each cell (CSS)
         gap : int
-            Size of the margin around each cell (CSS)
+            Size of the margin around each cell in px
         fontsize : str
             Font size of the text displayed in each cell (CSS)
         fontfamily : str
@@ -296,7 +364,21 @@ class MolGrid:
         sort_by : str or None
             Sort the grid according to the following field (which must be present in
             `subset` or `tooltip`).
+        substruct_highlight : bool
+            Highlight substructure when using the SMARTS search. Only available when
+            `prerender=False`
+
+        .. versionadded:: 0.1.0
+            Added `sort_by`, `custom_css`, `custom_header` and `callback` arguments.
+            Added the ability to style an entire cell with
+            `style={"__all__": <function>}`.
+
+        .. versionadded:: 0.2.0
+            Added `substruct_highlight` argument
         """
+        if substruct_highlight and self.prerender:
+            raise ValueError(
+                "Cannot highlight substructure search with prerendered images")
         if self.mol_col:
             df = self.dataframe.drop(columns=self.mol_col).copy()
         else:
@@ -310,6 +392,8 @@ class MolGrid:
         if subset is None:
             subset = df.columns.tolist()
             subset = [subset.pop(subset.index("img"))] + subset
+        if "img" not in subset:
+            raise KeyError("Please add the 'img' field in the `subset` parameter")
         # define fields that are searchable and sortable
         search_cols = [f"data-{col}" for col in subset if col != "img"]
         if tooltip:
@@ -350,17 +434,19 @@ class MolGrid:
             final_columns.append(id_name)
             subset = [id_name if x == "mols2grid-id" else x for x in subset]
         # organize data
+        temp = []
         for col in subset:
             if col == "img" and tooltip:
                 s = (f'<a tabindex="0" class="data data-{col} mols2grid-tooltip" '
-                     'data-toggle="popover" data-content="foo"></a>')  
+                     'data-toggle="popover" data-content="."></a>')  
             else:
                 if style.get(col):
                     s = f'<div class="data data-{col} style-{col}" style=""></div>'
                 else:
                     s = f'<div class="data data-{col}"></div>'
-            content.append(s)
+            temp.append(s)
             column_map[col] = f"data-{col}"
+        content = temp + content
         # add but hide SMILES div if not present
         if smiles not in (subset + tooltip):
             s = f'<div class="data data-{smiles}" style="display: none;"></div>'
@@ -390,7 +476,7 @@ class MolGrid:
             df["mols2grid-tooltip"] = df.apply(tooltip_formatter, axis=1,
                                                args=(tooltip, tooltip_fmt, style,
                                                      transform))
-            final_columns = final_columns + ["mols2grid-tooltip"]
+            final_columns += ["mols2grid-tooltip"]
             value_names = (value_names[:-1] +
                            ", {attr: 'data-content', name: 'mols2grid-tooltip'}]")
 
@@ -399,7 +485,14 @@ class MolGrid:
             df[col] = df[col].apply(func)
 
         if selection:
-            checkbox = '<input type="checkbox" class="position-relative float-left">'
+            if self._cached_selection:
+                df["cached_checkbox"] = False
+                df.loc[df["mols2grid-id"].isin(self._cached_selection.keys()), "cached_checkbox"] = True
+                final_columns += ["cached_checkbox"]
+                value_names = (value_names[:-1] +
+                           ", {attr: 'checked', name: 'cached_checkbox'}]")
+            checkbox = ('<input type="checkbox" '
+                        'class="position-relative float-left cached_checkbox">')
         else:
             checkbox = ""
         if whole_cell_style:
@@ -416,6 +509,13 @@ class MolGrid:
                 raise TypeError(
                     "Lambda functions are not supported as callbacks. Please "
                     "use a regular function instead.")
+            # automatically register callback in Google Colab
+            try:
+                from google import colab
+            except:
+                pass
+            else:
+                colab.output.register_callback(callback.__name__, callback)
             callback_type = "python"
             callback = callback.__name__
         else:
@@ -425,7 +525,7 @@ class MolGrid:
             if sort_by in (subset + tooltip):
                 sort_by = f"data-{sort_by}"
             else:
-                raise ValueError(f"{sort_by} is not an available field in "
+                raise ValueError(f"{sort_by!r} is not an available field in "
                                  "`subset` or `tooltip`")
         else:
             sort_by = "mols2grid-id"
@@ -434,12 +534,13 @@ class MolGrid:
         template = env.get_template('pages.html')
         template_kwargs = dict(
             width = width,
+            height = self.img_size[1],
             border = border,
             textalign = textalign,
             cell_width = cell_width,
             fontfamily = fontfamily,
             fontsize = fontsize,
-            gap = gap,
+            gap = f"{gap}px",
             hover_color = hover_color,
             item = item,
             item_repr = repr(item),
@@ -451,6 +552,9 @@ class MolGrid:
             search_cols = search_cols,
             data = json.dumps(df.to_dict("records")),
             selection = selection,
+            cached_selection = ([list(self._cached_selection.keys()),
+                                 list(self._cached_selection.values())]
+                                if self._cached_selection else False),
             smiles_col = smiles,
             sort_cols = sort_cols,
             grid_id = self._grid_id,
@@ -460,6 +564,11 @@ class MolGrid:
             callback = callback,
             callback_type = callback_type,
             sort_by = sort_by,
+            removeHs = self.removeHs,
+            prefer_coordGen = self.prefer_coordGen,
+            onthefly = not self.prerender,
+            substruct_highlight = substruct_highlight,
+            json_draw_opts = getattr(self, "json_draw_opts", ""),
         )
         return template.render(**template_kwargs)
 
@@ -476,7 +585,7 @@ class MolGrid:
 
     def filter(self, mask):
         """Filters the grid using a mask (boolean array)
-        
+
         Parameters
         ----------
         mask : list, pd.Series, np.ndarray
@@ -492,7 +601,7 @@ class MolGrid:
         # convert index to mols2grid-id
         ids = self.dataframe.loc[self.dataframe.index.isin(indices)]["mols2grid-id"]
         return self._filter_by_id(ids)
-        
+
     def _filter_by_id(self, ids):
         """Filters the grid using the values in the `mols2grid-id` column"""
         if isinstance(ids, (pd.Series, np.ndarray)):
@@ -501,7 +610,7 @@ class MolGrid:
             grid_id = self._grid_id,
             ids = ids)
         return Javascript(code)
-    
+
     def to_table(self, subset=None, tooltip=None, n_cols=6,
                  cell_width=160, border="1px solid #cccccc", gap=0,
                  fontsize="12pt", fontfamily="'DejaVu', sans-serif",
@@ -509,7 +618,7 @@ class MolGrid:
                  tooltip_trigger="click hover", tooltip_placement="bottom",
                  hover_color="#e7e7e7", style=None, transform=None):
         """Returns the HTML document for the "table" template
-        
+
         Parameters
         ----------
         subset : list or None
@@ -605,7 +714,7 @@ class MolGrid:
             td.append("\n".join(div))
             td.append("</td>")
             tr.append("\n".join(td))
-            
+
             if (ncell % n_cols == 0) or (ncell == len(df)):
                 cell = [f'<tr class="row-{nrow}">']
                 cell.append("\n".join(tr))

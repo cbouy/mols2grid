@@ -27,7 +27,7 @@ def _prepare_kwargs(kwargs, kind):
 @singledispatch
 def display(arg, **kwargs):
     """Display molecules on an interactive grid
-    
+
     Parameters
     ----------
     arg : pandas.DataFrame, SDF file or list of molecules
@@ -41,13 +41,21 @@ def display(arg, **kwargs):
     coordGen : bool (True)
         Use the coordGen library instead of the RDKit one to depict the
         molecules in 2D
-    use_coords : bool (True)
+    use_coords : bool (False)
         Use the coordinates of the molecules (only relevant when an SDF file, a
         list of molecules or a DataFrame of RDKit molecules were used as input)
-    remove_Hs : bool (False)
+    removeHs : bool (False)
         Remove hydrogen atoms from the drawings
     size : tuple ((160, 120))
         Size of each image
+    prerender : bool (False)
+        Prerender images for the entire dataset, or generate them on-the-fly
+        when needed
+    substruct_highlight : bool
+        Highlight substructure when using the SMARTS search. Only available
+        when `prerender=False`
+    MolDrawOptions : rdkit.Chem.Draw.MolDrawOptions (None)
+        Drawing options. Useful for making highly customized drawings
     rename : dict (None)
         Rename the properties in the final document
     name : str ("default")
@@ -81,8 +89,8 @@ def display(arg, **kwargs):
         Only available for the "pages" template. Number of rows per page
     border : str ("1px solid #cccccc")
         Styling of the border around each cell (CSS)
-    gap : int or str (0)
-        Size of the margin around each cell (CSS)
+    gap : int (0)
+        Size of the margin around each cell in px
     fontsize : str ("12pt")
         Font size of the text displayed in each cell (CSS)
     fontfamily : str ("'DejaVu', sans-serif")
@@ -110,6 +118,8 @@ def display(arg, **kwargs):
         displays a checkbox at the top of each cell. To access your selection (index and
         SMILES), use `mols2grid.get_selection()` or the export options in the bottom
         checkbox dropdown menu.
+    cache_selection : bool (False)
+        Restores the selection from a previous grid with the same name
     transform : dict (None)
         Functions applied to specific items in all cells. The dict must follow a
         `key: function` structure where the key must correspond to one of the columns
@@ -121,9 +131,11 @@ def display(arg, **kwargs):
         Celsius instead of Fahrenheit with a single digit precision and some text
         before (MP) and after (°C) the value. These transformations only affect
         columns in `subset` and `tooltip`, and do not interfere with `style`.
-    custom_css : str
+    custom_css : str or None
         Only available for the "pages" template. Custom CSS properties applied to the
         content of the HTML document.
+    custom_header : str or None
+        Custom libraries to be loaded in the header of the document
     callback : str
         Only available for the "pages" template. JavaScript callback to be executed when
         clicking on an image. A dictionnary containing the data for the full cell is
@@ -132,11 +144,13 @@ def display(arg, **kwargs):
     sort_by : str or None
         Sort the grid according to the following field (which must be present in `subset`
         or `tooltip`).
-    
+
     Notes
     -----
     You can also directly use RDKit's MolDrawOptions parameters as arguments.
     For more info, see https://www.rdkit.org/docs/source/rdkit.Chem.Draw.rdMolDraw2D.html#rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions
+    Additionally, `atomColourPalette` is available to customize the atom
+    palette if you're not prerendering image (`prerender=False`).
     """
     raise TypeError(f"No display method registered for type {type(arg)!r}")
 
@@ -162,14 +176,14 @@ def _(mols, **kwargs):
 @singledispatch
 def save(arg, **kwargs):
     """Generate an interactive grid of molecules and save it
-    
+
     Parameters
     ----------
     arg : pandas.DataFrame, SDF file or list of molecules
         The input containing your molecules
     output : str
         Name and path of the output document
-    
+
     See `mols2grid.display` for the full list of arguments
     """
     raise TypeError(f"No save method registered for type {type(arg)!r}")

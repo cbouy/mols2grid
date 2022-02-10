@@ -1,11 +1,18 @@
-<iframe class="mols2grid-iframe" frameborder="0" width={{ width }}
+<script>
+    function fit_height(obj) {
+        obj.style.height = 0;
+        var height = obj.contentDocument.body.scrollHeight + {{ padding }} + 'px';
+        obj.style.height = height;
+    }
+</script>
+<iframe class="mols2grid-iframe" frameborder="0" width="{{ width }}"
 {% if height %}
 height="{{ height }}"
 {% else %}
-height="0" 
-onload="javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+{{ padding }}+'px';}(this));"
+height="200"
 {% endif %}
 {% if allow %}
 allow="{{ allow }}"
 {% endif %}
-srcdoc="{{ doc }}"></iframe>
+srcdoc="{{ doc }}">
+</iframe>

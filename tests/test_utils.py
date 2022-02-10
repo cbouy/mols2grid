@@ -1,3 +1,5 @@
+from tempfile import NamedTemporaryFile
+import gzip
 import pytest
 import pandas as pd
 from rdkit import RDConfig, Chem
@@ -23,7 +25,7 @@ def test_requires():
     (["Activity"], "{value}", {}, {"Activity": lambda x: f"{x:.2f}"},
      "42.01"),
     (["Activity"], "{key}: {value}",
-     {"Activity": lambda x: "color: red" if x.endswith("1") else ""},
+     {"Activity": lambda x: "color: red" if x > 40 else ""},
      {"Activity": lambda x: f"{x:.2f}"},
      'Activity: <span style="color: red">42.01</span>'),
 ])
@@ -64,9 +66,8 @@ def test_mol_to_record():
         else:
             mol.SetProp(prop, value)
     new = utils.mol_to_record(mol)
-    for default_col in ["mol", "SMILES"]:
-        assert default_col in new.keys()
-        new.pop(default_col)
+    assert "mol" in new.keys()
+    new.pop("mol")
     assert new == props
 
 def test_mol_to_record_none():
@@ -108,6 +109,15 @@ def test_sdf_to_dataframe_custom_mol_col():
     df = utils.sdf_to_dataframe(sdf, mol_col="foo")
     assert "mol" not in df.columns
     assert "foo" in df.columns
+
+def test_sdf_to_df_gz():
+    with NamedTemporaryFile("wb", suffix=".gz") as tf, open(sdf, "rb") as fi:
+        gz = gzip.compress(fi.read(), compresslevel=1)
+        tf.write(gz)
+        tf.flush()
+        df = utils.sdf_to_dataframe(tf.name).drop(columns=["mol"])
+        ref = utils.sdf_to_dataframe(sdf).drop(columns=["mol"])
+        assert (df == ref).values.all()
 
 def test_remove_coordinates():
     mol = Chem.MolFromSmiles("CCO")

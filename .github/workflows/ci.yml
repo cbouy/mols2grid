@@ -23,16 +23,26 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: [3.6, 3.8]
+        python-version: [3.8, 3.9]
         rdkit-version: ["rdkit>2020.03.1"]
         include:
         - name: CI min version
           os: ubuntu-latest
-          python-version: 3.6
+          python-version: 3.7
           rdkit-version: "rdkit==2020.03.1"
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: Install Firefox
+        uses: browser-actions/setup-firefox@latest
+      
+      - run: firefox --version
+
+      - name: Prepare Selenium
+        uses: browser-actions/setup-geckodriver@latest
+      
+      - run: geckodriver --version
 
       - name: Cache conda
         uses: actions/cache@v2
@@ -43,6 +53,14 @@ jobs:
           key:
             ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{
             hashFiles('etc/example-environment.yml') }}
+
+      - name: Cache pip
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Setup Conda
         uses: conda-incubator/setup-miniconda@v2
@@ -72,7 +90,23 @@ jobs:
       
       - name: Run tests
         run: |
-          pytest --color=yes --disable-pytest-warnings --cov=mols2grid --cov-report=xml tests/
+          pytest --color=yes --disable-pytest-warnings \
+                 --cov=mols2grid --cov-report=xml \
+                 tests/ -m "not webdriver"
+
+      - name: Run webdriver tests
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 5
+          max_attempts: 5
+          retry_on: timeout
+          shell: bash
+          command: |
+            source /usr/share/miniconda/etc/profile.d/conda.sh
+            conda activate test
+            pytest --color=yes --disable-pytest-warnings \
+                   --cov=mols2grid --cov-report=xml --cov-append \
+                   tests/ -m "webdriver"
 
       - name: Measure tests coverage
         uses: codecov/codecov-action@v1

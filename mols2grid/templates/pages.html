@@ -18,6 +18,9 @@
       <div class="d-inline">
         <ul class="pagination float-left"></ul>
         <div id="controls" class="d-flex flex-row float-right">
+          {% if selection %}
+          {% include 'html/checkbox_dropdown.html' %}
+          {% endif %}
           <div id="sort-dropdown" class="dropdown pl-2">
             <button class="btn btn-light dropdown-toggle" type="button" id="sortDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               Sort by
@@ -30,7 +33,7 @@
               {% if loop.first %}
               <button class="dropdown-item sort-btn {{ is_active }}" type="button" data-name="mols2grid-id">Index</button>
               {% else %}
-              <button class="dropdown-item sort-btn {{ is_active }}" type="button" data-name="{{ name }}">{{ col_name | capitalize }}</button>
+              <button class="dropdown-item sort-btn {{ is_active }}" type="button" data-name="{{ name }}">{{ col_name }}</button>
               {% endif %}
               {% endfor %}
               {% if selection %}

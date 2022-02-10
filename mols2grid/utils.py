@@ -1,4 +1,4 @@
-from functools import wraps
+from functools import wraps, partial
 from importlib.util import find_spec
 from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
@@ -23,7 +23,7 @@ def requires(module):
 
 def tooltip_formatter(s, subset, fmt, style, transform):
     """Function to generate tooltips from a pandas Series
-    
+
     Parameters
     ----------
     s : pandas.Series
@@ -39,8 +39,8 @@ def tooltip_formatter(s, subset, fmt, style, transform):
     """
     items = []
     for k, v in s[subset].to_dict().items():
-        v = transform[k](v) if transform.get(k) else v
-        v = f'<span style="{style[k](v)}">{v}</span>' if style.get(k) else v
+        displayed = transform[k](v) if transform.get(k) else v
+        v = f'<span style="{style[k](v)}">{displayed}</span>' if style.get(k) else displayed
         items.append(fmt.format(key=k, value=v))
     return "<br>".join(items)
 
@@ -50,14 +50,19 @@ def mol_to_smiles(mol):
 
 def mol_to_record(mol, mol_col="mol"):
     """Function to create a dict of data from an RDKit molecule"""
-    return {"SMILES": Chem.MolToSmiles(mol),
-            **mol.GetPropsAsDict(includePrivate=True),
+    return {**mol.GetPropsAsDict(includePrivate=True),
             mol_col: mol} if mol else {}
 
 def sdf_to_dataframe(sdf_path, mol_col="mol"):
-    """Returns a dataframe of molecules from an SDF file"""
-    return pd.DataFrame([mol_to_record(mol, mol_col)
-                         for mol in Chem.SDMolSupplier(sdf_path)])
+    """Returns a dataframe of molecules from an SDfile (.sdf or .sdf.gz)"""
+    if sdf_path.endswith(".gz"):
+        import gzip
+        read_file = gzip.open
+    else:
+        read_file = partial(open, mode="rb")
+    with read_file(sdf_path) as f:
+        return pd.DataFrame([mol_to_record(mol, mol_col)
+                             for mol in Chem.ForwardSDMolSupplier(f)])
 
 def remove_coordinates(mol):
     """Removes the existing coordinates from the molecule. The molecule is
@@ -67,7 +72,7 @@ def remove_coordinates(mol):
 
 def make_popup_callback(title, html, js="", style=""):
     """Creates a JavaScript callback that displays a popup window
-    
+
     Parameters
     ----------
     title : str

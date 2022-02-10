@@ -1,14 +1,23 @@
 function SmartsSearch(query, columns) {
-    query = $('#mols2grid #searchbar').val();
-    var smiles = columns[0];
-    var qmol = RDKitModule.get_qmol(query);
+    var smiles_col = columns[0];
+    smarts_matches = {};
+    var query = $('#mols2grid #searchbar').val();
+    var qmol = RDKit.get_qmol(query);
     if (qmol.is_valid()) {
         for (var k = 0, kl = listObj.items.length; k < kl; k++) {
             var item = listObj.items[k];
-            var mol = RDKitModule.get_mol(item.values()[smiles]);
-            var results = JSON.parse(mol.get_substruct_match(qmol));
-            if (results.atoms) {
-                item.found = true;
+            var smiles = item.values()[smiles_col]
+            var mol = RDKit.get_mol(smiles);
+            if (mol.is_valid()) {
+                var results = JSON.parse(mol.get_substruct_match(qmol));
+                if (results.atoms) {
+                    item.found = true;
+                    {% if onthefly and substruct_highlight %}
+                    smarts_matches[smiles] = results;
+                    {% endif %}
+                } else {
+                    item.found = false;
+                }
             } else {
                 item.found = false;
             }
@@ -26,6 +35,7 @@ $('#mols2grid .search-btn').click(function() {
 $('#mols2grid #searchbar').on("keyup", function(e) {
     var query = e.target.value;
     if (search_type === "Text") {
+        smarts_matches = {};
         listObj.search(query, {{ search_cols }});
     } else {
         listObj.search(query, ["data-{{ smiles_col }}"], SmartsSearch);

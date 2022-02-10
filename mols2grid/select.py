@@ -1,9 +1,10 @@
 import warnings
 from collections import UserDict
+from threading import Lock
 
 class SelectionRegister:
     """Register for grid selections
-    
+
     Attributes
     ----------
     SELECTIONS : dict
@@ -13,6 +14,7 @@ class SelectionRegister:
     """
     def __init__(self):
         self.SELECTIONS = {}
+        self.lock = Lock()
 
     def _update_current_grid(self, name):
         self.current_selection = name
@@ -39,10 +41,10 @@ class SelectionRegister:
         ----------
         name : str
             Name of the grid to update
-        _id : int
-            Identifier (`mols2grid-id`) of the entry
-        smiles : str
-            SMILES of the entry
+        _id : list[int]
+            List of entry identifiers (`mols2grid-id`)
+        smiles : list[str]
+            List of SMILES
 
         Notes
         -----
@@ -50,8 +52,10 @@ class SelectionRegister:
         on the grid. It is only usefull when retrieving selections from Python
         with `mols2grid.get_selection()`.
         """
-        self._update_current_grid(name)
-        self._set_selection(_id, smiles)
+        with self.lock:
+            self._update_current_grid(name)
+            for i, s in zip(_id, smiles):
+                self._set_selection(i, s)
 
     def del_selection(self, name, _id):
         """Remove an entry from a grid
@@ -60,8 +64,8 @@ class SelectionRegister:
         ----------
         name : str
             Name of the grid to update
-        _id : int
-            Identifier (`mols2grid-id`) of the entry
+        _id : list[int]
+            List of entry identifiers (`mols2grid-id`)
 
         Notes
         -----
@@ -69,8 +73,10 @@ class SelectionRegister:
         on the grid. It is only usefull when retrieving selections from Python
         with `mols2grid.get_selection()`.
         """
-        self._update_current_grid(name)
-        self._unset_selection(_id)
+        with self.lock:
+            self._update_current_grid(name)
+            for i in _id:
+                self._unset_selection(i)
 
     def get_selection(self, name=None):
         """Returns the selection for a specific MolGrid instance

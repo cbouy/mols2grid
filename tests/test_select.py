@@ -1,3 +1,4 @@
+from threading import Thread
 import pytest
 import mols2grid as mg
 from mols2grid.select import register
@@ -47,14 +48,15 @@ def test_unset_selection():
 
 def test_add_selection():
     register._init_grid("bar")
-    register.add_selection("foo", 0, "C")
+    register.add_selection("foo", [0, 1], ["C", "CC"])
     assert register.get_selection()[0] == "C"
+    assert register.get_selection()[1] == "CC"
 
 def test_del_selection():
-    register._set_selection(0, "C")
     register._init_grid("bar")
-    register.del_selection("foo", 0)
-    assert register.get_selection() == {}
+    register.add_selection("foo", [0, 1], ["C", "CC"])
+    register.del_selection("foo", [1])
+    assert register.get_selection() == {0: "C"}
 
 def test_get_selection():
     assert register.get_selection() == {}
@@ -74,3 +76,18 @@ def test_warn_selection():
     with pytest.warns(UserWarning,
                       match="`mols2grid.selection` is deprecated"):
         len(mg.selection)
+
+def test_lock(n=1e6):
+    N = int(n)
+    x = list(range(N))
+    def func(name):
+        register.add_selection(name, x, x)
+    register._init_grid("bar")
+    t1 = Thread(target=func, args=("foo",))
+    t2 = Thread(target=func, args=("bar",))
+    t1.start()
+    t2.start()
+    t1.join()
+    t2.join()
+    assert len(register.get_selection("foo")) == N
+    assert len(register.get_selection("bar")) == N

@@ -19,6 +19,10 @@
 #mols2grid .cell:hover {
     background-color: {{ hover_color }} !important;
 }
+#mols2grid .cell .data-img {
+    padding: 0;
+    margin: 0;
+}
 #mols2grid .cell img, #mols2grid .cell svg {
     max-width: 100%;
     height: auto;
