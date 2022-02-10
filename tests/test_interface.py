@@ -132,6 +132,7 @@ def test_page_click(driver, grid, page, n_cols, n_rows):
     doc = get_doc(grid, dict(n_cols=n_cols, n_rows=n_rows))
     driver.get(doc)
     for i in range(2, page+1):
+        driver.wait_for_img_load()
         next_page = driver.find_by_css_selector(f'a.page-link[data-i="{i}"]')
         next_page.click()
     first_cell = driver.find_by_class_name('cell')
