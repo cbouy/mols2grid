@@ -1,4 +1,4 @@
-# 👀 mols2grid
+# ![mols2grid logo](https://user-images.githubusercontent.com/27850535/154588465-43dc5d82-ee2d-4178-a2f3-e06000bc87c9.png) mols2grid
 
 [![Pypi version](https://img.shields.io/pypi/v/mols2grid.svg)](https://pypi.python.org/pypi/mols2grid)
 ![Conda version](https://img.shields.io/conda/vn/conda-forge/mols2grid)
