@@ -30,7 +30,10 @@ Alternatively, you can also use pip:
 pip install mols2grid
 ```
 
-It is compatible with Jupyter Notebook and Google Colab (Visual Studio notebooks and Jupyterlab are not fully supported) and can run on Streamlit.
+It is fully compatible with Jupyter Notebook and Google Colab and can run on Streamlit.  
+It also works with Visual Studio notebooks and Jupyterlab, except for accessing your selection with `mols2grid.get_selection()` and copying it to the clipboard, but you can still export it as a CSV or SMILES file.
+
+![knime logo](https://www.knime.com/sites/default/files/favicons/favicon-32x32.png) You can also use mols2grid direclty in [KNIME](https://www.knime.com/), by looking for the `Interactive Grid of Molecules` node on the Knime HUB.
 
 ## 📜 Usage
 ---
@@ -152,12 +155,12 @@ You can either:
 
 ## 🚀 Resources
 ---
-* [Simple exemple](https://iwatobipen.wordpress.com/2021/06/13/draw-molecules-on-jupyter-notebook-rdkit-mols2grid/) by iwatobipen
+* [Simple example](https://iwatobipen.wordpress.com/2021/06/13/draw-molecules-on-jupyter-notebook-rdkit-mols2grid/) by iwatobipen
 * Creating a web app with Streamlit for filtering datasets:
   * [Blog post](https://blog.reverielabs.com/building-web-applications-from-python-scripts-with-streamlit/) by Justin Chavez
   * [Video tutorial](https://www.youtube.com/watch?v=0rqIwSeUImo) by Data Professor
-* [Viewing clustered chemical structures](https://practicalcheminformatics.blogspot.com/2021/07/viewing-clustered-chemical-structures.html) by Pat Walters
-* [RDKit UGM 2021 notebook](https://colab.research.google.com/github/rdkit/UGM_2021/blob/main/Notebooks/Bouysset_mols2grid.ipynb)
+* [Viewing clustered chemical structures](https://practicalcheminformatics.blogspot.com/2021/07/viewing-clustered-chemical-structures.html) and [Exploratory data analysis](https://practicalcheminformatics.blogspot.com/2021/10/exploratory-data-analysis-with.html) by Pat Walters
+* [Advanced notebook (RDKit UGM 2021)](https://colab.research.google.com/github/rdkit/UGM_2021/blob/main/Notebooks/Bouysset_mols2grid.ipynb)
 
 ## 👏 Acknowledgments
 ---
