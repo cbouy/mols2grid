@@ -398,16 +398,13 @@ class MolGrid:
         # define fields that are searchable and sortable
         search_cols = [f"data-{col}" for col in subset if col != "img"]
         if tooltip:
-            search_cols.append("mols2grid-tooltip")
-            sort_cols = search_cols[:-1]
-            sort_cols.extend([f"data-{col}" for col in tooltip])
+            search_cols.extend([f"data-{col}" for col in tooltip])
             for col in tooltip:
                 if col not in subset:
                     s = f'<div class="data data-{slugify(col)}" style="display: none;"></div>'
                     content.append(s)
                     column_map[col] = f"data-{col}"
-        else:
-            sort_cols = search_cols[:]
+        sort_cols = search_cols[:]
         sort_cols = ["mols2grid-id"] + sort_cols
         # get unique list but keep order
         sort_cols = list(dict.fromkeys(sort_cols))
