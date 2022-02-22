@@ -614,3 +614,13 @@ def test_colname_with_spaces(driver, df):
     driver.wait_for_img_load()
     el = driver.find_by_css_selector("#mols2grid .cell .data")
     assert el.text == "3-methylpentane"
+
+def test_custom_header(driver, grid):
+    doc = get_doc(grid, {
+        "subset": ["_Name", "img"],
+        "custom_header": '<script src="https://unpkg.com/@rdkit/rdkit@2021.3.2/Code/MinimalLib/dist/RDKit_minimal.js"></script>',
+        "n_rows": 1})
+    driver.get(doc)
+    ActionChains(driver).pause(1).perform()
+    val = driver.execute_script("return window.RDKit.version();")
+    assert val == "2021.03.2"
