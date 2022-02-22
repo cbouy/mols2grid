@@ -139,3 +139,16 @@ def test_make_popup_callback():
     assert '<span id="foo">${title}</span>' in popup
     assert '// prerequisite JavaScript code\nvar title = "FOOBAR";' in popup
     assert '<div class="modal-dialog" style="max-width: 42%;">' in popup
+
+@pytest.mark.parametrize(["string", "expected"], [
+    ("Mol", "Mol"),
+    ("mol name", "mol-name"),
+    ("mol  name", "mol-name"),
+    ("mol-name", "mol-name"),
+    ("mol- name", "mol--name"),
+    ("mol\tname", "mol-name"),
+    ("mol\nname", "mol-name"),
+    ("mol \t\n name", "mol-name"),
+])
+def test_slugify(string, expected):
+    assert utils.slugify(string) == expected

@@ -12,7 +12,8 @@ from .utils import (env,
                     mol_to_record,
                     mol_to_smiles,
                     sdf_to_dataframe,
-                    remove_coordinates)
+                    remove_coordinates,
+                    slugify)
 from .select import register
 try:
     from IPython.display import HTML, Javascript
@@ -402,7 +403,7 @@ class MolGrid:
             sort_cols.extend([f"data-{col}" for col in tooltip])
             for col in tooltip:
                 if col not in subset:
-                    s = f'<div class="data data-{col}" style="display: none;"></div>'
+                    s = f'<div class="data data-{slugify(col)}" style="display: none;"></div>'
                     content.append(s)
                     column_map[col] = f"data-{col}"
         else:
@@ -441,15 +442,16 @@ class MolGrid:
                      'data-toggle="popover" data-content="."></a>')  
             else:
                 if style.get(col):
-                    s = f'<div class="data data-{col} style-{col}" style=""></div>'
+                    s = (f'<div class="data data-{slugify(col)} style-{slugify(col)}" '
+                         'style=""></div>')
                 else:
-                    s = f'<div class="data data-{col}"></div>'
+                    s = f'<div class="data data-{slugify(col)}"></div>'
             temp.append(s)
             column_map[col] = f"data-{col}"
         content = temp + content
         # add but hide SMILES div if not present
         if smiles not in (subset + tooltip):
-            s = f'<div class="data data-{smiles}" style="display: none;"></div>'
+            s = f'<div class="data data-{slugify(smiles)}" style="display: none;"></div>'
             content.append(s)
             column_map[smiles] = f"data-{smiles}"
         # set mapping for list.js
@@ -459,6 +461,7 @@ class MolGrid:
         else:
             whole_cell_style = False
             x = "[{data: ['mols2grid-id']}, "
+        value_names = [slugify(c) for c in value_names]
         value_names = x + str(value_names)[1:]
 
         # apply CSS styles
@@ -467,7 +470,7 @@ class MolGrid:
                 name = "cellstyle"
                 df[name] = df.apply(func, axis=1)
             else:
-                name = f"style-{col}"
+                name = f"style-{slugify(col)}"
                 df[name] = df[col].apply(func)
             final_columns.append(name)
             value_names = value_names[:-1] + f", {{ attr: 'style', name: {name!r} }}]"
@@ -523,12 +526,18 @@ class MolGrid:
 
         if sort_by and sort_by != "mols2grid-id":
             if sort_by in (subset + tooltip):
-                sort_by = f"data-{sort_by}"
+                sort_by = f"data-{slugify(sort_by)}"
             else:
                 raise ValueError(f"{sort_by!r} is not an available field in "
                                  "`subset` or `tooltip`")
         else:
             sort_by = "mols2grid-id"
+        
+        # slugify remaining vars
+        column_map = {k: slugify(v) for k, v in column_map.items()}
+        sort_cols = [slugify(c) for c in sort_cols]
+        search_cols = [slugify(c) for c in search_cols]
+        smiles = slugify(smiles)
         df = df[final_columns].rename(columns=column_map).sort_values(sort_by)
 
         template = env.get_template('pages.html')

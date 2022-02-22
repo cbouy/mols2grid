@@ -1,3 +1,4 @@
+import re
 from functools import wraps, partial
 from importlib.util import find_spec
 from jinja2 import Environment, FileSystemLoader
@@ -40,7 +41,8 @@ def tooltip_formatter(s, subset, fmt, style, transform):
     items = []
     for k, v in s[subset].to_dict().items():
         displayed = transform[k](v) if transform.get(k) else v
-        v = f'<span style="{style[k](v)}">{displayed}</span>' if style.get(k) else displayed
+        v = (f'<span style="{style[k](v)}">{displayed}</span>'
+             if style.get(k) else displayed)
         items.append(fmt.format(key=k, value=v))
     return "<br>".join(items)
 
@@ -92,3 +94,7 @@ def make_popup_callback(title, html, js="", style=""):
                        html=html,
                        title=title,
                        style=style))
+
+def slugify(string):
+    """Replaces whitespaces with hyphens"""
+    return re.sub(r"\s+", "-", string)
