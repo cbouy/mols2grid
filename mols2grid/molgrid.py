@@ -756,5 +756,5 @@ class MolGrid:
 
     def save(self, output, **kwargs):
         """Render and save the grid in an HTML document"""
-        with open(output, "w") as f:
+        with open(output, "w", encoding="utf-8") as f:
             f.write(self.render(**kwargs))
