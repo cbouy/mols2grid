@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2022/02/23
+### Fixed
+- Field names containing spaces are now correctly delt with
+- The text search now looks for matches inside the values of the tooltip fields, rather
+  than inside the HTML code of the tooltip which included tags and other irrelevant text
+- Fixed an encoding bug when saving the grid as an HTML file on French Windows, which uses
+  CP-1252 encoding instead of UTF-8
+
 ## [0.2.0] - 2022/02/10
 ### Added
 - `cache_selection=True` allows to retrieve the checkbox state when re-displaying a grid,

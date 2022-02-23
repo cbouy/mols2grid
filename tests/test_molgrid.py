@@ -236,21 +236,6 @@ def test_render_wrong_template(grid_otf):
 
 @pytest.mark.parametrize("kwargs", [
     dict(),
-    dict(subset=["img"]),
-    dict(tooltip=["ID"]),
-    dict(selection=False),
-    dict(style={"ID": lambda x: "color: red" if x == 1 else ""}),
-    dict(transform={"ID": lambda x: f"Id. #{x}"}),
-    dict(custom_css="* {color: red;}"),
-    dict(callback="console.log(JSON.stringify(data));"),
-    dict(custom_header='<script src="https://unpkg.com/@rdkit/rdkit@2021.3.2/Code/MinimalLib/dist/RDKit_minimal.js"></script>'),
-    dict(substruct_highlight=False),
-])
-def test_integration_pages(grid_otf, kwargs):
-    grid_otf.to_pages(**kwargs)
-
-@pytest.mark.parametrize("kwargs", [
-    dict(),
     dict(subset=["ID"]),
     dict(tooltip=["ID"]),
     dict(gap="5px"),

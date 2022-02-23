@@ -600,3 +600,27 @@ def test_subset_gives_rows_order(driver, grid):
             assert el.value_of_css_property("display") == "none"
         else:
             assert name == subset[i]
+
+def test_colname_with_spaces(driver, df):
+    df = (df
+        .rename(columns={"SMILES": "Molecule", "_Name": "Molecule name"})
+        .drop(columns="mol"))
+    grid = mols2grid.MolGrid(df, smiles_col="Molecule")
+    doc = get_doc(grid, dict(
+        subset=["Molecule name", "img"],
+        tooltip=["Molecule"],
+        n_rows=1))
+    driver.get(doc)
+    driver.wait_for_img_load()
+    el = driver.find_by_css_selector("#mols2grid .cell .data")
+    assert el.text == "3-methylpentane"
+
+def test_custom_header(driver, grid):
+    doc = get_doc(grid, {
+        "subset": ["img"],
+        "custom_header": '<script src="https://unpkg.com/@rdkit/rdkit@2021.9.2/Code/MinimalLib/dist/RDKit_minimal.js"></script>',
+        "n_rows": 1})
+    driver.get(doc)
+    driver.wait_for_img_load()
+    val = driver.execute_script("return RDKit.version();")
+    assert val == "2021.09.2"
