@@ -72,7 +72,7 @@ def determine_scope(fixture_name, config):
 @pytest.fixture(scope=determine_scope)
 def driver():
     options = webdriver.FirefoxOptions()
-    options.headless = True
+    options.headless = False
     driver = FirefoxDriver(options=options)
     driver.set_page_load_timeout(10)
     yield driver
@@ -617,10 +617,10 @@ def test_colname_with_spaces(driver, df):
 
 def test_custom_header(driver, grid):
     doc = get_doc(grid, {
-        "subset": ["_Name", "img"],
-        "custom_header": '<script src="https://unpkg.com/@rdkit/rdkit@2021.3.2/Code/MinimalLib/dist/RDKit_minimal.js"></script>',
+        "subset": ["img"],
+        "custom_header": '<script src="https://unpkg.com/@rdkit/rdkit@2021.9.2/Code/MinimalLib/dist/RDKit_minimal.js"></script>',
         "n_rows": 1})
     driver.get(doc)
-    ActionChains(driver).pause(1).perform()
-    val = driver.execute_script("return window.RDKit.version();")
-    assert val == "2021.03.2"
+    driver.wait_for_img_load()
+    val = driver.execute_script("return RDKit.version();")
+    assert val == "2021.09.2"
