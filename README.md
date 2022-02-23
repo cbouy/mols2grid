@@ -8,8 +8,8 @@
 [![Build status](https://github.com/cbouy/mols2grid/workflows/build/badge.svg)](https://github.com/cbouy/mols2grid/actions/workflows/build.yml)
 
 [![Powered by RDKit](https://img.shields.io/static/v1?label=Powered%20by&message=RDKit&color=3838ff&style=flat&logo=data:image/x-icon;base64,AAABAAEAEBAQAAAAAABoAwAAFgAAACgAAAAQAAAAIAAAAAEAGAAAAAAAAAMAABILAAASCwAAAAAAAAAAAADc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nz/FBT/FBT/FBT/FBT/FBT/FBTc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nz/FBT/PBT/PBT/PBT/PBT/PBT/PBT/FBTc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nz/FBT/PBT/ZGT/ZGT/ZGT/ZGT/ZGT/ZGT/PBT/FBTc3Nzc3Nzc3Nzc3Nzc3Nz/FBT/PBT/ZGT/ZGT/ZGT/ZGT/ZGT/ZGT/ZGT/ZGT/PBT/FBTc3Nzc3Nzc3Nz/FBT/PBT/ZGT/ZGT/ZGT/jIz/jIz/jIz/jIz/ZGT/ZGT/ZGT/PBT/FBTc3Nzc3Nz/FBT/PBT/ZGT/ZGT/jIz/jIz/jIz/jIz/jIz/jIz/ZGT/ZGT/PBT/FBTc3Nzc3Nz/FBT/PBT/ZGT/ZGT/jIz/jIz/tLT/tLT/jIz/jIz/ZGT/ZGT/PBT/FBTc3Nzc3Nz/FBT/PBT/ZGT/ZGT/jIz/jIz/tLT/tLT/jIz/jIz/ZGT/ZGT/PBT/FBTc3Nzc3Nz/FBT/PBT/ZGT/ZGT/jIz/jIz/jIz/jIz/jIz/jIz/ZGT/ZGT/PBT/FBTc3Nzc3Nz/FBT/PBT/ZGT/ZGT/ZGT/jIz/jIz/jIz/jIz/ZGT/ZGT/ZGT/PBT/FBTc3Nzc3Nzc3Nz/FBT/PBT/ZGT/ZGT/ZGT/ZGT/ZGT/ZGT/ZGT/ZGT/PBT/FBTc3Nzc3Nzc3Nzc3Nzc3Nz/FBT/PBT/ZGT/ZGT/ZGT/ZGT/ZGT/ZGT/PBT/FBTc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nz/FBT/PBT/PBT/PBT/PBT/PBT/PBT/FBTc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nz/FBT/FBT/FBT/FBT/FBT/FBTc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nz/////+B////AP///gB///wAP//4AB//+AAf//gAH//4AB//+AAf//gAH//8AD///gB///8A////gf////////)](https://www.rdkit.org/)
+[![Knime Hub](https://img.shields.io/static/v1?label=Available%20on&message=KNIME&color=ffd500&style=flat&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAABdUExURUxpcf/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAPfHMOMAAAAfdFJOUwCyq6CEYtAEApEspncGDpjxVlAYgDSdiEBHbMrCHtmwXwB/AAAAT3pUWHRSYXcgcHJvZmlsZSB0eXBlIGlwdGMAAHic48osKEnmUgADIwsuYwsTIxNLkxQDEyBEgDTDZAMjs1Qgy9jUyMTMxBzEB8uASKBKLgAolQ7jKiJtHwAAAIxJREFUGNNdjFkSgyAQBYdtYADZVNxz/2NGjSlj+q9fvWqAD1rDk1Ke3nJqH4NnpH7d4iCFvV1XVJ3r7u6URPZiHb8eeFJ25sjDNahlKRDUkq7u5njd32ZC3A433g2+h3bKCuUx9FHOecyV/CzXfi/KSJG9EjJB0lEAS9UxxriINMiOLJim0SfNiYF/3szTBp6mEP9HAAAAAElFTkSuQmCC)](https://hub.knime.com/cbouy/spaces/Private/latest/Interactive%20Grid%20of%20Molecules~OZIyk4YLBNvXq-xU)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cbouy/mols2grid/blob/master/demo.ipynb)
-[![Knime Hub](https://img.shields.io/static/v1?label=KNIME&message=install%20component&color=ffd500&style=flat&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAABdUExURUxpcf/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAP/VAPfHMOMAAAAfdFJOUwCyq6CEYtAEApEspncGDpjxVlAYgDSdiEBHbMrCHtmwXwB/AAAAT3pUWHRSYXcgcHJvZmlsZSB0eXBlIGlwdGMAAHic48osKEnmUgADIwsuYwsTIxNLkxQDEyBEgDTDZAMjs1Qgy9jUyMTMxBzEB8uASKBKLgAolQ7jKiJtHwAAAIxJREFUGNNdjFkSgyAQBYdtYADZVNxz/2NGjSlj+q9fvWqAD1rDk1Ke3nJqH4NnpH7d4iCFvV1XVJ3r7u6URPZiHb8eeFJ25sjDNahlKRDUkq7u5njd32ZC3A433g2+h3bKCuUx9FHOecyV/CzXfi/KSJG9EjJB0lEAS9UxxriINMiOLJim0SfNiYF/3szTBp6mEP9HAAAAAElFTkSuQmCC)](https://hub.knime.com/cbouy/spaces/Private/latest/Interactive%20Grid%20of%20Molecules~OZIyk4YLBNvXq-xU)
 
 mols2grid is an interactive chemical viewer for 2D structures of small molecules, based on RDKit.
 
@@ -34,8 +34,9 @@ pip install mols2grid
 It is fully compatible with Jupyter Notebook and Google Colab and can run on Streamlit.  
 It also works with Visual Studio notebooks and Jupyterlab, except for accessing your selection with `mols2grid.get_selection()` and copying it to the clipboard, but you can still export it as a CSV or SMILES file.
 
-<img alt="knime logo" align="left" src="https://www.knime.com/sites/default/files/favicons/favicon-32x32.png"/> You can also use mols2grid directly in [KNIME](https://www.knime.com/), by looking for the `Interactive Grid of Molecules` node on the Knime HUB.  
-Make sure you have setup [Knime's Python integration](https://docs.knime.com/latest/python_installation_guide) for the node to work.
+<img alt="knime logo" align="left" style="padding:6px" src="https://www.knime.com/sites/default/files/favicons/favicon-32x32.png"/>
+<p>You can also use mols2grid directly in <a href="https://www.knime.com/">KNIME</a>, by looking for the `Interactive Grid of Molecules` component on the Knime HUB.<br/>
+Make sure you have setup <a href="https://docs.knime.com/latest/python_installation_guide">Knime's Python integration</a> for the node to work.</p>
 
 ## 📜 Usage
 ---
@@ -175,7 +176,7 @@ You can either:
 
 Unless otherwise noted, all files in this directory and all subdirectories are distributed under the Apache License, Version 2.0:
 ```
-    Copyright 2021 Cédric BOUYSSET
+    Copyright 2021-2022 Cédric BOUYSSET
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
