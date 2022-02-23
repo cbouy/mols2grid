@@ -72,7 +72,7 @@ def determine_scope(fixture_name, config):
 @pytest.fixture(scope=determine_scope)
 def driver():
     options = webdriver.FirefoxOptions()
-    options.headless = False
+    options.headless = True
     driver = FirefoxDriver(options=options)
     driver.set_page_load_timeout(10)
     yield driver
