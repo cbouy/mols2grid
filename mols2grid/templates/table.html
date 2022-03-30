@@ -2,49 +2,15 @@
   <meta charset="utf-8">
   <head>
     <style>
-      #mols2grid table {
-        border-collapse: collapse;
-      }
-      #mols2grid table, tr, td {
-        border: none;
-      }
-      #mols2grid td {
-        border: {{ border }};
-        text-align: {{ textalign }};
-        vertical-align: top;
-        max-width: {{ cell_width }}px;
-        width: {{ cell_width }}px;
-        font-family: {{ fontfamily }};
-        font-size: {{ fontsize }};
-        margin: 0;
-        padding: 0;
-      }
-      #mols2grid td div {
-        padding: 0;
-        margin: {{ gap }};
-      }
-      #mols2grid td div img {
-        max-width: {{ cell_width }}px;
-        width: {{ cell_width }}px;
-        height: auto;
-        padding: 0;
-      }
-      #mols2grid td:hover {
-        background-color: {{ hover_color }};
-      }
-      #mols2grid .data {
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        display: block;
-      }
-      #mols2grid tr {
-        page-break-inside: avoid !important;
-      }
+      {% include 'css/table.css' %}
+      /* custom CSS */
+      {{ custom_css }}
     </style>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
+    <!-- custom header -->
+    {{ custom_header }}
   </head>
   <body>
     <table id="mols2grid">
@@ -61,6 +27,10 @@
         trigger: {{ tooltip_trigger }},
         html: true,
       })
+      // resize iframe to fit content
+      if (window.frameElement) {
+          window.parent.fit_height(window.frameElement);
+      }
     </script>
     {% endif %}
   </body>

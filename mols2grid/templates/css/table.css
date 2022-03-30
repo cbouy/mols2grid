@@ -1,0 +1,39 @@
+#mols2grid table {
+    border-collapse: collapse;
+}
+#mols2grid table, tr, td {
+    border: none;
+}
+#mols2grid td {
+    border: {{ border }};
+    text-align: {{ textalign }};
+    vertical-align: top;
+    max-width: {{ cell_width }}px;
+    width: {{ cell_width }}px;
+    font-family: {{ fontfamily }};
+    font-size: {{ fontsize }};
+    margin: 0;
+    padding: 0;
+}
+#mols2grid td div {
+    padding: 0;
+    margin: {{ gap }};
+}
+#mols2grid td div img {
+    max-width: {{ cell_width }}px;
+    width: {{ cell_width }}px;
+    height: auto;
+    padding: 0;
+}
+#mols2grid td:hover {
+    background-color: {{ hover_color }};
+}
+#mols2grid .data {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: block;
+}
+#mols2grid tr {
+    page-break-inside: avoid !important;
+}
