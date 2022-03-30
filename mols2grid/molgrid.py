@@ -337,9 +337,9 @@ class MolGrid:
             `style={"__all__": lambda x: "color: red" if x["Solubility"] < -5 else ""}`
         selection : bool
             Enables the selection of molecules and displays a checkbox at the top of each
-            cell. This is only usefull in the context of a Jupyter notebook, which gives
-            you access to your selection (index and SMILES) through
-            `mols2grid.get_selection()`
+            cell. In the context of a Jupyter notebook, this gives you access to your
+            selection (index and SMILES) through `mols2grid.get_selection()`. In all
+            cases, you can export your selection by clicking on the ☑ icon.
         transform : dict or None
             Functions applied to specific items in all cells. The dict must follow a
             `key: function` structure where the key must correspond to one of the columns
@@ -360,7 +360,9 @@ class MolGrid:
             dictionnary containing the data for the full cell is directly available as
             `data` in JS. For Python, the callback function must have `data` as the first
             argument to the function. All the values in the `data` dict are parsed as
-            strings, except "mols2grid-id" which is always an integer.
+            strings, except "mols2grid-id" which is always an integer. Note that fields
+            containing spaces in their name will be replaced by hyphens, i.e. "mol weight"
+            becomes available as `data["mol-weight"]`.
         sort_by : str or None
             Sort the grid according to the following field (which must be present in
             `subset` or `tooltip`).

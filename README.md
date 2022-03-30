@@ -106,7 +106,7 @@ For the `pages` template, the following parameters are available:
     Number of rows per page
 * `border="1px solid #cccccc"`: str  
     Styling of the border around each cell (CSS)
-* `gap=0`: int
+* `gap=0`: int  
     Size of the margin around each cell in px
 * `fontsize="12pt"`: str  
     Font size of the text displayed in each cell (CSS)
@@ -134,18 +134,18 @@ For the `pages` template, the following parameters are available:
     ```
     These transformations only affect columns in `subset` and `tooltip` and do not interfere with `style`.
 * `selection=True` : bool  
-    Enables the selection of molecules using a checkbox. Only usefull in the context of a Jupyter notebook. You can retrieve your selection of molecules (index and SMILES) through `mols2grid.get_selection()`
-* `cache_selection=False` : bool
+    Enables the selection of molecules using a checkbox. In the context of a Jupyter notebook, this gives you access to your selection (index and SMILES) through `mols2grid.get_selection()`. In all cases, you can export your selection by clicking on the ☑ icon.
+* `cache_selection=False` : bool  
     Restores the selection from a previous grid with the same name if `True`
 * `custom_css=None` : str or None  
     Custom CSS properties applied to the content of the HTML document
 * `custom_header=None` : str or None  
     Custom libraries (CSS or JS) to be loaded in the header of the document
 * `callback=None` : str or callable  
-    JavaScript or Python callback to be executed when clicking on an image. A dictionnary containing the data for the full cell is directly available as `data` in JS. For Python, the callback function must have `data` as the first argument to the function. All the values in the `data` dict are parsed as strings, except "mols2grid-id" which is always an integer.
+    JavaScript or Python callback to be executed when clicking on an image. A dictionnary containing the data for the full cell is directly available as `data` in JS. For Python, the callback function must have `data` as the first argument to the function. All the values in the `data` dict are parsed as strings, except "mols2grid-id" which is always an integer. Note that fields containing spaces in their name will be replaced by hyphens, i.e. "mol weight" becomes available as `data["mol-weight"]`.
 * `sort_by=None` : str or None  
     Sort the grid according to the following field (which must be present in `subset` or `tooltip`).
-* `substruct_highlight=True` : bool
+* `substruct_highlight=True` : bool  
     Highlight the query when using a SMARTS substructure search. Only available when `prerender=False`.
 
 Less options are available for the `table` template, you can check the complete list of arguments with `help(mols2grid.MolGrid.to_table)`
