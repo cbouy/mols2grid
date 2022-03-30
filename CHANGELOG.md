@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.2] - ????/??/??
+### Added
+- Added `custom_css`, `custom_header` and `sort_by` to the "table" template
+### Changed
+- The default number of columns is now 5 for `template="table"` (same as the other default
+  template)
+### Fixed
+- `template="table"` now correctly displays images when `prerender=True` (Issue #27)
+- Displaying the grid with `template="table"` in a notebook now automatically fits to the
+  content of the table.
+
 ## [0.2.1] - 2022/02/23
 ### Fixed
 - Field names containing spaces are now correctly delt with
