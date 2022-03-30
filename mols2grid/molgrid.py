@@ -682,10 +682,12 @@ class MolGrid:
         custom_header : str or None
             Custom libraries to be loaded in the header of the document
         sort_by : str or None
+            Sort the table according to the following field
         """
         tr = []
         data = []
-        df = self.dataframe
+        sort_by = sort_by or "mols2grid-id"
+        df = self.dataframe.sort_values(sort_by).reset_index(drop=True)
         cell_width = self.img_size[0]
 
         if subset is None:
