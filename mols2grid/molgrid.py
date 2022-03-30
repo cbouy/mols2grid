@@ -253,18 +253,17 @@ class MolGrid:
                     dataframe[self.mol_col].apply(remove_coordinates))
             if self.removeHs:
                 dataframe[self.mol_col] = dataframe[self.mol_col].apply(Chem.RemoveHs)
+            # render
+            dataframe["img"] = dataframe[self.mol_col].apply(self.mol_to_img)
             # cleanup
             if not keep_mols:
                 dataframe.drop(columns=self.mol_col, inplace=True)
                 self.mol_col = None
+        else:
+            dataframe["img"] = None
         # generate smiles col if not present or needs to be updated
         if self.mol_col and self.smiles_col not in dataframe.columns:
             dataframe[self.smiles_col] = dataframe[self.mol_col].apply(mol_to_smiles)
-        # render
-        if self.prerender:
-            dataframe["img"] = dataframe[self.mol_col].apply(self.mol_to_img)
-        else:
-            dataframe["img"] = None
 
     def render(self, template="pages", **kwargs):
         """Returns the HTML document corresponding to the "pages" or "table"
@@ -684,6 +683,9 @@ class MolGrid:
         sort_by : str or None
             Sort the table according to the following field
         """
+        if not self.prerender:
+            raise ValueError(
+                "Please set `prerender=True` when using the 'table' template")
         tr = []
         data = []
         sort_by = sort_by or "mols2grid-id"

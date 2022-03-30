@@ -226,9 +226,11 @@ def test_save(grid_otf):
         grid_otf.save(f.name)
         assert Path(f.name).is_file()
 
-@pytest.mark.parametrize("kind", ["pages", "table"])
-def test_render(grid_otf, kind):
-    grid_otf.render(template=kind)
+def test_render_pages(grid_otf):
+    grid_otf.render(template="pages")
+
+def test_render_table(grid):
+    grid.render(template="table")
 
 def test_render_wrong_template(grid_otf):
     with pytest.raises(ValueError, match="template='foo' not supported"):
