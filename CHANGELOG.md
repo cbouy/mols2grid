@@ -6,8 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.2] - ????/??/??
 ### Added
+- Added a *"Check matching"* button that only selects items that match the current search
+  and/or filters.
 - Added `custom_css`, `custom_header` and `sort_by` to the "table" template
 ### Changed
+- The *Check all*, *Uncheck all* and *Invert* selection buttons have been fixed. They now
+  actually check/uncheck ALL items, and not just the ones matching the current search. A
+  *Check matching* button has been added to reproduce the old behaviour.
 - If both `subset` and `tooltip` are `None`, the index and image will be directly
   displayed on the grid while the remaining fields will be in the tooltip. This makes the
   default representation much more readable.
