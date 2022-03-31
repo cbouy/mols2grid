@@ -705,7 +705,7 @@ class MolGrid:
         for i, row in df.iterrows():
             ncell = i + 1
             nrow, ncol = divmod(i, n_cols)
-            td = [f'<td class="col-{ncol}>"']
+            td = [f'<td class="col-{ncol}">']
             if "__all__" in style.keys():
                 s = style["__all__"](row)
                 div = [f'<div class="cell-{i}" style="{s}">']

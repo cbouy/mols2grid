@@ -301,3 +301,9 @@ def test_subset_without_img_error(grid_otf):
     with pytest.raises(KeyError,
                        match="Please add the 'img' field in the `subset` parameter"):
         grid_otf.display(subset=["_Name"])
+
+def test_table_no_prerender_error(grid_otf):
+    with pytest.raises(ValueError,
+        match="Please set `prerender=True` when using the 'table' template"
+    ):
+        grid_otf.display(template="table")
