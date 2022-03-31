@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added `custom_css`, `custom_header` and `sort_by` to the "table" template
 ### Changed
+- If both `subset` and `tooltip` are `None`, the index and image will be directly
+  displayed on the grid while the remaining fields will be in the tooltip.
 - The default number of columns is now 5 for `template="table"` (same as the other default
   template)
 ### Fixed

@@ -299,10 +299,9 @@ class MolGrid:
             Columns to be displayed in each cell of the grid. Each
             column's value will be displayed from top to bottom in the same
             order given here. Use `"img"` for the image of the molecule.
-            Default: all columns (with "img" in first position)
         tooltip : list or None
             Columns to be displayed as a tooltip when hovering/clicking on the
-            image of a cell. Use `None` for no tooltip.
+            image of a cell.
         tooltip_fmt : str
             Format string of each key/value pair in the tooltip
         tooltip_trigger : str
@@ -370,6 +369,11 @@ class MolGrid:
             Highlight substructure when using the SMARTS search. Only available when
             `prerender=False`
 
+        Notes
+        -----
+        If ``subset=None, tooltip=None``, the index and image will be directly displayed
+        on the grid while the remaining fields will be in the tooltip.
+
         .. versionadded:: 0.1.0
             Added `sort_by`, `custom_css`, `custom_header` and `callback` arguments.
             Added the ability to style an entire cell with
@@ -377,6 +381,11 @@ class MolGrid:
 
         .. versionadded:: 0.2.0
             Added `substruct_highlight` argument
+
+        .. versionchanged:: 0.2.2
+            If both `subset` and `tooltip` are `None`, the index and image will be
+            directly displayed on the grid while the remaining fields will be in the
+            tooltip.
         """
         if substruct_highlight and self.prerender:
             raise ValueError(
@@ -392,10 +401,16 @@ class MolGrid:
         width = n_cols * (cell_width + 2 * (gap + 2))
 
         if subset is None:
-            subset = df.columns.tolist()
-            subset = [subset.pop(subset.index("img"))] + subset
+            if tooltip is None:
+                subset = ["mols2grid-id", "img"]
+                tooltip = [x for x in df.columns.tolist() if x not in subset]
+            else:
+                subset = df.columns.tolist()
+                subset = [subset.pop(subset.index("img"))] + subset
+
         if "img" not in subset:
             raise KeyError("Please add the 'img' field in the `subset` parameter")
+
         # define fields that are searchable and sortable
         search_cols = [f"data-{col}" for col in subset if col != "img"]
         if tooltip:
@@ -405,6 +420,8 @@ class MolGrid:
                     s = f'<div class="data data-{slugify(col)}" style="display: none;"></div>'
                     content.append(s)
                     column_map[col] = f"data-{col}"
+        else:
+            tooltip = []
         sort_cols = search_cols[:]
         sort_cols = ["mols2grid-id"] + sort_cols
         # get unique list but keep order
@@ -413,8 +430,6 @@ class MolGrid:
             style = {}
         if transform is None:
             transform = {}
-        if tooltip is None:
-            tooltip = []
         value_names = list(set(subset + [smiles] + tooltip))
         value_names = [f"data-{col}" for col in value_names]
 

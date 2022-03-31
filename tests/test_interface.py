@@ -65,7 +65,7 @@ class FirefoxDriver(webdriver.Firefox):
 
 
 def determine_scope(fixture_name, config):
-    if os.environ.get("GITHUB_ACTIONS", False):
+    if os.environ.get("GITHUB_ACTIONS"):
         return "function"
     return "module"
 
@@ -108,7 +108,7 @@ def html_doc(grid):
 # make sure non-parametrized test is ran first
 @pytest.mark.order(1)
 def test_no_subset_all_visible(driver, grid):
-    doc = get_doc(grid, {"selection": False})
+    doc = get_doc(grid, {"tooltip": [], "selection": False})
     driver.get(doc)
     columns = set(grid.dataframe.columns.drop("mol").to_list())
     cell = driver.find_by_css_selector("#mols2grid .cell")
@@ -645,3 +645,24 @@ def test_table_template(driver):
     assert el.get_attribute("innerHTML") == "<strong>_Name</strong>: 1,3,5-trimethylbenzene"
     md5_hash = driver.get_svg_md5_hash("#mols2grid td .data-img")
     assert md5_hash == "7ca709f65c41fcfe090e98525920fb40"
+
+def test_default_subset_tooltip(driver, grid):
+    doc = get_doc(grid, {"n_rows": 1})
+    driver.get(doc)
+    driver.wait_for_img_load()
+    expected_subset = ["mols2grid-id", "img"]
+    expected_tooltip = [x for x in grid.dataframe.columns.drop("mol").to_list()
+                        if x not in expected_subset]
+    cell = driver.find_by_css_selector("#mols2grid .cell")
+    data_elements = cell.find_elements_by_class_name("data")
+    subset = [c.replace("data-", "").replace("-copy", "")
+               for x in data_elements
+               for c in x.get_attribute("class").split(" ")
+               if c.startswith("data-") and not x.get_attribute("style")]
+    assert subset == expected_subset
+    tooltip = [c.replace("data-", "").replace("-copy", "")
+               for x in data_elements
+               for c in x.get_attribute("class").split(" ")
+               if c.startswith("data-")
+               and x.get_attribute("style") == "display: none;"]
+    assert tooltip == expected_tooltip
