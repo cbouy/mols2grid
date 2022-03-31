@@ -752,10 +752,11 @@ class MolGrid:
                             f'{v}</div>')
                 else:
                     func = style.get(col)
+                    slug_col = slugify(col)
                     if func:
-                        item = f'<div class="data data-{col}" style="{func(v)}">'
+                        item = f'<div class="data data-{slug_col}" style="{func(v)}">'
                     else:
-                        item = f'<div class="data data-{col}">'
+                        item = f'<div class="data data-{slug_col}">'
                     func = transform.get(col)
                     v = func(v) if func else v
                     item += f'{v}</div>'
