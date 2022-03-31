@@ -648,10 +648,9 @@ class MolGrid:
             Columns to be displayed in each cell of the grid. Each
             column's value will be displayed from top to bottom in the same
             order given here. Use `"img"` for the image of the molecule.
-            Default: all columns (with "img" in first position)
         tooltip : list or None
             Columns to be displayed as a tooltip when hovering/clicking on the
-            image of a cell. Use `None` for no tooltip.
+            image of a cell.
         tooltip_fmt : str
             Format string of each key/value pair in the tooltip
         tooltip_trigger : str
@@ -699,6 +698,23 @@ class MolGrid:
             Custom libraries to be loaded in the header of the document
         sort_by : str or None
             Sort the table according to the following field
+
+        Notes
+        -----
+        If ``subset=None, tooltip=None``, the index and image will be directly displayed
+        on the grid while the remaining fields will be in the tooltip.
+
+        .. versionadded:: 0.1.0
+            Added the ability to style an entire cell with
+            ``style={"__all__": <function>}``
+
+        .. versionadded:: 0.2.2
+            Added `sort_by`, `custom_css`, `custom_header` arguments.
+
+        .. versionchanged:: 0.2.2
+            If both `subset` and `tooltip` are `None`, the index and image will be
+            directly displayed on the grid while the remaining fields will be in the
+            tooltip.
         """
         if not self.prerender:
             raise ValueError(
