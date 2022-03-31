@@ -726,12 +726,18 @@ class MolGrid:
         cell_width = self.img_size[0]
 
         if subset is None:
-            subset = df.columns.tolist()
-            subset = [subset.pop(subset.index("img"))] + subset
+            if tooltip is None:
+                subset = ["mols2grid-id", "img"]
+                tooltip = [x for x in df.columns.tolist() if x not in subset]
+            else:
+                subset = df.columns.tolist()
+                subset = [subset.pop(subset.index("img"))] + subset
         if style is None:
             style = {}
         if transform is None:
             transform = {}
+        if not tooltip:
+            tooltip = []
 
         for i, row in df.iterrows():
             ncell = i + 1
