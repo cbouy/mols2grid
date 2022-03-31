@@ -51,9 +51,11 @@ def display(arg, **kwargs):
     prerender : bool (False)
         Prerender images for the entire dataset, or generate them on-the-fly
         when needed
-    substruct_highlight : bool
+    substruct_highlight : bool (True)
         Highlight substructure when using the SMARTS search. Only available
         when `prerender=False`
+    single_highlight : bool (False)
+        Highlight only the first match of the substructure query
     MolDrawOptions : rdkit.Chem.Draw.MolDrawOptions (None)
         Drawing options. Useful for making highly customized drawings
     rename : dict (None)

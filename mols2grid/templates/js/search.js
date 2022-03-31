@@ -15,11 +15,15 @@ function SmartsSearch(query, columns) {
                     item.found = true;
                     {% if onthefly and substruct_highlight %}
                     results = JSON.parse(results);
+                    {% if single_highlight %}
+                    var highlights = results[0]
+                    {% else %}
                     var highlights = {"atoms": [], "bonds": []};
                     results.forEach(function (match) {
                         highlights["atoms"].push(...match.atoms)
                         highlights["bonds"].push(...match.bonds)
                     });
+                    {% endif %}
                     var index = item.values()["mols2grid-id"];
                     smarts_matches[index] = highlights;
                     {% endif %}

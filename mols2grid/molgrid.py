@@ -290,7 +290,7 @@ class MolGrid:
                  tooltip_trigger="click hover", tooltip_placement="bottom",
                  hover_color="#e7e7e7", style=None, selection=True, transform=None,
                  custom_css=None, custom_header=None, callback=None, sort_by=None,
-                 substruct_highlight=True):
+                 substruct_highlight=True, single_highlight=False):
         """Returns the HTML document for the "pages" template
 
         Parameters
@@ -368,6 +368,8 @@ class MolGrid:
         substruct_highlight : bool
             Highlight substructure when using the SMARTS search. Only available when
             `prerender=False`
+        single_highlight : bool
+            Highlight only the first match of the substructure query
 
         Notes
         -----
@@ -591,6 +593,7 @@ class MolGrid:
             onthefly = not self.prerender,
             substruct_highlight = substruct_highlight,
             json_draw_opts = getattr(self, "json_draw_opts", ""),
+            single_highlight = single_highlight,
         )
         return template.render(**template_kwargs)
 
