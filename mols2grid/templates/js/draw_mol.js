@@ -37,5 +37,7 @@ listObj.on("updated", function (list) {
         var svg = draw_mol(smiles, index, template_mol);
         $t.children(".data-img").html(svg);
     });
-    template_mol.delete();
+    if (template_mol) {
+        template_mol.delete();
+    }
 });
