@@ -25,7 +25,7 @@ from mols2grid.select import register
 geckodriver_autoinstaller.install()
 pytestmark = pytest.mark.webdriver
 
-HEADLESS = True
+HEADLESS = False
 
 class FirefoxDriver(webdriver.Firefox):
     def wait_for_img_load(self, max_delay=15, selector="#mols2grid .cell .data-img svg"):
@@ -40,6 +40,10 @@ class FirefoxDriver(webdriver.Firefox):
 
     def find_by_id(self, element_id, **kwargs):
         condition = EC.presence_of_element_located((By.ID, element_id))
+        return self.wait(condition, **kwargs)
+
+    def find_clickable(self, by, selector, **kwargs):
+        condition = EC.element_to_be_clickable((by, selector))
         return self.wait(condition, **kwargs)
 
     def find_by_css_selector(self, css_selector, **kwargs):
@@ -176,9 +180,8 @@ def test_smarts_search(driver, html_doc):
     driver.get(html_doc)
     driver.wait_for_img_load()
     (ActionChains(driver)
-        .click(driver.find_by_id("searchBtn"))
-        .pause(.5)
-        .click(driver.find_by_id("smartsSearch"))
+        .click(driver.find_clickable(By.ID, "searchBtn"))
+        .click(driver.find_clickable(By.ID, "smartsSearch"))
         .send_keys_to_element(driver.find_by_id("searchbar"), "CC(I)C")
         .key_up(Keys.TAB)
         .pause(.5)
@@ -190,7 +193,7 @@ def test_selection_click(driver, html_doc):
     driver.get(html_doc)
     driver.wait_for_img_load()
     (ActionChains(driver)
-        .click(driver.find_by_css_selector("input[type='checkbox']"))
+        .click(driver.find_clickable(By.CSS_SELECTOR, "input[type='checkbox']"))
         .pause(.5)
         .perform())
     sel = driver.execute_script("return SELECTION.to_dict();")
@@ -209,7 +212,7 @@ def test_selection_with_cache_check_and_uncheck(driver, df):
     sel = eval(sel)
     assert sel == {0: "CCC(C)CC"}
     (ActionChains(driver)
-        .click(driver.find_by_css_selector("input[type='checkbox']"))
+        .click(driver.find_clickable(By.CSS_SELECTOR, "input[type='checkbox']"))
         .pause(.5)
         .perform())
     sel = driver.execute_script("return SELECTION.to_dict();")
@@ -224,33 +227,29 @@ def test_selection_check_uncheck_invert(driver, html_doc):
         .send_keys_to_element(driver.find_by_id("searchbar"), "iodopropane")
         .key_up(Keys.TAB)
         .pause(.5)
-        .click(driver.find_by_id("chkboxDropdown"))
-        .pause(.5)
-        .click(driver.find_by_id("btn-chkbox-all"))
+        .click(driver.find_clickable(By.ID, "chkboxDropdown"))
+        .click(driver.find_clickable(By.ID, "btn-chkbox-all"))
         .perform())
     sel = driver.execute_script("return SELECTION.to_dict();")
     sel = eval(sel)
     assert len(sel) == 30
     (ActionChains(driver)
-        .click(driver.find_by_id("chkboxDropdown"))
-        .pause(.5)
-        .click(driver.find_by_id("btn-chkbox-none"))
+        .click(driver.find_clickable(By.ID, "chkboxDropdown"))
+        .click(driver.find_clickable(By.ID, "btn-chkbox-none"))
         .perform())
     sel = driver.execute_script("return SELECTION.to_dict();")
     sel = eval(sel)
     assert sel == {}
     (ActionChains(driver)
-        .click(driver.find_by_id("chkboxDropdown"))
-        .pause(.5)
-        .click(driver.find_by_id("btn-chkbox-match"))
+        .click(driver.find_clickable(By.ID, "chkboxDropdown"))
+        .click(driver.find_clickable(By.ID, "btn-chkbox-match"))
         .perform())
     sel = driver.execute_script("return SELECTION.to_dict();")
     sel = eval(sel)
     assert len(sel) == 1
     (ActionChains(driver)
-        .click(driver.find_by_id("chkboxDropdown"))
-        .pause(.5)
-        .click(driver.find_by_id("btn-chkbox-invert"))
+        .click(driver.find_clickable(By.ID, "chkboxDropdown"))
+        .click(driver.find_clickable(By.ID, "btn-chkbox-invert"))
         .perform())
     sel = driver.execute_script("return SELECTION.to_dict();")
     sel = eval(sel)
@@ -263,9 +262,8 @@ def test_check_matching_selects_only_not_hidden(driver, html_doc):
     (ActionChains(driver)
         .send_keys_to_element(driver.find_by_id("searchbar"), "iodopropane")
         .key_up(Keys.TAB)
-        .click(driver.find_by_id("chkboxDropdown"))
-        .pause(.3)
-        .click(driver.find_by_id("btn-chkbox-match"))
+        .click(driver.find_clickable(By.ID, "chkboxDropdown"))
+        .click(driver.find_clickable(By.ID, "btn-chkbox-match"))
         .perform())
     driver.find_by_id("searchbar").clear()
     (ActionChains(driver)
@@ -391,7 +389,7 @@ def test_tooltip_trigger(driver, grid):
     with pytest.raises(NoSuchElementException):
         driver.find_element_by_css_selector('div.popover[role="tooltip"]')
     (ActionChains(driver)
-        .click(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
+        .click(driver.find_clickable(By.CSS_SELECTOR, "#mols2grid .cell .data-img *"))
         .perform())
     tooltip = driver.find_by_css_selector('div.popover[role="tooltip"]')
     el = tooltip.find_element_by_class_name("popover-body")
@@ -492,7 +490,7 @@ def test_callback_js(driver, grid, selection):
     driver.get(doc)
     driver.wait_for_img_load()
     (ActionChains(driver)
-        .click(driver.find_by_css_selector("#mols2grid .cell .data-img"))
+        .click(driver.find_clickable(By.CSS_SELECTOR, "#mols2grid .cell .data-img"))
         .pause(.5)
         .perform())
     el = driver.find_by_css_selector("#mols2grid .cell .data-_Name")
@@ -508,16 +506,16 @@ def test_sort_button(driver, html_doc):
     driver.get(html_doc)
     driver.wait_for_img_load()
     (ActionChains(driver)
-        .click(driver.find_by_id("sortDropdown"))
-        .pause(.3)
-        .click(driver.find_by_css_selector('button.sort-btn[data-name="data-_Name"]'))
+        .click(driver.find_clickable(By.ID, "sortDropdown"))
+        .click(driver.find_clickable(By.CSS_SELECTOR,
+                                     'button.sort-btn[data-name="data-_Name"]'))
         .perform())
     el = driver.find_by_css_selector("#mols2grid .cell .data-_Name")
     assert el.text == "1,1,2,2-tetrachloroethane"
     (ActionChains(driver)
-        .click(driver.find_by_id("sortDropdown"))
-        .pause(.3)
-        .click(driver.find_by_css_selector('button.sort-btn[data-name="data-_Name"]'))
+        .click(driver.find_clickable(By.ID, "sortDropdown"))
+        .click(driver.find_clickable(By.CSS_SELECTOR,
+                                     'button.sort-btn[data-name="data-_Name"]'))
         .perform())
     el = driver.find_by_css_selector("#mols2grid .cell .data-_Name")
     assert el.text == "tetrachloromethane"
@@ -532,9 +530,8 @@ def test_substruct_highlight(driver, grid, substruct_highlight, expected):
     text_box = driver.find_by_id("searchbar")
     driver.wait_for_img_load()
     (ActionChains(driver)
-        .click(driver.find_by_id("searchBtn"))
-        .pause(.5)
-        .click(driver.find_by_id("smartsSearch"))
+        .click(driver.find_clickable(By.ID, "searchBtn"))
+        .click(driver.find_clickable(By.ID, "smartsSearch"))
         .send_keys_to_element(text_box, "CC(I)C")
         .key_up(Keys.TAB)
         .perform())
@@ -546,9 +543,8 @@ def test_substruct_clear_removes_highlight(driver, grid):
     driver.get(doc)
     driver.wait_for_img_load()
     (ActionChains(driver)
-        .click(driver.find_by_id("searchBtn"))
-        .pause(.5)
-        .click(driver.find_by_id("smartsSearch"))
+        .click(driver.find_clickable(By.ID, "searchBtn"))
+        .click(driver.find_clickable(By.ID, "smartsSearch"))
         .send_keys_to_element(driver.find_by_id("searchbar"), "C")
         .key_up(Keys.TAB)
         .perform())
@@ -567,17 +563,15 @@ def test_smarts_to_text_search_removes_highlight(driver, grid):
     driver.get(doc)
     driver.wait_for_img_load()
     (ActionChains(driver)
-        .click(driver.find_by_id("searchBtn"))
-        .pause(.5)
-        .click(driver.find_by_id("smartsSearch"))
+        .click(driver.find_clickable(By.ID, "searchBtn"))
+        .click(driver.find_clickable(By.ID, "smartsSearch"))
         .send_keys_to_element(driver.find_by_id("searchbar"), "I")
         .key_up(Keys.TAB)
         .perform())
     md5_hash_hl = driver.get_svg_md5_hash()
     (ActionChains(driver)
-        .click(driver.find_by_id("searchBtn"))
-        .pause(.5)
-        .click(driver.find_by_id("txtSearch"))
+        .click(driver.find_clickable(By.ID, "searchBtn"))
+        .click(driver.find_clickable(By.ID, "txtSearch"))
         .send_keys_to_element(driver.find_by_id("searchbar"), "odopropane")
         .key_up(Keys.TAB)
         .perform())
@@ -680,3 +674,51 @@ def test_default_subset_tooltip(driver, grid):
                if c.startswith("data-")
                and x.get_attribute("style") == "display: none;"]
     assert tooltip == expected_tooltip
+
+def test_multi_highlight(driver, html_doc):
+    driver.get(html_doc)
+    driver.wait_for_img_load()
+    (ActionChains(driver)
+        .click(driver.find_clickable(By.ID, "searchBtn"))
+        .click(driver.find_clickable(By.ID, "smartsSearch"))
+        .send_keys_to_element(driver.find_by_id("searchbar"), "Br")
+        .key_up(Keys.TAB)
+        .pause(.5)
+        .perform())
+    md5_hash = driver.get_svg_md5_hash()
+    assert md5_hash == "814a4c5dfa5226b629031861508505c5"
+
+def test_single_highlight(driver, grid):
+    doc = get_doc(grid, {"single_highlight": True})
+    driver.get(doc)
+    driver.wait_for_img_load()
+    (ActionChains(driver)
+        .click(driver.find_clickable(By.ID, "searchBtn"))
+        .click(driver.find_clickable(By.ID, "smartsSearch"))
+        .send_keys_to_element(driver.find_by_id("searchbar"), "Br")
+        .key_up(Keys.TAB)
+        .pause(.5)
+        .perform())
+    md5_hash = driver.get_svg_md5_hash()
+    assert md5_hash == "ca043475667e4f79a3b87a96d7dd731a"
+
+def test_mol_depiction_aligned_to_query(driver, html_doc):
+    driver.get(html_doc)
+    driver.wait_for_img_load()
+    (ActionChains(driver)
+        .click(driver.find_clickable(By.ID, "searchBtn"))
+        .click(driver.find_clickable(By.ID, "smartsSearch"))
+        .send_keys_to_element(driver.find_by_id("searchbar"), "CCCBr")
+        .key_up(Keys.TAB)
+        .pause(.5)
+        .perform())
+    images = driver.wait(EC.presence_of_all_elements_located(
+                         (By.CSS_SELECTOR, "#mols2grid .cell .data-img")))
+    for img, expected in zip(images, [
+        "4b19aa7cf16fe691ea7840a3ce9601b5",
+        "4d7a5d8cd6652c1fd8d04a6fffdd2e3a",
+    ]):
+        im = svg2png(bytestring=(img.get_attribute("innerHTML")))
+        im = Image.open(BytesIO(im))
+        md5_hash = md5(im.tobytes()).hexdigest()
+        assert md5_hash == expected
