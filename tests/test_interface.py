@@ -26,7 +26,7 @@ from mols2grid.select import register
 geckodriver_autoinstaller.install()
 pytestmark = pytest.mark.webdriver
 
-HEADLESS = True
+HEADLESS = False
 
 class selection_available:
     def __init__(self, is_empty=False):
@@ -278,7 +278,7 @@ def test_image_use_coords(driver, df):
     if rdkit_version == "2020.03.1":
         assert md5_hash == "aed60ed28347831d24f02dbb5be19007"
     else:
-        assert md5_hash == "6909ba43f86003cea9b0fd8d723cddfe"
+        assert md5_hash == "80ac785821c6aee7923c793930c4723e"
 
 @pytest.mark.parametrize(["coordGen", "prerender", "expected"], [
     (True,  True, "acf7cf7cd5cfaa5eaf4a4f257e290e49"),
@@ -304,7 +304,7 @@ def test_coordgen(driver, mols, coordGen, prerender, expected):
     (True, True, "acf7cf7cd5cfaa5eaf4a4f257e290e49"),
     (False, True, ("2d30379732d312409d1d93ad5b3c3e60"
                    if rdkit_version == "2020.03.1"
-                   else "b01c2146523b8a006bb34621839668eb")),
+                   else "b163a9cb19caee002ff9d739ed513672")),
     (True, False, "d8227a9948b6f801193085e5a8b257a2"),
     (False, False, "a8d830b6127c390dd5759a6ab1af8b3a"),
 ])
@@ -602,7 +602,7 @@ def test_table_template(driver):
     el = tooltip.find_element_by_class_name("popover-body")
     assert el.get_attribute("innerHTML") == "<strong>_Name</strong>: 1,3,5-trimethylbenzene"
     md5_hash = driver.get_svg_md5_hash("#mols2grid td .data-img")
-    assert md5_hash == "7ca709f65c41fcfe090e98525920fb40"
+    assert md5_hash == "9a681d0d978a6cb7ed28a95850d775b8"
 
 def test_default_subset_tooltip(driver, grid):
     doc = get_doc(grid, {"n_rows": 1})
