@@ -1,0 +1,11 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: mols2grid - Interactive molecule viewer for 2D structures
+message: Please cite this software using these metadata.
+type: software
+authors:
+  - given-names: Cédric
+    family-names: Bouysset
+    orcid: 'https://orcid.org/0000-0002-7814-8158'
