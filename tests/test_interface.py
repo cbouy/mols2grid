@@ -26,7 +26,7 @@ from mols2grid.select import register
 geckodriver_autoinstaller.install()
 pytestmark = pytest.mark.webdriver
 
-HEADLESS = False
+HEADLESS = True
 
 class selection_available:
     def __init__(self, is_empty=False):
@@ -602,7 +602,10 @@ def test_table_template(driver):
     el = tooltip.find_element_by_class_name("popover-body")
     assert el.get_attribute("innerHTML") == "<strong>_Name</strong>: 1,3,5-trimethylbenzene"
     md5_hash = driver.get_svg_md5_hash("#mols2grid td .data-img")
-    assert md5_hash == "9a681d0d978a6cb7ed28a95850d775b8"
+    if rdkit_version == "2020.03.1":
+        assert md5_hash == "7ca709f65c41fcfe090e98525920fb40"
+    else:
+        assert md5_hash == "9a681d0d978a6cb7ed28a95850d775b8"
 
 def test_default_subset_tooltip(driver, grid):
     doc = get_doc(grid, {"n_rows": 1})
