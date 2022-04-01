@@ -25,7 +25,7 @@ from mols2grid.select import register
 geckodriver_autoinstaller.install()
 pytestmark = pytest.mark.webdriver
 
-HEADLESS = False
+HEADLESS = True
 
 class FirefoxDriver(webdriver.Firefox):
     def wait_for_img_load(self, max_delay=15, selector="#mols2grid .cell .data-img svg"):
