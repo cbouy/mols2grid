@@ -29,7 +29,7 @@ jobs:
         - name: CI min version
           os: ubuntu-latest
           python-version: 3.7
-          dependencies: "rdkit==2020.03.1 boost-cpp==1.74.0"
+          dependencies: "rdkit==2020.03.1 boost-cpp==1.72.0"
 
     steps:
       - uses: actions/checkout@v2
