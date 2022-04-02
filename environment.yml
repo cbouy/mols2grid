@@ -1,0 +1,18 @@
+name: mols2grid
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pandas==1.2.1
+  - ipykernel==5.4.3
+  - ipywidgets==7.6.3
+  - jedi==0.17.2
+  - jinja2==2.11.3
+  - sphinx==4.5.0
+  - nbsphinx==0.8.8
+  - m2r2==0.3.2
+  - recommonmark==0.7.1
+  - rdkit==2022.03.1
+  - pip:
+    - py3dmol==1.7.0
+    - sphinx-rtd-theme==1.0.0
