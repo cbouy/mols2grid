@@ -18,18 +18,18 @@ concurrency:
 
 jobs:
   tests:
-    name: CI-${{ matrix.os }} | py${{ matrix.python-version }} | ${{ matrix.rdkit-version }}
+    name: CI-${{ matrix.os }} | py${{ matrix.python-version }} | ${{ matrix.dependencies }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest]
         python-version: [3.8, 3.9]
-        rdkit-version: ["rdkit==2022.03.1"]
+        dependencies: ["rdkit==2022.03.1"]
         include:
         - name: CI min version
           os: ubuntu-latest
           python-version: 3.7
-          rdkit-version: "rdkit==2020.03.1"
+          dependencies: "rdkit==2020.03.1 boost-cpp==1.74.0"
 
     steps:
       - uses: actions/checkout@v2
