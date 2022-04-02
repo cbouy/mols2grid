@@ -80,7 +80,7 @@ jobs:
 
       - name: Install conda dependencies
         run: |
-          mamba install ${{ matrix.rdkit-version }}
+          mamba install ${{ matrix.dependencies }}
           mamba list
 
       - name: Install package through pip
