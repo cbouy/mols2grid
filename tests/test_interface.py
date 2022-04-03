@@ -573,6 +573,7 @@ def test_colname_with_spaces(driver, df):
     el = driver.find_by_css_selector("#mols2grid .cell .data")
     assert el.text == "3-methylpentane"
 
+@flaky(max_runs=3, min_passes=1)
 def test_custom_header(driver, grid):
     doc = get_doc(grid, {
         "subset": ["img"],
