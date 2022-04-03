@@ -4,6 +4,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.2] - 2022/04/04
+### Added
+- A proper documentation page with tutorials can now be accessed online.
+- Added a `single_highlight=False` parameter to only highlight a single match per
+  molecule in substructure queries.
+- Added a *"Check matching"* button that only selects items that match the current search
+  and/or filters.
+- Added `custom_css`, `custom_header` and `sort_by` to the "table" template
+### Changed
+- Compounds matching a substructure search are now aligned to the query molecule before
+  rendering the image.
+- When doing a substructure search, all matches are now highlighted by default. To only
+  show a single one, use `single_highlight=True`.
+- The *Check all*, *Uncheck all* and *Invert* selection buttons have been fixed. They now
+  actually check/uncheck ALL items, and not just the ones matching the current search. A
+  *Check matching* button has been added to reproduce the old behaviour.
+- If both `subset` and `tooltip` are `None`, the index and image will be directly
+  displayed on the grid while the remaining fields will be in the tooltip. This makes the
+  default representation much more readable.
+- The default number of columns is now 5 for `template="table"` (same as the other default
+  template)
+### Fixed
+- `template="table"` now correctly displays images when `prerender=True` (Issue #27)
+- Displaying the grid with `template="table"` in a notebook now automatically fits to the
+  content of the table.
+
 ## [0.2.1] - 2022/02/23
 ### Fixed
 - Field names containing spaces are now correctly delt with

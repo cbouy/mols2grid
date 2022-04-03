@@ -226,9 +226,11 @@ def test_save(grid_otf):
         grid_otf.save(f.name)
         assert Path(f.name).is_file()
 
-@pytest.mark.parametrize("kind", ["pages", "table"])
-def test_render(grid_otf, kind):
-    grid_otf.render(template=kind)
+def test_render_pages(grid_otf):
+    grid_otf.render(template="pages")
+
+def test_render_table(grid):
+    grid.render(template="table")
 
 def test_render_wrong_template(grid_otf):
     with pytest.raises(ValueError, match="template='foo' not supported"):
@@ -299,3 +301,9 @@ def test_subset_without_img_error(grid_otf):
     with pytest.raises(KeyError,
                        match="Please add the 'img' field in the `subset` parameter"):
         grid_otf.display(subset=["_Name"])
+
+def test_table_no_prerender_error(grid_otf):
+    with pytest.raises(ValueError,
+        match="Please set `prerender=True` when using the 'table' template"
+    ):
+        grid_otf.display(template="table")

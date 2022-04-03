@@ -1,4 +1,5 @@
 import re
+import gzip
 from functools import wraps, partial
 from importlib.util import find_spec
 from jinja2 import Environment, FileSystemLoader
@@ -56,9 +57,21 @@ def mol_to_record(mol, mol_col="mol"):
             mol_col: mol} if mol else {}
 
 def sdf_to_dataframe(sdf_path, mol_col="mol"):
-    """Returns a dataframe of molecules from an SDfile (.sdf or .sdf.gz)"""
+    """Creates a dataframe of molecules from an SDFile. All property fields in
+    the SDFile are made available in the resulting dataframe
+
+    Parameters
+    ----------
+    sdf_path : str
+        Path to the SDFile, ending with either ``.sdf`` or ``.sdf.gz``
+    mol_col : str
+        Name of the column containing the RDKit molecules in the dataframe
+
+    Returns
+    -------
+    df : pandas.DataFrame
+    """
     if sdf_path.endswith(".gz"):
-        import gzip
         read_file = gzip.open
     else:
         read_file = partial(open, mode="rb")
@@ -78,16 +91,21 @@ def make_popup_callback(title, html, js="", style=""):
     Parameters
     ----------
     title : str
-        Title of the popup. Use `title='${data["Name"]}'` to use the value
+        Title of the popup. Use ``title='${data["Name"]}'`` to use the value
         of the column "Name" as a title
     html : str
         Content of the popup window
     js : str
         JavaScript code executed before making the content of the popup window.
         This allows you to create variables and reuse them later in the `html`
-        content of the popup, using the `${my_variable}` syntax
+        content of the popup, using the ``${my_variable}`` syntax
     style : str
         CSS style assigned to the popup window
+
+    Returns
+    -------
+    js_callback : str
+        JavaScript code that allows to display a popup window
     """
     return (env.get_template('js/popup.js')
                .render(js=js,
