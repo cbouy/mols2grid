@@ -4,12 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.2] - ????/??/??
+## [0.2.2] - 2022/04/04
 ### Added
+- A proper documentation page with tutorials can now be accessed online.
+- Added a `single_highlight=False` parameter to only highlight a single match per
+  molecule in substructure queries.
 - Added a *"Check matching"* button that only selects items that match the current search
   and/or filters.
 - Added `custom_css`, `custom_header` and `sort_by` to the "table" template
 ### Changed
+- Compounds matching a substructure search are now aligned to the query molecule before
+  rendering the image.
+- When doing a substructure search, all matches are now highlighted by default. To only
+  show a single one, use `single_highlight=True`.
 - The *Check all*, *Uncheck all* and *Invert* selection buttons have been fixed. They now
   actually check/uncheck ALL items, and not just the ones matching the current search. A
   *Check matching* button has been added to reproduce the old behaviour.
