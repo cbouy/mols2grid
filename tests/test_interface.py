@@ -25,8 +25,9 @@ from mols2grid.select import register
 
 geckodriver_autoinstaller.install()
 pytestmark = pytest.mark.webdriver
+GITHUB_ACTIONS = os.environ.get("GITHUB_ACTIONS")
 
-HEADLESS = True
+HEADLESS = False
 
 class selection_available:
     def __init__(self, is_empty=False):
@@ -100,14 +101,14 @@ class FirefoxDriver(webdriver.Firefox):
         self.wait_for_img_load()
 
 def determine_scope(fixture_name, config):
-    if os.environ.get("GITHUB_ACTIONS"):
+    if GITHUB_ACTIONS:
         return "function"
     return "module"
 
 @pytest.fixture(scope=determine_scope)
 def driver():
     options = webdriver.FirefoxOptions()
-    options.headless = HEADLESS
+    options.headless = True if GITHUB_ACTIONS else HEADLESS
     driver = FirefoxDriver(options=options)
     driver.set_page_load_timeout(10)
     yield driver
