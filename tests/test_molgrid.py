@@ -307,3 +307,9 @@ def test_table_no_prerender_error(grid_otf):
         match="Please set `prerender=True` when using the 'table' template"
     ):
         grid_otf.display(template="table")
+
+def test_replace_non_serializable_from_default_output():
+    g =_make_grid()
+    g.dataframe["non-serializable"] = g.dataframe[g.mol_col]
+    html = g.render()
+    assert "\\ud83e\\udd37\\u200d\\u2642\\ufe0f" in html  #🤷‍♂️

@@ -596,7 +596,8 @@ class MolGrid:
             tooltip_placement = repr(tooltip_placement),
             n_items_per_page = n_rows * n_cols,
             search_cols = search_cols,
-            data = json.dumps(df.to_dict("records")),
+            data = json.dumps(df.to_dict("records"), indent=None,
+                              default=lambda x: "🤷‍♂️"),
             selection = selection,
             cached_selection = ([list(self._cached_selection.keys()),
                                  list(self._cached_selection.values())]
