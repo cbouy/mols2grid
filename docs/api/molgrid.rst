@@ -6,3 +6,4 @@ advanced usage, like filtering the grid using external controls such as
 slider widgets. See the notebooks for examples.
 
 .. autoclass:: mols2grid.MolGrid
+    :members:
