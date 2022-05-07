@@ -6,7 +6,7 @@ function SmartsSearch(query, columns) {
     if (qmol.is_valid()) {
         listObj.items.forEach(function (item) {
             var smiles = item.values()[smiles_col]
-            var mol = RDKit.get_mol(smiles);
+            var mol = RDKit.get_mol(smiles, '{"removeHs": {{ removeHs | tojson }} }');
             if (mol.is_valid()) {
                 var results = mol.get_substruct_matches(qmol);
                 if (results === "\{\}") {

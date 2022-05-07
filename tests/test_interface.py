@@ -25,8 +25,9 @@ from mols2grid.select import register
 
 geckodriver_autoinstaller.install()
 pytestmark = pytest.mark.webdriver
+GITHUB_ACTIONS = os.environ.get("GITHUB_ACTIONS")
 
-HEADLESS = True
+HEADLESS = False
 
 class selection_available:
     def __init__(self, is_empty=False):
@@ -100,14 +101,14 @@ class FirefoxDriver(webdriver.Firefox):
         self.wait_for_img_load()
 
 def determine_scope(fixture_name, config):
-    if os.environ.get("GITHUB_ACTIONS"):
+    if GITHUB_ACTIONS:
         return "function"
     return "module"
 
 @pytest.fixture(scope=determine_scope)
 def driver():
     options = webdriver.FirefoxOptions()
-    options.headless = HEADLESS
+    options.headless = True if GITHUB_ACTIONS else HEADLESS
     driver = FirefoxDriver(options=options)
     driver.set_page_load_timeout(10)
     yield driver
@@ -658,3 +659,17 @@ def test_mol_depiction_aligned_to_query(driver, html_doc):
         im = Image.open(BytesIO(im))
         md5_hash = md5(im.tobytes()).hexdigest()
         assert md5_hash == expected
+
+def test_highlight_with_hydrogens(driver, df):
+    mols = []
+    for mol in df["mol"][25:]:
+        m = Chem.AddHs(mol)
+        m.ClearProp("SMILES")
+        mols.append(m)
+    grid = mols2grid.MolGrid.from_mols(mols, removeHs=False)
+    doc = get_doc(grid, dict(substruct_highlight=True, single_highlight=False))
+    driver.get(doc)
+    driver.wait_for_img_load()
+    driver.substructure_query("Cl")
+    md5_hash = driver.get_svg_md5_hash()
+    assert md5_hash == "1133a4662a00bde52798fa5673251d8c"
