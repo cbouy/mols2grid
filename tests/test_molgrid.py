@@ -215,11 +215,13 @@ def test_mol_to_img_png():
     assert img.startswith('<img src="data:image/png;base64')
 
 def test_get_selection(df):
-    grid = MolGrid(df, mol_col="mol")
+    grid = MolGrid(df, mol_col="mol", name="grid")
+    other = MolGrid(df, mol_col="mol", name="other")
+    register._update_current_grid("grid")
     register._set_selection(0, "")
-    new = grid.get_selection()
-    assert_equal(new.values,
-                 df.iloc[0:1].values)
+    assert grid.get_selection().equals(df.head(1))
+    assert other.get_selection().equals(df.head(0))  # empty dataframe
+    register._clear()
 
 def test_save(grid_otf):
     with NamedTemporaryFile("w", suffix=".html") as f:

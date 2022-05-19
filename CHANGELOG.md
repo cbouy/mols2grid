@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.4] - 2022/05/??
+### Fixed
+- Calling `MolGrid.get_selection()` when 2 grids with different names are present should
+  now display the selection of the grid itself, and not the selection corresponding to
+  indices of the grid that was last interacted with.
+
 ## [0.2.3] - 2022/05/10
 ### Fixed
 - Doing a substructure search on molecules with explicit hydrogens should now highlight

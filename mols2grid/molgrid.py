@@ -627,7 +627,7 @@ class MolGrid:
         -------
         pandas.DataFrame
         """
-        sel = list(register.get_selection().keys())
+        sel = list(register.get_selection(self._grid_id).keys())
         return (self.dataframe.loc[self.dataframe["mols2grid-id"].isin(sel)]
                               .drop(columns=self._extra_columns))
 
