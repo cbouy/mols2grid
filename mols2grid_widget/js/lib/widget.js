@@ -22,13 +22,7 @@ var CommWidgetView = widgets.DOMWidgetView.extend({
         let grid_id = this.model.get('grid_id');
         let name = "_MOLS2GRID_" + grid_id;
         window[name] = this.model;
-        // Python -> JS
-        this.model.on('change:grid_id', this.value_changed, this);
     },
-
-    value_changed: function() {
-        
-    }
 });
 
 

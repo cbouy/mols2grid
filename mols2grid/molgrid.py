@@ -1,6 +1,7 @@
 import warnings
 from base64 import b64encode
 from html import escape
+from functools import partial
 import json
 import pandas as pd
 import numpy as np
@@ -152,19 +153,23 @@ class MolGrid:
         self.dataframe = dataframe
         # register instance
         self._grid_id = name
-        self.widget = CommWidget(grid_id=name)
-        display(self.widget)
         if cache_selection:
             try:
                 self._cached_selection = register.get_selection(name)
             except KeyError:
-                self._cached_selection = None
+                self._cached_selection = {}
                 register._init_grid(name)
             else:
                 register._update_current_grid(name)
         else:
-            self._cached_selection = None
+            self._cached_selection = {}
             register._init_grid(name)
+        # create comm widget
+        comm = CommWidget(grid_id=name, selection=str(self._cached_selection))
+        selection_handler = partial(register.selection_updated, name)
+        comm.observe(selection_handler, names=["selection"])
+        display(comm)
+        self.widget = comm
 
     @classmethod
     def from_mols(cls, mols, **kwargs):
