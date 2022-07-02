@@ -11,14 +11,11 @@ listObj.on("updated", function (list) {
             data[name] = this.innerHTML;
         });
         {% if callback_type == "python" %}
-        // call custom python callback
-        if (kernel_env === "jupyter") {
-            kernel.execute("{{ callback }}("+JSON.stringify(data)+")");
-        } else if (kernel_env === "colab") {
-            (async function() {
-                const result = await kernel.invokeFunction("{{ callback }}",
-                                                           [data], {});
-            })();
+        // trigger custom python callback
+        let model = window.parent["_MOLS2GRID_" + {{ grid_id | tojson }}];
+        if (model) {
+            model.set("callback_args", JSON.stringify(data));
+            model.save_changes();
         } else {
             // no kernel detected for callback
         }

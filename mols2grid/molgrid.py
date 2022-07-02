@@ -9,6 +9,7 @@ from rdkit import Chem
 from rdkit.Chem import Draw
 from mols2grid_widget import CommWidget
 from .utils import (env,
+                    callback_handler,
                     requires,
                     tooltip_formatter,
                     mol_to_record,
@@ -553,19 +554,9 @@ class MolGrid:
 
         # callback
         if callable(callback):
-            if callback.__name__ == "<lambda>":
-                raise TypeError(
-                    "Lambda functions are not supported as callbacks. Please "
-                    "use a regular function instead.")
-            # automatically register callback in Google Colab
-            try:
-                from google import colab
-            except:
-                pass
-            else:
-                colab.output.register_callback(callback.__name__, callback)
             callback_type = "python"
-            callback = callback.__name__
+            cb_handler = partial(callback_handler, callback)
+            self.widget.observe(cb_handler, names=["callback_args"])
         else:
             callback_type = "js"
 
