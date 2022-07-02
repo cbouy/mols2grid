@@ -33,8 +33,14 @@ if (window.parent.IPython !== undefined) {
 } else {
     function add_selection(grid_id, _id, smiles) {
         SELECTION.multi_set(_id, smiles);
+        let model = window.parent["_MOLS2GRID_" + grid_id];
+        model.set("selection", SELECTION.to_dict());
+        model.save_changes();
     }
     function del_selection(grid_id, _id) {
         SELECTION.multi_del(_id);
+        let model = window.parent["_MOLS2GRID_" + grid_id];
+        model.set("selection", SELECTION.to_dict());
+        model.save_changes();
     }
 }

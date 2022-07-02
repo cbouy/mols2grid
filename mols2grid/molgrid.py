@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem import Draw
+from mols2grid_widget import CommWidget
 from .utils import (env,
                     requires,
                     tooltip_formatter,
@@ -16,7 +17,7 @@ from .utils import (env,
                     slugify)
 from .select import register
 try:
-    from IPython.display import HTML, Javascript
+    from IPython.display import HTML, Javascript, display
 except ModuleNotFoundError:
     pass
 else:
@@ -151,6 +152,8 @@ class MolGrid:
         self.dataframe = dataframe
         # register instance
         self._grid_id = name
+        self.widget = CommWidget(grid_id=name)
+        display(self.widget)
         if cache_selection:
             try:
                 self._cached_selection = register.get_selection(name)
