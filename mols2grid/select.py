@@ -1,6 +1,5 @@
 import warnings
 from ast import literal_eval
-from threading import Lock
 
 class SelectionRegister:
     """Register for grid selections
@@ -14,7 +13,6 @@ class SelectionRegister:
     """
     def __init__(self):
         self.SELECTIONS = {}
-        self.lock = Lock()
 
     def _update_current_grid(self, name):
         self.current_selection = name
@@ -30,6 +28,7 @@ class SelectionRegister:
     
     def selection_updated(self, name, event):
         self.SELECTIONS[name] = literal_eval(event.new)
+        self._update_current_grid(name)
 
     def get_selection(self, name=None):
         """Returns the selection for a specific MolGrid instance
