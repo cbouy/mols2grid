@@ -3,6 +3,7 @@ from flaky import flaky
 import os
 from ast import literal_eval
 from base64 import b64encode, b64decode
+from types import SimpleNamespace
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -27,7 +28,7 @@ geckodriver_autoinstaller.install()
 pytestmark = pytest.mark.webdriver
 GITHUB_ACTIONS = os.environ.get("GITHUB_ACTIONS")
 
-HEADLESS = False
+HEADLESS = True
 
 class selection_available:
     def __init__(self, is_empty=False):
@@ -219,7 +220,8 @@ def test_selection_click(driver, html_doc):
 
 def test_selection_with_cache_check_and_uncheck(driver, df):
     register._init_grid("cached_sel")
-    register._set_selection(0, "CCC(C)CC")
+    event = SimpleNamespace(new='{0: "CCC(C)CC"}')
+    register.selection_updated("cached_sel", event)
     grid = get_grid(df, name="cached_sel", cache_selection=True)
     doc = get_doc(grid, {})
     driver.get(doc)

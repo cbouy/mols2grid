@@ -1,4 +1,6 @@
 from tempfile import NamedTemporaryFile
+from types import SimpleNamespace
+from unittest.mock import Mock
 import gzip
 import pytest
 import pandas as pd
@@ -152,3 +154,11 @@ def test_make_popup_callback():
 ])
 def test_slugify(string, expected):
     assert utils.slugify(string) == expected
+
+@pytest.mark.parametrize("value", [1, 2])
+def test_callback_handler(value):
+    callback = lambda x: x+1
+    mock = Mock(side_effect=callback)
+    event = SimpleNamespace(new=str(value))
+    utils.callback_handler(mock, event)
+    mock.assert_called_once_with(value)
