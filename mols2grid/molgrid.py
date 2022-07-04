@@ -412,6 +412,10 @@ class MolGrid:
             If both ``subset`` and ``tooltip`` are ``None``, the index and
             image will be directly displayed on the grid while the remaining
             fields will be in the tooltip.
+        
+        .. versionchanged:: 1.0.0
+            ``callback`` can now be a *lambda* function
+
         """
         if substruct_highlight and self.prerender:
             raise ValueError(

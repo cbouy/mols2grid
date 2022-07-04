@@ -7,8 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2022/??/??
 ### Added
 - Full support for JupyterLab and notebooks running in VSCode.
-- Callbacks can now be `lambda` functions.
 ### Changed
+- Callbacks can now be `lambda` functions.
 - When exporting a selection to a SMILES file through the GUI, the output no longer
   contains a header.
 - Relies on a custom ipywidget to handle communication between the front-end/Javascript
