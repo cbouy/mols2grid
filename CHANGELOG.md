@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   contains a header.
 - Relies on a custom ipywidget to handle communication between the front-end/Javascript
   and the back-end/Python.
+### Removed
+- `mapping` argument for renaming fields, replaced by `rename` in `v0.1.0`.
+- `mols2grid.selection`, replaced by `mols2grid.get_selection()` in `v0.1.0`.
 
 ## [0.2.4] - 2022/05/29
 ### Fixed

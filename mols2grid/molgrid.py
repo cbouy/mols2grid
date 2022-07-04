@@ -116,13 +116,6 @@ class MolGrid:
         else:
             # list of dicts or other input formats for dataframes
             dataframe = pd.DataFrame(df)
-        mapping = kwargs.pop("mapping", None)
-        if mapping:
-            warnings.warn(
-                "`mapping` is deprecated and will be removed soon. Consider "
-                "using `rename` in the future."
-            )
-        rename = rename or mapping
         if rename:
             dataframe.rename(columns=rename, inplace=True)
         self._extra_columns = ["img", "mols2grid-id"]
