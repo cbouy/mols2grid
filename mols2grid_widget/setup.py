@@ -1,8 +1,15 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# Copyright (c) Jupyter Development Team.
+# Distributed under the terms of the Modified BSD License.
+
 from __future__ import print_function
-from setuptools import setup, find_packages
+from glob import glob
 import os
 from os.path import join as pjoin
-from distutils import log
+from setuptools import setup, find_packages
+
 
 from jupyter_packaging import (
     create_cmdclass,
@@ -10,67 +17,106 @@ from jupyter_packaging import (
     ensure_targets,
     combine_commands,
     get_version,
+    skip_if_exists
 )
 
+HERE = os.path.dirname(os.path.abspath(__file__))
 
-here = os.path.dirname(os.path.abspath(__file__))
 
+
+
+# The name of the project
 name = 'mols2grid_widget'
-LONG_DESCRIPTION = 'A Custom Jupyter Widget Library'
 
-# Get mols2grid_widget version
+# Get the version
 version = get_version(pjoin(name, '_version.py'))
 
-js_dir = pjoin(here, 'js')
 
 # Representative files that should exist after a successful build
 jstargets = [
-    pjoin(js_dir, 'dist', 'index.js'),
+    pjoin(HERE, name, 'nbextension', 'index.js'),
+    pjoin(HERE, name, 'labextension', 'package.json'),
 ]
 
+
+package_data_spec = {
+    name: [
+        'nbextension/**js*',
+        'labextension/**'
+    ]
+}
+
+
 data_files_spec = [
-    ('share/jupyter/nbextensions/mols2grid_widget', 'mols2grid_widget/nbextension', '*.*'),
+    ('share/jupyter/nbextensions/mols2grid_widget', 'mols2grid_widget/nbextension', '**'),
     ('share/jupyter/labextensions/mols2grid_widget', 'mols2grid_widget/labextension', '**'),
     ('share/jupyter/labextensions/mols2grid_widget', '.', 'install.json'),
     ('etc/jupyter/nbconfig/notebook.d', '.', 'mols2grid_widget.json'),
 ]
 
-cmdclass = create_cmdclass('jsdeps', data_files_spec=data_files_spec)
-cmdclass['jsdeps'] = combine_commands(
-    install_npm(js_dir, npm=['yarn'], build_cmd='build:prod'), ensure_targets(jstargets),
+
+cmdclass = create_cmdclass('jsdeps', package_data_spec=package_data_spec,
+    data_files_spec=data_files_spec)
+npm_install = combine_commands(
+    install_npm(HERE, build_cmd='build:prod'),
+    ensure_targets(jstargets),
 )
+cmdclass['jsdeps'] = skip_if_exists(jstargets, npm_install)
+
 
 setup_args = dict(
-    name=name,
-    version=version,
-    description='A Custom Jupyter Widget Library',
-    long_description=LONG_DESCRIPTION,
-    include_package_data=True,
-    install_requires=[
-        'ipywidgets>=7.6.0',
-    ],
-    packages=find_packages(),
-    zip_safe=False,
-    cmdclass=cmdclass,
-    author='Cedric Bouysset',
-    author_email='bouysset.cedric@gmail.com',
-    url='https://github.com/cbouy/mols2grid_widget',
-    keywords=[
-        'ipython',
-        'jupyter',
-        'widgets',
-    ],
-    classifiers=[
-        'Development Status :: 4 - Beta',
-        'Framework :: IPython',
+    name            = name,
+    description     = 'Custom widget for mols2grid',
+    version         = version,
+    scripts         = glob(pjoin('scripts', '*')),
+    cmdclass        = cmdclass,
+    packages        = find_packages(),
+    author          = 'Cedric Bouysset',
+    author_email    = 'cedric@bouysset.net',
+    url             = 'https://github.com/cbouy/mols2grid_widget',
+    license         = 'BSD',
+    platforms       = "Linux, Mac OS X, Windows",
+    keywords        = ['Jupyter', 'Widgets', 'IPython'],
+    classifiers     = [
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
-        'Topic :: Multimedia :: Graphics',
+        'License :: OSI Approved :: BSD License',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
+        'Framework :: Jupyter',
     ],
+    include_package_data = True,
+    python_requires=">=3.6",
+    install_requires = [
+        'ipywidgets>=7.0.0',
+    ],
+    extras_require = {
+        'test': [
+            'pytest>=4.6',
+            'pytest-cov',
+            'nbval',
+        ],
+        'examples': [
+            # Any requirements for the examples to run
+        ],
+        'docs': [
+            'jupyter_sphinx',
+            'nbsphinx',
+            'nbsphinx-link',
+            'pytest_check_links',
+            'pypandoc',
+            'recommonmark',
+            'sphinx>=1.5',
+            'sphinx_rtd_theme',
+        ],
+    },
+    entry_points = {
+    },
 )
 
-setup(**setup_args)
+if __name__ == '__main__':
+    setup(**setup_args)

@@ -1,0 +1,2 @@
+[run]
+omit = mols2grid_widget/tests/*

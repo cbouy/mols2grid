@@ -14,7 +14,7 @@ listObj.on("updated", function (list) {
         // trigger custom python callback
         let model = window.parent["_MOLS2GRID_" + {{ grid_id | tojson }}];
         if (model) {
-            model.set("callback_args", JSON.stringify(data));
+            model.set("callback_kwargs", JSON.stringify(data));
             model.save_changes();
         } else {
             // no kernel detected for callback

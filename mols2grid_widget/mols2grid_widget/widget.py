@@ -1,16 +1,36 @@
-from ipywidgets import register, DOMWidget
+#!/usr/bin/env python
+# coding: utf-8
+
+# Copyright (c) Cedric Bouysset.
+# Distributed under the terms of the Modified BSD License.
+
+from ipywidgets import DOMWidget, register
 from traitlets import Unicode
+from ._frontend import module_name, module_version
+
 
 @register
-class CommWidget(DOMWidget):
-    """Custom widget to handle comm between the grid and the Python backend"""
-    _view_name = Unicode('CommWidgetView').tag(sync=True)
-    _model_name = Unicode('CommWidgetModel').tag(sync=True)
-    _view_module = Unicode('mols2grid_widget').tag(sync=True)
-    _model_module = Unicode('mols2grid_widget').tag(sync=True)
-    _view_module_version = Unicode('^0.1.0').tag(sync=True)
-    _model_module_version = Unicode('^0.1.0').tag(sync=True)
+class MolGridWidget(DOMWidget):
+    """A custom widget for the MolGrid class. Handles selections and callbacks.
+
+    Attributes
+    ----------
+    grid_id : str
+        Name of the grid controlling the widget
+    selection : str
+        JSON string containing the molecule selection as a dictionnary. Index
+        are keys and SMILES string are values.
+    callback_kwargs : str
+        JSON string containing the keyword arguments with which to call the
+        callback function.
+    """
+    _model_name = Unicode('MolGridModel').tag(sync=True)
+    _model_module = Unicode(module_name).tag(sync=True)
+    _model_module_version = Unicode(module_version).tag(sync=True)
+    _view_name = Unicode('MolGridView').tag(sync=True)
+    _view_module = Unicode(module_name).tag(sync=True)
+    _view_module_version = Unicode(module_version).tag(sync=True)
 
     grid_id = Unicode("default").tag(sync=True)
     selection = Unicode("{}").tag(sync=True)
-    callback_args = Unicode("{}").tag(sync=True)
+    callback_kwargs = Unicode("{}").tag(sync=True)

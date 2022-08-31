@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem import Draw
-from mols2grid_widget import CommWidget
+from mols2grid_widget import MolGridWidget
 from .utils import (env,
                     callback_handler,
                     requires,
@@ -158,12 +158,12 @@ class MolGrid:
         else:
             self._cached_selection = {}
             register._init_grid(name)
-        # create comm widget
-        comm = CommWidget(grid_id=name, selection=str(self._cached_selection))
+        # create widget
+        widget = MolGridWidget(grid_id=name, selection=str(self._cached_selection))
         selection_handler = partial(register.selection_updated, name)
-        comm.observe(selection_handler, names=["selection"])
-        display(comm)
-        self.widget = comm
+        widget.observe(selection_handler, names=["selection"])
+        display(widget)
+        self.widget = widget
 
     @classmethod
     def from_mols(cls, mols, **kwargs):
@@ -553,7 +553,7 @@ class MolGrid:
         if callable(callback):
             callback_type = "python"
             cb_handler = partial(callback_handler, callback)
-            self.widget.observe(cb_handler, names=["callback_args"])
+            self.widget.observe(cb_handler, names=["callback_kwargs"])
         else:
             callback_type = "js"
 
