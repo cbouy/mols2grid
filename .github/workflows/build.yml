@@ -10,17 +10,44 @@ defaults:
 jobs:
   build-n-publish:
     name: Build and publish to PyPI
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Install node
+      uses: actions/setup-node@v1
+      with:
+        node-version: "12.x"
 
     - name: Install python with pip
       uses: actions/setup-python@v2
       with:
         python-version: 3.7
         architecture: x64
-    
+
+    - name: Setup pip cache
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: pip-3.7-${{ hashFiles('package.json') }}
+        restore-keys: |
+          pip-3.7-
+          pip-
+
+    - name: Get npm cache directory
+      id: npm-cache
+      run: |
+        echo "::set-output name=dir::$(npm config get cache)"
+
+    - uses: actions/cache@v2
+      with:
+        path: ${{ steps.npm-cache.outputs.dir }}
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
     - name: Install dependencies for packaging
       run: |
         pip install setuptools wheel

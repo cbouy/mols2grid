@@ -27,7 +27,7 @@ module.exports = [
     entry: './src/extension.ts',
     output: {
       filename: 'index.js',
-      path: path.resolve(__dirname, 'mols2grid_widget', 'nbextension'),
+      path: path.resolve(__dirname, 'mols2grid', 'nbextension'),
       libraryTarget: 'amd',
       publicPath: '',
     },
@@ -65,27 +65,5 @@ module.exports = [
     externals,
     resolve,
   },
-
-
-  /**
-   * Documentation widget bundle
-   *
-   * This bundle is used to embed widgets in the package documentation.
-   */
-  {
-    entry: './src/index.ts',
-    output: {
-      filename: 'embed-bundle.js',
-      path: path.resolve(__dirname, 'docs', 'source', '_static'),
-      library: "mols2grid_widget",
-      libraryTarget: 'amd'
-    },
-    module: {
-      rules: rules
-    },
-    devtool: 'source-map',
-    externals,
-    resolve,
-  }
 
 ];

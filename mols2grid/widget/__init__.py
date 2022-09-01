@@ -1,11 +1,4 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# Copyright (c) Cedric Bouysset.
-# Distributed under the terms of the Modified BSD License.
-
 from .widget import MolGridWidget
-from ._version import __version__, version_info
 
 def _jupyter_labextension_paths():
     """Called by Jupyter Lab Server to detect if it is a valid labextension and
@@ -20,7 +13,7 @@ def _jupyter_labextension_paths():
         during widget installation
     """
     return [{
-        'src': 'labextension',
+        'src': '../labextension',
         'dest': 'mols2grid_widget',
     }]
 
@@ -43,7 +36,7 @@ def _jupyter_nbextension_paths():
     """
     return [{
         'section': 'notebook',
-        'src': 'nbextension',
+        'src': '../nbextension',
         'dest': 'mols2grid_widget',
         'require': 'mols2grid_widget/extension'
     }]

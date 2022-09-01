@@ -1,2 +1,24 @@
-include README.md LICENSE CHANGELOG.md
+include README.md
+include LICENSE 
+include CHANGELOG.md
 recursive-include mols2grid/templates *
+
+include tsconfig.json
+include package.json
+include webpack.config.js
+
+# Javascript files
+graft mols2grid/nbextension
+graft mols2grid/labextension
+graft src
+graft css
+prune **/node_modules
+prune coverage
+prune lib
+
+# Patterns to exclude from any directory
+global-exclude *~
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude .git
+global-exclude .ipynb_checkpoints

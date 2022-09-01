@@ -34,6 +34,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install node
+        uses: actions/setup-node@v1
+        with:
+          node-version: "12.x"
+
       - name: Install Firefox
         uses: browser-actions/setup-firefox@latest
       
@@ -126,7 +131,7 @@ jobs:
             import mols2grid as mg
             from rdkit import RDConfig
             sdf = f"{RDConfig.RDDocsDir}/Book/data/solubility.test.sdf"
-            mg.save(sdf, output="/dev/null", subset=["img", "mols2grid-id"])
+            mg.save(sdf, output="/dev/null")
 
       - name: Test tar.gz build
         run: |

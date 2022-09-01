@@ -15,11 +15,10 @@
     "strict": true,
     "strictPropertyInitialization": false,
     "target": "es2015",
-    "types": ["jest"]
+    "types": []
   },
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
-  ],
-  "exclude": ["src/**/__tests__"]
+  ]
 }

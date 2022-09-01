@@ -10,14 +10,17 @@
   ],
   "files": [
     "lib/**/*.js",
+    "lib/**/*.d.ts",
     "dist/*.js",
+    "dist/*.d.ts",
+    "dist/*.map",
     "css/*.css"
   ],
-  "homepage": "https://github.com/cbouy/mols2grid_widget",
+  "homepage": "https://github.com/cbouy/mols2grid",
   "bugs": {
-    "url": "https://github.com/cbouy/mols2grid_widget/issues"
+    "url": "https://github.com/cbouy/mols2grid/issues"
   },
-  "license": "BSD-3-Clause",
+  "license": "Apache-2.0",
   "author": {
     "name": "Cedric Bouysset",
     "email": "cedric@bouysset.net"
@@ -26,7 +29,7 @@
   "types": "./lib/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/cbouy/mols2grid_widget"
+    "url": "https://github.com/cbouy/mols2grid"
   },
   "scripts": {
     "build": "yarn run build:lib && yarn run build:nbextension && yarn run build:labextension:dev",
@@ -37,12 +40,9 @@
     "build:nbextension": "webpack",
     "clean": "yarn run clean:lib && yarn run clean:nbextension && yarn run clean:labextension",
     "clean:lib": "rimraf lib",
-    "clean:labextension": "rimraf mols2grid_widget/labextension",
-    "clean:nbextension": "rimraf mols2grid_widget/nbextension/static/index.js",
-    "lint": "eslint . --ext .ts,.tsx --fix",
-    "lint:check": "eslint . --ext .ts,.tsx",
+    "clean:labextension": "rimraf mols2grid/labextension",
+    "clean:nbextension": "rimraf mols2grid/nbextension/static/index.js",
     "prepack": "yarn run build:lib",
-    "test": "jest",
     "watch": "npm-run-all -p watch:*",
     "watch:lib": "tsc -w",
     "watch:nbextension": "webpack --watch --mode=development",
@@ -83,7 +83,7 @@
   },
   "jupyterlab": {
     "extension": "lib/plugin",
-    "outputDir": "mols2grid_widget/labextension/",
+    "outputDir": "mols2grid/labextension",
     "sharedPackages": {
       "@jupyter-widgets/base": {
         "bundled": false,

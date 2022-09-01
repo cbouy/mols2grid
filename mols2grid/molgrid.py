@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem import Draw
-from mols2grid_widget import MolGridWidget
+from .widget import MolGridWidget
 from .utils import (env,
                     callback_handler,
                     requires,
