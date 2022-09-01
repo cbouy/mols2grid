@@ -1,7 +1,7 @@
 name: build
 on:
   release:
-    types: [released]
+    types: [published]
 
 defaults:
   run:
@@ -64,6 +64,14 @@ jobs:
         python -m build .
     
     - name: Publish to PyPI
-      uses: pypa/gh-action-pypi-publish@master
+      if: github.event.release.action == "released"
+      uses: pypa/gh-action-pypi-publish@release/v1
       with:
         password: ${{ secrets.PYPI_TOKEN }}
+    
+    - name: Publish to TestPyPI
+      if: github.event.release.action == "prereleased"
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.TEST_PYPI_TOKEN }}
+        repository_url: https://test.pypi.org/legacy/
