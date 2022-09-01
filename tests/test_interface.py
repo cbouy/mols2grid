@@ -164,7 +164,7 @@ def test_smiles_hidden(driver, html_doc):
     assert not el.is_displayed()
 
 @pytest.mark.parametrize("page", [1, 2, 3])
-def test_page_click(driver, grid, page, n_cols, n_rows):
+def test_page_click(driver, grid, page):
     doc = get_doc(grid, dict(subset=["img", "_Name"], n_cols=3, n_rows=3))
     driver.get(doc)
     for i in range(2, page+1):
@@ -172,7 +172,7 @@ def test_page_click(driver, grid, page, n_cols, n_rows):
         next_page = driver.find_by_css_selector(f'a.page-link[data-i="{i}"]')
         next_page.click()
     first_cell = driver.find_by_class_name('cell')
-    mols2grid_id = n_cols * n_rows * (page - 1)
+    mols2grid_id = 9 * (page - 1)
     name = first_cell.find_element_by_class_name('data-_Name')
     ref = grid.dataframe.iloc[mols2grid_id]
     assert name.text == ref["_Name"]
