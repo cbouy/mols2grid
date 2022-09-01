@@ -29,6 +29,7 @@ pytestmark = pytest.mark.webdriver
 GITHUB_ACTIONS = os.environ.get("GITHUB_ACTIONS")
 
 HEADLESS = True
+PAGE_LOAD_TIMEOUT = 10
 
 class selection_available:
     def __init__(self, is_empty=False):
@@ -111,7 +112,7 @@ def driver():
     options = webdriver.FirefoxOptions()
     options.headless = True if GITHUB_ACTIONS else HEADLESS
     driver = FirefoxDriver(options=options)
-    driver.set_page_load_timeout(10)
+    driver.set_page_load_timeout(PAGE_LOAD_TIMEOUT)
     yield driver
     driver.quit()
 
@@ -163,11 +164,8 @@ def test_smiles_hidden(driver, html_doc):
     assert not el.is_displayed()
 
 @pytest.mark.parametrize("page", [1, 2, 3])
-@pytest.mark.parametrize("n_cols", [1, 3])
-@pytest.mark.parametrize("n_rows", [1, 3])
 def test_page_click(driver, grid, page, n_cols, n_rows):
-    doc = get_doc(grid, dict(subset=["img", "_Name"],
-                             n_cols=n_cols, n_rows=n_rows))
+    doc = get_doc(grid, dict(subset=["img", "_Name"], n_cols=3, n_rows=3))
     driver.get(doc)
     for i in range(2, page+1):
         driver.wait_for_img_load()
