@@ -1,6 +1,9 @@
 include README.md
 include LICENSE 
 include CHANGELOG.md
+include setup.py
+include setup.cfg
+include pyproject.toml
 recursive-include mols2grid/templates *
 
 include tsconfig.json
