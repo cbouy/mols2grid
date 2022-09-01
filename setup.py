@@ -1,9 +1,7 @@
-from setuptools import setup
 import os
+from setuptools import setup
 from os.path import join as pjoin
 from setuptools import setup
-
-
 from jupyter_packaging import (
     create_cmdclass,
     install_npm,

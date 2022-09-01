@@ -90,7 +90,7 @@ jobs:
 
       - name: Install package through pip
         run: |
-          pip install .[tests]
+          pip install .[tests,build]
           pip list
       
       - name: Run tests
@@ -123,7 +123,7 @@ jobs:
       - name: Prepare for build
         run: |
           pip uninstall -y mols2grid
-          python setup.py sdist bdist_wheel
+          python -m build .
           echo "$SCRIPT" > test_install.py
           cat test_install.py
         env:
