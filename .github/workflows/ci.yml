@@ -13,7 +13,7 @@ defaults:
     shell: bash -l {0}
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}"
+  group: ${{ github.ref }}-${{ github.head_ref }}"
   cancel-in-progress: true
 
 jobs:
@@ -22,17 +22,19 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
         include:
-        - label: CI-py3.8-rdkit2022
-          python-version: 3.8
-          extra_dependencies: "rdkit==2022.03.1"
-        - label: CI-py3.10-latest
-          python-version: "3.10"
-          extra_dependencies: "rdkit"
-        - label: CI-py3.7-rdkit2020
-          python-version: 3.7
-          extra_dependencies: "rdkit=2020.03.1=py37hdd87690_3 boost-cpp=1.72.0=h359cf19_6"
+          - label: CI-py3.8-rdkit2022
+            os: ubuntu-latest
+            python-version: 3.8
+            extra_dependencies: "rdkit==2022.03.1"
+          - label: CI-py3.10-latest
+            os: ubuntu-latest
+            python-version: "3.10"
+            extra_dependencies: "rdkit"
+          - label: CI-py3.7-rdkit2020
+            os: ubuntu-latest
+            python-version: 3.7
+            extra_dependencies: "rdkit=2020.03.1=py37hdd87690_3 boost-cpp=1.72.0=h359cf19_6"
 
     steps:
       - uses: actions/checkout@v2
@@ -59,7 +61,7 @@ jobs:
         with:
           path: ~/conda_pkgs_dir
           key:
-            ${{ hashFiles('environment.yml') }}-${{ matrix.label }}-conda-${{ env.CACHE_NUMBER }}
+            conda-${{ hashFiles('environment.yml') }}-${{ matrix.label }}-${{ env.CACHE_NUMBER }}
 
       - name: Cache pip
         uses: actions/cache@v3
