@@ -31,17 +31,16 @@ pip install rdkit mols2grid
 
 **Compatibility**
 
-mols2grid is mainly meant to be used in notebooks (Jupyter notebooks, Jupyter Lab, and Google Colab) but it can also be used as a standalone HTML page opened with your favorite web browser.
+mols2grid is mainly meant to be used in notebooks (Jupyter notebooks, Jupyter Lab, and Google Colab) but it can also be used as a standalone HTML page opened with your favorite web browser, or embedded in a Streamlit app.
 
-Before version `1.0.0`, notebooks in Visual Studio Code or Jupyter Lab were missing support for Python callbacks and retrieving the selection from Python.
+Since Streamlit doesn't seem to support ipywidgets yet, some features aren't functional: retrieving the selection from Python (you can still export it from the GUI) and using Python callbacks.
 
-Note that VSCode still lacks support for filtering based on other widgets (see the `filtering` example notebook).
+Note that running notebooks in VSCode lacks support for filtering based on other widgets (see the `filtering` example notebook).
 
 <img alt="knime logo" align="left" style="padding:6px" src="https://www.knime.com/sites/default/files/favicons/favicon-32x32.png"/>
 <p>You can also use mols2grid directly in <a href="https://www.knime.com/">KNIME</a>, by looking for the `Interactive Grid of Molecules` component on the Knime HUB.<br/>
 Make sure you have setup <a href="https://docs.knime.com/latest/python_installation_guide">Knime's Python integration</a> for the node to work.</p>
 
-Since Streamlit doesn't seem to support ipywidgets yet, some features aren't functional: retrieving the selection from Python, using callbacks, and filtering using external widgets.
 
 # 📜 Usage
 ---
@@ -87,7 +86,7 @@ Please head to the [notebooks](notebooks/quickstart.html) and [API reference](ap
 
 # 🎓 Citing
 ---
-You can refer to mols2grid in your research by using the following DOI:
+You can refer to mols2grid in your research by using the following DOI:  
 <a href="https://zenodo.org/badge/latestdoi/348814588">
   <img alt="DOI:10.5281/zenodo.6591473" src="https://zenodo.org/badge/348814588.svg"/>
 </a>
