@@ -49,7 +49,7 @@ jobs:
 
     - name: Install dependencies for packaging
       run: |
-        pip install setuptools wheel build jupyter-packaging==0.12.0 jupyterlab==3.* yarn==1.22.18
+        pip install setuptools wheel build jupyter_packaging==0.12.0 jupyterlab==3.*
     
     - name: Check python installation
       run: |
