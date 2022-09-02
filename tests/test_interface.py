@@ -1,6 +1,7 @@
+import os
+import json
 import pytest
 from flaky import flaky
-import os
 from ast import literal_eval
 from base64 import b64encode, b64decode
 from types import SimpleNamespace
@@ -534,10 +535,9 @@ def test_filter(driver, grid):
     doc = get_doc(grid, {"subset": ["img", "_Name"],})
     driver.get(doc)
     mask = grid.dataframe["_Name"].str.contains("iodopropane")
-    ids = grid.dataframe.loc[mask]["mols2grid-id"].to_list()
     filter_code = env.get_template('js/filter.js').render(
         grid_id = grid._grid_id,
-        ids = ids)
+        mask = json.dumps(mask))
     driver.wait_for_img_load()
     driver.execute_script(filter_code)
     el = driver.find_by_css_selector("#mols2grid .cell .data-_Name")
