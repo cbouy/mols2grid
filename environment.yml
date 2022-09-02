@@ -10,6 +10,7 @@ dependencies:
   - jinja2==3.0.3
   - sphinx==4.5.0
   - nbsphinx==0.8.8
+  - nodejs==17.9.0
   - m2r2==0.3.2
   - recommonmark==0.7.1
   - rdkit==2022.03.1
