@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "jupyter_packaging==0.7.9",
+    "jupyter_packaging==0.12.0",
     "jupyterlab==3.*",
     "setuptools>=40.8.0",
     "wheel",
