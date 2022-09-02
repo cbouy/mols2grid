@@ -647,7 +647,7 @@ class MolGrid:
         if is_running_within_streamlit():
             filtering_script = env.get_template('js/filter.js').render(
                 grid_id = self._grid_id,
-                mask = mask)
+                mask = json.dumps(mask))
             return Javascript(filtering_script)
         else:
             self.widget.filter_mask = mask
