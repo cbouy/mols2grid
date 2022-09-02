@@ -297,7 +297,7 @@ class MolGrid:
                  tooltip_trigger="click hover", tooltip_placement="bottom",
                  hover_color="#e7e7e7", style=None, selection=True, transform=None,
                  custom_css=None, custom_header=None, callback=None, sort_by=None,
-                 substruct_highlight=True, single_highlight=False):
+                 substruct_highlight=None, single_highlight=False):
         """Returns the HTML document for the "pages" template
 
         Parameters
@@ -383,7 +383,7 @@ class MolGrid:
         sort_by : str or None
             Sort the grid according to the following field (which must be
             present in ``subset`` or ``tooltip``).
-        substruct_highlight : bool
+        substruct_highlight : bool or None
             Highlight substructure when using the SMARTS search. Only available
             when ``prerender=False``
         single_highlight : bool
@@ -414,12 +414,17 @@ class MolGrid:
             fields will be in the tooltip.
         
         .. versionchanged:: 1.0.0
-            ``callback`` can now be a *lambda* function
+            ``callback`` can now be a *lambda* function. If ``prerender=True``,
+            substructure highlighting will be automatically disabled if it
+            wasn't explicitely set to ``True`` instead of raising an error.
 
         """
+        if substruct_highlight is None:
+            substruct_highlight = not self.prerender
         if substruct_highlight and self.prerender:
             raise ValueError(
-                "Cannot highlight substructure search with prerendered images")
+                "Cannot highlight substructure search with prerendered images"
+            )
         if self.mol_col:
             df = self.dataframe.drop(columns=self.mol_col).copy()
         else:

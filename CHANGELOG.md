@@ -4,11 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2022/??/??
+## [1.0.0] - 2022/09/05
 ### Added
-- Full support for JupyterLab and notebooks running in VSCode.
+- Notebooks running in VSCode and Jupyter Lab now support Python callbacks and accessing
+  selections from Python.
 ### Changed
-- Callbacks can now be `lambda` functions.
+- Callbacks can now also be `lambda` functions.
+- If ``prerender=True``, substructure highlighting will be automatically disabled by
+  default instead of raising an error.
 - When exporting a selection to a SMILES file through the GUI, the output no longer
   contains a header.
 - Relies on a custom ipywidget to handle communication between the front-end/Javascript

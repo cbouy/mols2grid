@@ -277,10 +277,13 @@ def test_onthefly_render_png_error(df):
         MolGrid(df, prerender=False, useSVG=False)
 
 def test_substruct_highlight_prerender_error(grid):
-    with pytest.raises(ValueError,
-                       match="Cannot highlight substructure search with "
-                             "prerendered images"):
-        grid.display()
+    with pytest.raises(
+        ValueError,
+        match="Cannot highlight substructure search with prerendered images"
+    ):
+        grid.display(substruct_highlight=True)
+    # disables substruct highlight when prerendering by default
+    grid.display()
 
 def test_use_coords_onthefly_error():
     with pytest.raises(ValueError,
