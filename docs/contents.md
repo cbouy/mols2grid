@@ -26,11 +26,17 @@ conda install -c conda-forge mols2grid
 
 Alternatively, you can also use pip:
 ```shell
-pip install mols2grid
+pip install rdkit mols2grid
 ```
 
-It is fully compatible with Jupyter Notebook and Google Colab and can run on Streamlit.  
-Visual Studio notebooks and Jupyterlab are not fully compatible for now.
+## Compatibility
+
+mols2grid is mainly meant to be used in notebooks (Jupyter notebooks, Jupyter Lab, and Google Colab) but it can also run on Streamlit or as a standalone HTML page.
+
+Before version `1.0.0`, notebooks in Visual Studio Code or Jupyter Lab were missing support for Python callbacks and retrieving the selection from Python.
+
+Note that VSCode still lacks support for filtering based on other widgets (see the `filtering` example notebook).
+
 
 <img alt="knime logo" align="left" style="padding:6px" src="https://www.knime.com/sites/default/files/favicons/favicon-32x32.png"/>
 <p>You can also use mols2grid directly in <a href="https://www.knime.com/">KNIME</a>, by looking for the `Interactive Grid of Molecules` component on the Knime HUB.<br/>
