@@ -16,6 +16,7 @@ from .utils import (env,
                     mol_to_smiles,
                     sdf_to_dataframe,
                     remove_coordinates,
+                    is_running_within_streamlit,
                     slugify)
 from .select import register
 try:
@@ -638,27 +639,24 @@ class MolGrid:
         Parameters
         ----------
         mask : list, pandas.Series or numpy.ndarray
-            Boolean array: `True` when the item should be displayed, `False` if it should
-            be filtered out. 
+            Boolean array: ``True`` when the item should be displayed,
+            ``False`` if it should be filtered out. 
         """
-        # convert mask to mols2grid-id
-        ids = self.dataframe.loc[mask]["mols2grid-id"]
-        return self._filter_by_id(ids)
+        if isinstance(mask, (pd.Series, np.ndarray)):
+            mask = mask.tolist()
+        if is_running_within_streamlit():
+            filtering_script = env.get_template('js/filter.js').render(
+                grid_id = self._grid_id,
+                mask = mask)
+            return Javascript(filtering_script)
+        else:
+            self.widget.filter_mask = mask
 
     def filter_by_index(self, indices):
         """Filters the grid using the dataframe's index"""
-        # convert index to mols2grid-id
-        ids = self.dataframe.loc[self.dataframe.index.isin(indices)]["mols2grid-id"]
-        return self._filter_by_id(ids)
-
-    def _filter_by_id(self, ids):
-        """Filters the grid using the values in the ``mols2grid-id`` column"""
-        if isinstance(ids, (pd.Series, np.ndarray)):
-            ids = ids.to_list()
-        code = env.get_template('js/filter.js').render(
-            grid_id = self._grid_id,
-            ids = ids)
-        return Javascript(code)
+        # convert index to mask
+        mask = self.dataframe.index.isin(indices)
+        return self.filter(mask)
 
     def to_table(self, subset=None, tooltip=None, n_cols=5,
                  cell_width=160, border="1px solid #cccccc", gap=0,

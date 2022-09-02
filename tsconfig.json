@@ -2,7 +2,7 @@
   "compilerOptions": {
     "declaration": true,
     "esModuleInterop":true,
-    "lib": ["es2015", "dom"],
+    "lib": ["es2016", "dom"],
     "module": "commonjs",
     "moduleResolution": "node",
     "noEmitOnError": true,
@@ -14,7 +14,7 @@
     "sourceMap": true,
     "strict": true,
     "strictPropertyInitialization": false,
-    "target": "es2015",
+    "target": "es2016",
     "types": []
   },
   "include": [

@@ -1,5 +1,5 @@
 from ipywidgets import DOMWidget, register
-from traitlets import Unicode
+from traitlets import Bool, List, Unicode
 from ._frontend import module_name, module_version
 
 
@@ -17,6 +17,9 @@ class MolGridWidget(DOMWidget):
     callback_kwargs : str
         JSON string containing the keyword arguments with which to call the
         callback function.
+    filter_mask : List[bool]
+        List stating wether a molecule should be kept (True) or filtered out
+        (False)
     """
     _model_name = Unicode('MolGridModel').tag(sync=True)
     _model_module = Unicode(module_name).tag(sync=True)
@@ -28,3 +31,4 @@ class MolGridWidget(DOMWidget):
     grid_id = Unicode("default").tag(sync=True)
     selection = Unicode("{}").tag(sync=True)
     callback_kwargs = Unicode("{}").tag(sync=True)
+    filter_mask = List(Bool, []).tag(sync=True)

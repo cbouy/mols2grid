@@ -25,6 +25,7 @@ export class MolGridModel extends DOMWidgetModel {
       grid_id: "default",
       selection: "{}",
       callback_kwargs: "{}",
+      filter_mask: [],
     };
   }
 
@@ -47,5 +48,24 @@ export class MolGridView extends DOMWidgetView {
     let grid_id: string = this.model.get('grid_id');
     let name: string = "_MOLS2GRID_" + grid_id;
     (<any>window)[name] = this.model;
+    this.model.on('change:filter_mask', this._trigger_filtering, this);
+  }
+
+  private _trigger_filtering() {
+    let grid_id: string = this.model.get('grid_id');
+    let listObj: any = undefined;
+    if (typeof (<any>window).mols2grid_lists !== "undefined") {
+      listObj = (<any>window).mols2grid_lists[grid_id];
+    } else if (typeof (<any>window).parent.mols2grid_lists !== "undefined") {
+      listObj = (<any>window).parent.mols2grid_lists[grid_id];
+    } else {
+      return;
+    }
+    let filter_mask = this.model.get("filter_mask");
+    if (filter_mask !== []) {
+      listObj.filter(function (item: any) {
+          return filter_mask[item.values()["mols2grid-id"]];
+      });
+    }
   }
 }

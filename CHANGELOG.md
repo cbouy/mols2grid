@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   contains a header.
 - Relies on a custom ipywidget to handle communication between the front-end/Javascript
   and the back-end/Python.
+- When calling `grid.filter` and other filtering methods, mols2grid will now use the
+  filtering code based on ipywidgets, and switch back to the older JavaScript version to
+  keep compatibility with Streamlit.
 ### Removed
 - `mapping` argument for renaming fields, replaced by `rename` in `v0.1.0`.
 - `mols2grid.selection`, replaced by `mols2grid.get_selection()` in `v0.1.0`.

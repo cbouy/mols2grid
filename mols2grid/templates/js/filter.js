@@ -5,8 +5,8 @@ if (typeof mols2grid_lists !== "undefined") {
     var listObj = window.parent.mols2grid_lists[name];
 }
 if (typeof listObj !== "undefined") {
-    var ids = {{ ids }};
+    var mask = {{ mask }};
     listObj.filter(function (item) {
-        return ids.includes(item.values()["mols2grid-id"]);
+        return mask[item.values()["mols2grid-id"]];
     });
 }
