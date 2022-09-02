@@ -84,6 +84,10 @@ Please head to the [notebooks](notebooks/quickstart.html) and [API reference](ap
 * [@JustinChavez](https://github.com/JustinChavez) (contributor)
 * [@hadim](https://github.com/hadim) (conda feedstock maintainer)
 
+# 🎓 Citing
+---
+You can refer to mols2grid in your research by using the following DOI: [![DOI:10.5281/zenodo.6591473](https://zenodo.org/badge/348814588.svg)](https://zenodo.org/badge/latestdoi/348814588).
+
 # ⚖ License
 ---
 
