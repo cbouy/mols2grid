@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - "*"
+  pull_request:
+    branches:
+      - "*"
   workflow_dispatch:
 
 defaults:
@@ -10,7 +13,7 @@ defaults:
     shell: bash -l {0}
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -30,6 +33,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
+      - run: echo "${{ github.workflow }}-${{ github.ref_name }}"
 
       - name: Install node
         uses: actions/setup-node@v1
