@@ -537,7 +537,7 @@ def test_filter(driver, grid):
     mask = grid.dataframe["_Name"].str.contains("iodopropane")
     filter_code = env.get_template('js/filter.js').render(
         grid_id = grid._grid_id,
-        mask = json.dumps(mask))
+        mask = json.dumps(mask.tolist()))
     driver.wait_for_img_load()
     driver.execute_script(filter_code)
     el = driver.find_by_css_selector("#mols2grid .cell .data-_Name")
