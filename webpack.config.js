@@ -9,8 +9,7 @@ const rules = [
 ];
 
 // Packages that shouldn't be bundled but loaded at runtime
-// 'module' is the magic requirejs dependency used to set the publicPath
-const externals = ['@jupyter-widgets/base', 'module'];
+const externals = ['@jupyter-widgets/base'];
 
 const resolve = {
   // Add '.ts' and '.tsx' as resolvable extensions.
@@ -25,12 +24,12 @@ module.exports = [
    * the notebook.
    */
   {
-    entry: ['./src/amd-public-path.ts', './src/extension.ts'],
+    entry: './src/extension.ts',
     output: {
       filename: 'index.js',
       path: path.resolve(__dirname, 'mols2grid', 'nbextension'),
       libraryTarget: 'amd',
-      publicPath: '', // Set in amd-public-path.js
+      publicPath: '',
     },
     module: {
       rules: rules
@@ -51,13 +50,13 @@ module.exports = [
    * the custom widget embedder.
    */
   {
-    entry: ['./src/amd-public-path.ts', './src/index.ts'],
+    entry: './src/index.ts',
     output: {
         filename: 'index.js',
         path: path.resolve(__dirname, 'dist'),
         libraryTarget: 'amd',
         library: "mols2grid_widget",
-        publicPath: '', // Set in amd-public-path.js
+        publicPath: 'https://unpkg.com/mols2grid_widget@' + version + '/dist/'
     },
     devtool: 'source-map',
     module: {

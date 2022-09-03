@@ -1,6 +1,6 @@
 {
   "name": "mols2grid_widget",
-  "version": "1.0.0-rc2",
+  "version": "1.0.0-rc3",
   "description": "Custom widget for mols2grid",
   "keywords": [
     "jupyter",
