@@ -78,6 +78,8 @@ Please head to the [notebooks](notebooks/quickstart.html) and [API reference](ap
 * [Viewing clustered chemical structures](https://practicalcheminformatics.blogspot.com/2021/07/viewing-clustered-chemical-structures.html) and [Exploratory data analysis](https://practicalcheminformatics.blogspot.com/2021/10/exploratory-data-analysis-with.html) by Pat Walters
 * [Advanced notebook (RDKit UGM 2021)](https://colab.research.google.com/github/rdkit/UGM_2021/blob/main/Notebooks/Bouysset_mols2grid.ipynb)
 
+Feel free to open a pull request if you'd like your snippets to be added to this list!
+
 # 👏 Acknowledgments
 ---
 * [@fredrikw](https://github.com/fredrikw) (contributor)
@@ -86,10 +88,9 @@ Please head to the [notebooks](notebooks/quickstart.html) and [API reference](ap
 
 # 🎓 Citing
 ---
-You can refer to mols2grid in your research by using the following DOI:  
-<a href="https://zenodo.org/badge/latestdoi/348814588">
-  <img alt="DOI:10.5281/zenodo.6591473" src="https://zenodo.org/badge/348814588.svg"/>
-</a>
+You can refer to mols2grid in your research by using the following DOI:
+
+[![DOI:10.5281/zenodo.6591473](https://zenodo.org/badge/348814588.svg)](https://zenodo.org/badge/latestdoi/348814588)
 
 # ⚖ License
 ---
