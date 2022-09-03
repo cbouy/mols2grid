@@ -1,20 +1,42 @@
 name: build
 on:
   release:
-    types: [published]
+    types: [released]
+  workflow_dispatch:
 
 defaults:
   run:
     shell: bash -l {0}
 
+env:
+  IS_PRERELEASE: ${{ github.event_name == 'workflow_dispatch' }}
+
 jobs:
   build-n-publish:
-    name: Build and publish to PyPI
+    name: Build and publish mols2grid
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+    
+    - name: Get prerelease version tags
+      if: env.IS_PRERELEASE
+      run: |
+        py_dirty_tag=$(grep "version_info =" ./mols2grid/_version.py | cut -d, -f4)
+        py_is_pre=$(test -z "$py_dirty_tag" && echo "false" || echo "true")
+        js_version_string=$(grep '"version":' ./package.json)
+        js_dirty_tag=$(echo "$js_version_string" | cut -d- -f2)
+        js_is_pre=$(test "$js_version_string" == "$js_dirty_tag" && echo "false" || echo "true")
+        echo "py_is_pre=$py_is_pre" >> $GITHUB_ENV
+        echo "js_is_pre=$js_is_pre" >> $GITHUB_ENV
+
+    - name: Check prerelease is correctly versioned
+      if: env.IS_PRERELEASE && ( env.py_is_pre != true || env.js_is_pre != true )
+      uses: actions/github-script@v3
+      with:
+        script: |
+          core.setFailed("Versions are not tagged as a prerelease")
 
     - name: Install node
       uses: actions/setup-node@v1
@@ -63,13 +85,13 @@ jobs:
         python -m build .
     
     - name: Publish to PyPI
-      if: github.event.release.action == "released"
+      if: github.event_name == 'release'
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         password: ${{ secrets.PYPI_TOKEN }}
     
     - name: Publish to TestPyPI
-      if: github.event.release.action == "prereleased"
+      if: env.IS_PRERELEASE
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         password: ${{ secrets.TEST_PYPI_TOKEN }}
@@ -82,4 +104,4 @@ jobs:
         npm publish
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        PRE_RELEASE: ${{ github.event.release.prerelease }}
+        PRE_RELEASE: ${{ env.IS_PRERELEASE }}
