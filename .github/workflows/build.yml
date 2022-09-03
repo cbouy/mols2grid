@@ -88,7 +88,7 @@ jobs:
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ env.IS_PRERELEASE && secrets.TEST_PYPI_TOKEN || secrets.PYPI_TOKEN }}
-        TWINE_REPOSITORY: ${{ env.IS_PRERELEASE && "testpypi" || "pypi" }}
+        TWINE_REPOSITORY: ${{ env.IS_PRERELEASE && 'testpypi' || 'pypi' }}
       run: twine upload dist/mols2grid*.{tar.gz,whl}
     
     - name: Publish the NPM package
