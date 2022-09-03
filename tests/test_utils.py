@@ -1,6 +1,6 @@
 from tempfile import NamedTemporaryFile
 from types import SimpleNamespace
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 import sys
 import gzip
 import pytest
@@ -10,7 +10,6 @@ from rdkit.Chem.rdDepictor import Compute2DCoords
 from mols2grid import utils
 
 sdf = f"{RDConfig.RDDocsDir}/Book/data/solubility.test.sdf"
-PY_VERSION = ".".join(map(str, sys.version_info[:2]))
 
 def test_requires():
     @utils.requires("_not_a_module")
@@ -165,18 +164,15 @@ def test_callback_handler(value):
     utils.callback_handler(mock, event)
     mock.assert_called_once_with(value)
 
-@pytest.mark.skipif(
-    PY_VERSION == "3.7", reason="cannot patch inexisting package in 3.7"
-)
 def test_is_running_within_streamlit():
     assert utils.is_running_within_streamlit() is False
     with patch(
-        "streamlit.runtime.scriptrunner.get_script_run_ctx", create=True,
+        "mols2grid.utils._get_streamlit_script_run_ctx", create=True,
         new=lambda: object()
     ):
         assert utils.is_running_within_streamlit() is True
     with patch(
-        "streamlit.runtime.scriptrunner.get_script_run_ctx", create=True,
+        "mols2grid.utils._get_streamlit_script_run_ctx", create=True,
         new=lambda: None
     ):
         assert utils.is_running_within_streamlit() is False

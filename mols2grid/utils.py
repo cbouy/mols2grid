@@ -123,6 +123,10 @@ def callback_handler(callback, event):
     data = literal_eval(event.new)
     callback(data)
 
+def _get_streamlit_script_run_ctx():
+    from streamlit.runtime.scriptrunner import get_script_run_ctx
+    return get_script_run_ctx()
+
 def is_running_within_streamlit():
     """
     Function to check whether python code is run within streamlit
@@ -133,8 +137,8 @@ def is_running_within_streamlit():
         True if code is run within streamlit, else False
     """
     try:
-        from streamlit.runtime.scriptrunner import get_script_run_ctx
+        ctx = _get_streamlit_script_run_ctx()
     except ImportError:
         return False
     else:
-        return get_script_run_ctx() is not None
+        return ctx is not None
