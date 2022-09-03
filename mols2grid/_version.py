@@ -1,4 +1,4 @@
-version_info = (1, 0, 0, "rc1")
+version_info = (1, 0, 0, "rc2")
 
 __version__ = ".".join(map(str, version_info[:3]))
 if len(version_info) > 3:
