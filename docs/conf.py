@@ -34,7 +34,7 @@ extensions = [
     'sphinx.ext.viewcode', 'sphinx.ext.napoleon',
     'sphinx.ext.autosectionlabel',
     'sphinx_rtd_theme',
-    'm2r2',
+    'sphinx_mdinclude',
     'nbsphinx',
 ]
 
