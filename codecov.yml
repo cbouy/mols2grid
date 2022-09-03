@@ -1,0 +1,14 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 85%
+    patch:
+      default:
+        target: 0%
+comment:
+  layout: "diff, sunburst, reach, files"
+  behavior: default
+  require_changes: false
+  require_base: yes
+  require_head: yes

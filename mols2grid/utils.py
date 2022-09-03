@@ -1,5 +1,6 @@
 import re
 import gzip
+from ast import literal_eval
 from functools import wraps, partial
 from importlib.util import find_spec
 from jinja2 import Environment, FileSystemLoader
@@ -116,3 +117,28 @@ def make_popup_callback(title, html, js="", style=""):
 def slugify(string):
     """Replaces whitespaces with hyphens"""
     return re.sub(r"\s+", "-", string)
+
+def callback_handler(callback, event):
+    """Handler for applying the callback function on change"""
+    data = literal_eval(event.new)
+    callback(data)
+
+def _get_streamlit_script_run_ctx():
+    from streamlit.runtime.scriptrunner import get_script_run_ctx
+    return get_script_run_ctx()
+
+def is_running_within_streamlit():
+    """
+    Function to check whether python code is run within streamlit
+
+    Returns
+    -------
+    use_streamlit : boolean
+        True if code is run within streamlit, else False
+    """
+    try:
+        ctx = _get_streamlit_script_run_ctx()
+    except ImportError:
+        return False
+    else:
+        return ctx is not None

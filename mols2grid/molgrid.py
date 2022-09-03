@@ -1,22 +1,26 @@
 import warnings
 from base64 import b64encode
 from html import escape
+from functools import partial
 import json
 import pandas as pd
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem import Draw
+from .widget import MolGridWidget
 from .utils import (env,
+                    callback_handler,
                     requires,
                     tooltip_formatter,
                     mol_to_record,
                     mol_to_smiles,
                     sdf_to_dataframe,
                     remove_coordinates,
+                    is_running_within_streamlit,
                     slugify)
 from .select import register
 try:
-    from IPython.display import HTML, Javascript
+    from IPython.display import HTML, Javascript, display
 except ModuleNotFoundError:
     pass
 else:
@@ -113,13 +117,6 @@ class MolGrid:
         else:
             # list of dicts or other input formats for dataframes
             dataframe = pd.DataFrame(df)
-        mapping = kwargs.pop("mapping", None)
-        if mapping:
-            warnings.warn(
-                "`mapping` is deprecated and will be removed soon. Consider "
-                "using `rename` in the future."
-            )
-        rename = rename or mapping
         if rename:
             dataframe.rename(columns=rename, inplace=True)
         self._extra_columns = ["img", "mols2grid-id"]
@@ -155,13 +152,19 @@ class MolGrid:
             try:
                 self._cached_selection = register.get_selection(name)
             except KeyError:
-                self._cached_selection = None
+                self._cached_selection = {}
                 register._init_grid(name)
             else:
                 register._update_current_grid(name)
         else:
-            self._cached_selection = None
+            self._cached_selection = {}
             register._init_grid(name)
+        # create widget
+        widget = MolGridWidget(grid_id=name, selection=str(self._cached_selection))
+        selection_handler = partial(register.selection_updated, name)
+        widget.observe(selection_handler, names=["selection"])
+        display(widget)
+        self.widget = widget
 
     @classmethod
     def from_mols(cls, mols, **kwargs):
@@ -295,7 +298,7 @@ class MolGrid:
                  tooltip_trigger="click hover", tooltip_placement="bottom",
                  hover_color="#e7e7e7", style=None, selection=True, transform=None,
                  custom_css=None, custom_header=None, callback=None, sort_by=None,
-                 substruct_highlight=True, single_highlight=False):
+                 substruct_highlight=None, single_highlight=False):
         """Returns the HTML document for the "pages" template
 
         Parameters
@@ -381,7 +384,7 @@ class MolGrid:
         sort_by : str or None
             Sort the grid according to the following field (which must be
             present in ``subset`` or ``tooltip``).
-        substruct_highlight : bool
+        substruct_highlight : bool or None
             Highlight substructure when using the SMARTS search. Only available
             when ``prerender=False``
         single_highlight : bool
@@ -410,10 +413,19 @@ class MolGrid:
             If both ``subset`` and ``tooltip`` are ``None``, the index and
             image will be directly displayed on the grid while the remaining
             fields will be in the tooltip.
+        
+        .. versionchanged:: 1.0.0
+            ``callback`` can now be a *lambda* function. If ``prerender=True``,
+            substructure highlighting will be automatically disabled if it
+            wasn't explicitely set to ``True`` instead of raising an error.
+
         """
+        if substruct_highlight is None:
+            substruct_highlight = not self.prerender
         if substruct_highlight and self.prerender:
             raise ValueError(
-                "Cannot highlight substructure search with prerendered images")
+                "Cannot highlight substructure search with prerendered images"
+            )
         if self.mol_col:
             df = self.dataframe.drop(columns=self.mol_col).copy()
         else:
@@ -545,19 +557,9 @@ class MolGrid:
 
         # callback
         if callable(callback):
-            if callback.__name__ == "<lambda>":
-                raise TypeError(
-                    "Lambda functions are not supported as callbacks. Please "
-                    "use a regular function instead.")
-            # automatically register callback in Google Colab
-            try:
-                from google import colab
-            except:
-                pass
-            else:
-                colab.output.register_callback(callback.__name__, callback)
             callback_type = "python"
-            callback = callback.__name__
+            cb_handler = partial(callback_handler, callback)
+            self.widget.observe(cb_handler, names=["callback_kwargs"])
         else:
             callback_type = "js"
 
@@ -637,27 +639,24 @@ class MolGrid:
         Parameters
         ----------
         mask : list, pandas.Series or numpy.ndarray
-            Boolean array: `True` when the item should be displayed, `False` if it should
-            be filtered out. 
+            Boolean array: ``True`` when the item should be displayed,
+            ``False`` if it should be filtered out. 
         """
-        # convert mask to mols2grid-id
-        ids = self.dataframe.loc[mask]["mols2grid-id"]
-        return self._filter_by_id(ids)
+        if isinstance(mask, (pd.Series, np.ndarray)):
+            mask = mask.tolist()
+        if is_running_within_streamlit():
+            filtering_script = env.get_template('js/filter.js').render(
+                grid_id = self._grid_id,
+                mask = json.dumps(mask))
+            return Javascript(filtering_script)
+        else:
+            self.widget.filter_mask = mask
 
     def filter_by_index(self, indices):
         """Filters the grid using the dataframe's index"""
-        # convert index to mols2grid-id
-        ids = self.dataframe.loc[self.dataframe.index.isin(indices)]["mols2grid-id"]
-        return self._filter_by_id(ids)
-
-    def _filter_by_id(self, ids):
-        """Filters the grid using the values in the ``mols2grid-id`` column"""
-        if isinstance(ids, (pd.Series, np.ndarray)):
-            ids = ids.to_list()
-        code = env.get_template('js/filter.js').render(
-            grid_id = self._grid_id,
-            ids = ids)
-        return Javascript(code)
+        # convert index to mask
+        mask = self.dataframe.index.isin(indices)
+        return self.filter(mask)
 
     def to_table(self, subset=None, tooltip=None, n_cols=5,
                  cell_width=160, border="1px solid #cccccc", gap=0,

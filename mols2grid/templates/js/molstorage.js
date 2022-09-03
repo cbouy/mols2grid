@@ -19,7 +19,7 @@ class MolStorage extends Map {
         return content
     }
     download_smi(fileName) {
-        var content = "SMILES index\n";
+        var content = "";
         for (let [key, value] of this) {
             content += value + " " + key + "\n";
         }

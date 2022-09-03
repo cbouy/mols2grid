@@ -2,6 +2,7 @@ import pytest
 from numpy.testing import assert_equal
 from tempfile import NamedTemporaryFile
 from pathlib import Path
+from types import SimpleNamespace
 from rdkit import RDConfig, Chem
 from rdkit.Chem import Draw
 from rdkit.Chem.rdDepictor import Compute2DCoords
@@ -64,10 +65,6 @@ def test_copy_df(df):
 def test_records_as_input():
     data = [{"SMILES": "C"*i, "ID": i} for i in range(1, 5)]
     MolGrid(data)
-
-def test_mapping_deprecated():
-    with pytest.warns(UserWarning, match="`mapping` is deprecated"):
-        _make_grid(mapping={"SOL": "Solubility"})
 
 def test_rename():
     grid = _make_grid(rename={"SOL": "Solubility"})
@@ -217,8 +214,9 @@ def test_mol_to_img_png():
 def test_get_selection(df):
     grid = MolGrid(df, mol_col="mol", name="grid")
     other = MolGrid(df, mol_col="mol", name="other")
-    register._update_current_grid("grid")
-    register._set_selection(0, "")
+    event = SimpleNamespace(new='{0: ""}')
+    register.selection_updated("grid", event)
+    assert register.current_selection == "grid"
     assert grid.get_selection().equals(df.head(1))
     assert other.get_selection().equals(df.head(0))  # empty dataframe
     register._clear()
@@ -250,19 +248,14 @@ def test_integration_table(grid, kwargs):
     grid.to_table(**kwargs)
 
 def test_python_callback(grid_otf):
-    def myfunc():
-        pass
-    html = grid_otf.to_pages(subset=["img"], callback=myfunc)
-    assert "// call custom python callback" in html
+    html = grid_otf.to_pages(subset=["img"], callback=lambda data: None)
+    assert "// trigger custom python callback" in html
     assert "// no kernel detected for callback" in html
-
-def test_python_callback_lambda(grid_otf):
-    with pytest.raises(TypeError, match="Lambda functions are not supported"):
-        grid_otf.to_pages(subset=["img"], callback=lambda x: None)
 
 def test_cache_selection():
     grid = _make_grid(name="cache")
-    register.add_selection("cache", [0], ["CCO"])
+    event = SimpleNamespace(new='{0: "CCO"}')
+    register.selection_updated("cache", event)
     grid = _make_grid(name="cache", cache_selection=True)
     assert hasattr(grid, "_cached_selection")
     assert register.get_selection("cache") == grid._cached_selection
@@ -270,12 +263,12 @@ def test_cache_selection():
 def test_cache_no_init():
     grid = _make_grid(name="new_cache", cache_selection=True)
     assert hasattr(grid, "_cached_selection")
-    assert grid._cached_selection is None
+    assert grid._cached_selection == {}
     assert "new_cache" in register.list_grids()
 
 def test_no_cache_selection():
     grid = _make_grid(name="no_cache", cache_selection=False)
-    assert grid._cached_selection is None
+    assert grid._cached_selection == {}
     assert "no_cache" in register.list_grids()
 
 def test_onthefly_render_png_error(df):
@@ -284,10 +277,13 @@ def test_onthefly_render_png_error(df):
         MolGrid(df, prerender=False, useSVG=False)
 
 def test_substruct_highlight_prerender_error(grid):
-    with pytest.raises(ValueError,
-                       match="Cannot highlight substructure search with "
-                             "prerendered images"):
-        grid.display()
+    with pytest.raises(
+        ValueError,
+        match="Cannot highlight substructure search with prerendered images"
+    ):
+        grid.display(substruct_highlight=True)
+    # disables substruct highlight when prerendering by default
+    grid.display()
 
 def test_use_coords_onthefly_error():
     with pytest.raises(ValueError,

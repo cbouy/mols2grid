@@ -9,3 +9,7 @@ authors:
   - given-names: Cédric
     family-names: Bouysset
     orcid: 'https://orcid.org/0000-0002-7814-8158'
+doi: 10.5281/zenodo.6591473
+license: Apache-2.0
+repository-code: https://github.com/cbouy/mols2grid
+date-released: "2021-03-23"

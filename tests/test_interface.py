@@ -1,8 +1,10 @@
+import os
+import json
 import pytest
 from flaky import flaky
-import os
 from ast import literal_eval
 from base64 import b64encode, b64decode
+from types import SimpleNamespace
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -27,7 +29,8 @@ geckodriver_autoinstaller.install()
 pytestmark = pytest.mark.webdriver
 GITHUB_ACTIONS = os.environ.get("GITHUB_ACTIONS")
 
-HEADLESS = False
+HEADLESS = True
+PAGE_LOAD_TIMEOUT = 10
 
 class selection_available:
     def __init__(self, is_empty=False):
@@ -110,7 +113,7 @@ def driver():
     options = webdriver.FirefoxOptions()
     options.headless = True if GITHUB_ACTIONS else HEADLESS
     driver = FirefoxDriver(options=options)
-    driver.set_page_load_timeout(10)
+    driver.set_page_load_timeout(PAGE_LOAD_TIMEOUT)
     yield driver
     driver.quit()
 
@@ -162,18 +165,15 @@ def test_smiles_hidden(driver, html_doc):
     assert not el.is_displayed()
 
 @pytest.mark.parametrize("page", [1, 2, 3])
-@pytest.mark.parametrize("n_cols", [1, 3])
-@pytest.mark.parametrize("n_rows", [1, 3])
-def test_page_click(driver, grid, page, n_cols, n_rows):
-    doc = get_doc(grid, dict(subset=["img", "_Name"],
-                             n_cols=n_cols, n_rows=n_rows))
+def test_page_click(driver, grid, page):
+    doc = get_doc(grid, dict(subset=["img", "_Name"], n_cols=3, n_rows=3))
     driver.get(doc)
     for i in range(2, page+1):
         driver.wait_for_img_load()
         next_page = driver.find_by_css_selector(f'a.page-link[data-i="{i}"]')
         next_page.click()
     first_cell = driver.find_by_class_name('cell')
-    mols2grid_id = n_cols * n_rows * (page - 1)
+    mols2grid_id = 9 * (page - 1)
     name = first_cell.find_element_by_class_name('data-_Name')
     ref = grid.dataframe.iloc[mols2grid_id]
     assert name.text == ref["_Name"]
@@ -219,7 +219,8 @@ def test_selection_click(driver, html_doc):
 
 def test_selection_with_cache_check_and_uncheck(driver, df):
     register._init_grid("cached_sel")
-    register._set_selection(0, "CCC(C)CC")
+    event = SimpleNamespace(new='{0: "CCC(C)CC"}')
+    register.selection_updated("cached_sel", event)
     grid = get_grid(df, name="cached_sel", cache_selection=True)
     doc = get_doc(grid, {})
     driver.get(doc)
@@ -534,10 +535,9 @@ def test_filter(driver, grid):
     doc = get_doc(grid, {"subset": ["img", "_Name"],})
     driver.get(doc)
     mask = grid.dataframe["_Name"].str.contains("iodopropane")
-    ids = grid.dataframe.loc[mask]["mols2grid-id"].to_list()
     filter_code = env.get_template('js/filter.js').render(
         grid_id = grid._grid_id,
-        ids = ids)
+        mask = json.dumps(mask.tolist()))
     driver.wait_for_img_load()
     driver.execute_script(filter_code)
     el = driver.find_by_css_selector("#mols2grid .cell .data-_Name")

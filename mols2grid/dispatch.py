@@ -51,9 +51,9 @@ def display(arg, **kwargs):
     prerender : bool, default=False
         Prerender images for the entire dataset, or generate them on-the-fly
         when needed
-    substruct_highlight : bool, default=True
-        Highlight substructure when using the SMARTS search. Only available
-        when ``prerender=False``
+    substruct_highlight : bool, default=None
+        Highlight substructure when using the SMARTS search. Active by default
+        when ``prerender=False``.
     single_highlight : bool, default=False
         Highlight only the first match of the substructure query
     MolDrawOptions : rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions or None, default=None
@@ -164,8 +164,24 @@ def display(arg, **kwargs):
     Additionally, ``atomColourPalette`` is available to customize the atom
     palette if you're not prerendering image (``prerender=False``).
 
-    If ``subset=None, tooltip=None``, the index and image will be directly
-    displayed on the grid while the remaining fields will be in the tooltip.
+    .. versionadded:: 0.1.0
+        Added ``sort_by``, ``custom_css``, ``custom_header`` and ``callback``
+        arguments. Added the ability to style an entire cell with
+        ``style={"__all__": <function>}``.
+
+    .. versionadded:: 0.2.0
+        Added ``substruct_highlight`` argument
+
+    .. versionchanged:: 0.2.2
+        If both ``subset`` and ``tooltip`` are ``None``, the index and image
+        will be directly displayed on the grid while the remaining fields will
+        be in the tooltip.
+    
+    .. versionchanged:: 1.0.0
+        ``callback`` can now be a *lambda* function. If ``prerender=True``,
+        substructure highlighting will be automatically disabled if it wasn't
+        explicitely set to ``True`` instead of raising an error.
+
     """
     raise TypeError(f"No display method registered for type {type(arg)!r}")
 

@@ -2,10 +2,10 @@ name: CI
 on:
   push:
     branches:
-      - "*"
+      - master
   pull_request:
     branches:
-      - master
+      - "*"
   workflow_dispatch:
 
 defaults:
@@ -13,26 +13,36 @@ defaults:
     shell: bash -l {0}
 
 concurrency:
-  group: "${{ github.ref }}-${{ github.head_ref }}"
+  group: ${{ github.ref }}-${{ github.head_ref }}"
   cancel-in-progress: true
 
 jobs:
   tests:
-    name: CI-${{ matrix.os }} | py${{ matrix.python-version }} | ${{ matrix.dependencies }}
+    name: ${{ matrix.label }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        python-version: [3.8, 3.9]
-        dependencies: ["rdkit==2022.03.1"]
         include:
-        - name: CI min version
-          os: ubuntu-latest
-          python-version: 3.7
-          dependencies: "rdkit=2020.03.1=py37hdd87690_3 boost-cpp=1.72.0=h359cf19_6"
+          - label: CI-py3.8-rdkit2022
+            os: ubuntu-latest
+            python-version: 3.8
+            extra_dependencies: "rdkit==2022.03.1"
+          - label: CI-py3.10-latest
+            os: ubuntu-latest
+            python-version: "3.10"
+            extra_dependencies: "rdkit"
+          - label: CI-py3.7-rdkit2020
+            os: ubuntu-latest
+            python-version: 3.7
+            extra_dependencies: "rdkit=2020.03.1=py37hdd87690_3 boost-cpp=1.72.0=h359cf19_6"
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: Install node
+        uses: actions/setup-node@v1
+        with:
+          node-version: "12.x"
 
       - name: Install Firefox
         uses: browser-actions/setup-firefox@latest
@@ -45,27 +55,26 @@ jobs:
       - run: geckodriver --version
 
       - name: Cache conda
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           CACHE_NUMBER: 0
         with:
           path: ~/conda_pkgs_dir
           key:
-            ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{
-            hashFiles('etc/example-environment.yml') }}
+            conda-${{ hashFiles('environment.yml') }}-${{ matrix.label }}-${{ env.CACHE_NUMBER }}
 
       - name: Cache pip
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          key: pip-${{ hashFiles('setup.cfg') }}
+          restore-keys: pip-
 
       - name: Setup Conda
         uses: conda-incubator/setup-miniconda@v2
         with:
           python-version: ${{ matrix.python-version }}
+          environment-file: environment.yml
           mamba-version: "*"
           channels: conda-forge,defaults
           use-only-tar-bz2: true
@@ -78,14 +87,14 @@ jobs:
           conda --version
           mamba --version
 
-      - name: Install conda dependencies
+      - name: Install remaining conda dependencies
         run: |
-          mamba install ${{ matrix.dependencies }}
+          mamba install ${{ matrix.extra_dependencies }}
           mamba list
 
       - name: Install package through pip
         run: |
-          pip install .[tests]
+          pip install .[tests,build]
           pip list
       
       - name: Run tests
@@ -109,16 +118,16 @@ jobs:
                    tests/ -m "webdriver"
 
       - name: Measure tests coverage
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
-          file: coverage.xml
-          fail_ci_if_error: True
-          verbose: True
+          files: ./coverage.xml
+          fail_ci_if_error: true
+          verbose: true
 
       - name: Prepare for build
         run: |
           pip uninstall -y mols2grid
-          python setup.py sdist bdist_wheel
+          python -m build .
           echo "$SCRIPT" > test_install.py
           cat test_install.py
         env:
@@ -126,7 +135,7 @@ jobs:
             import mols2grid as mg
             from rdkit import RDConfig
             sdf = f"{RDConfig.RDDocsDir}/Book/data/solubility.test.sdf"
-            mg.save(sdf, output="/dev/null", subset=["img", "mols2grid-id"])
+            mg.save(sdf, output="/dev/null")
 
       - name: Test tar.gz build
         run: |

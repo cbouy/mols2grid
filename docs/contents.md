@@ -26,15 +26,21 @@ conda install -c conda-forge mols2grid
 
 Alternatively, you can also use pip:
 ```shell
-pip install mols2grid
+pip install rdkit mols2grid
 ```
 
-It is fully compatible with Jupyter Notebook and Google Colab and can run on Streamlit.  
-Visual Studio notebooks and Jupyterlab are not fully compatible for now.
+**Compatibility**
+
+mols2grid is mainly meant to be used in notebooks (Jupyter notebooks, Jupyter Lab, and Google Colab) but it can also be used as a standalone HTML page opened with your favorite web browser, or embedded in a Streamlit app.
+
+Since Streamlit doesn't seem to support ipywidgets yet, some features aren't functional: retrieving the selection from Python (you can still export it from the GUI) and using Python callbacks.
+
+Note that running notebooks in VSCode lacks support for filtering based on other widgets (see the `filtering` example notebook).
 
 <img alt="knime logo" align="left" style="padding:6px" src="https://www.knime.com/sites/default/files/favicons/favicon-32x32.png"/>
 <p>You can also use mols2grid directly in <a href="https://www.knime.com/">KNIME</a>, by looking for the `Interactive Grid of Molecules` component on the Knime HUB.<br/>
 Make sure you have setup <a href="https://docs.knime.com/latest/python_installation_guide">Knime's Python integration</a> for the node to work.</p>
+
 
 # 📜 Usage
 ---
@@ -72,11 +78,19 @@ Please head to the [notebooks](notebooks/quickstart.html) and [API reference](ap
 * [Viewing clustered chemical structures](https://practicalcheminformatics.blogspot.com/2021/07/viewing-clustered-chemical-structures.html) and [Exploratory data analysis](https://practicalcheminformatics.blogspot.com/2021/10/exploratory-data-analysis-with.html) by Pat Walters
 * [Advanced notebook (RDKit UGM 2021)](https://colab.research.google.com/github/rdkit/UGM_2021/blob/main/Notebooks/Bouysset_mols2grid.ipynb)
 
+Feel free to open a pull request if you'd like your snippets to be added to this list!
+
 # 👏 Acknowledgments
 ---
 * [@fredrikw](https://github.com/fredrikw) (contributor)
 * [@JustinChavez](https://github.com/JustinChavez) (contributor)
 * [@hadim](https://github.com/hadim) (conda feedstock maintainer)
+
+# 🎓 Citing
+---
+You can refer to mols2grid in your research by using the following DOI:
+
+[![DOI:10.5281/zenodo.6591473](https://zenodo.org/badge/348814588.svg)](https://zenodo.org/badge/latestdoi/348814588)
 
 # ⚖ License
 ---

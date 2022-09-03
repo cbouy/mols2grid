@@ -20,4 +20,4 @@ python:
       path: .
 
 conda:
-  environment: environment.yml
+  environment: docs/environment.yml
