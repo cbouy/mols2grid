@@ -41,7 +41,8 @@ jobs:
     - name: Install node
       uses: actions/setup-node@v1
       with:
-        node-version: "12.x"
+        node-version: '12.x'
+        registry-url: 'https://registry.npmjs.org/'
 
     - name: Install python with pip
       uses: actions/setup-python@v2
@@ -90,7 +91,7 @@ jobs:
         TWINE_PASSWORD: ${{ env.IS_PRERELEASE && secrets.TEST_PYPI_TOKEN || secrets.PYPI_TOKEN }}
         TWINE_REPOSITORY: ${{ env.IS_PRERELEASE && 'testpypi' || 'pypi' }}
       run: twine upload dist/mols2grid*.{tar.gz,whl}
-    
+
     - name: Publish the NPM package
       run: npm publish
       env:
