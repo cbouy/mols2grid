@@ -1,7 +1,6 @@
 from tempfile import NamedTemporaryFile
 from types import SimpleNamespace
-from unittest.mock import MagicMock, Mock, patch
-import sys
+from unittest.mock import Mock, patch
 import gzip
 import pytest
 import pandas as pd
