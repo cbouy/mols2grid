@@ -1,6 +1,7 @@
 from tempfile import NamedTemporaryFile
 from types import SimpleNamespace
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
+import sys
 import gzip
 import pytest
 import pandas as pd
@@ -162,3 +163,17 @@ def test_callback_handler(value):
     event = SimpleNamespace(new=str(value))
     utils.callback_handler(mock, event)
     mock.assert_called_once_with(value)
+
+def test_is_running_within_streamlit():
+    assert utils.is_running_within_streamlit() is False
+    with patch(
+        "streamlit.runtime.scriptrunner.get_script_run_ctx", create=True,
+        new=lambda: object()
+    ):
+        assert utils.is_running_within_streamlit() is True
+    with patch(
+        "streamlit.runtime.scriptrunner.get_script_run_ctx", create=True,
+        new=lambda: None
+    ):
+        assert utils.is_running_within_streamlit() is False
+
