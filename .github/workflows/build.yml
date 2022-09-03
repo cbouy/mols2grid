@@ -31,7 +31,7 @@ jobs:
         echo "py_is_pre=$py_is_pre" >> $GITHUB_ENV
         echo "js_is_pre=$js_is_pre" >> $GITHUB_ENV
 
-    - name: Check prerelease is correctly versioned
+    - name: Fail if prerelease is not correctly versioned
       if: env.IS_PRERELEASE && !( env.py_is_pre && env.js_is_pre )
       uses: actions/github-script@v3
       with:
@@ -71,7 +71,7 @@ jobs:
 
     - name: Install dependencies for packaging
       run: |
-        pip install setuptools wheel build virtualenv
+        pip install setuptools wheel build virtualenv twine
     
     - name: Check python installation
       run: |
