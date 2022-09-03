@@ -32,7 +32,7 @@ jobs:
         echo "js_is_pre=$js_is_pre" >> $GITHUB_ENV
 
     - name: Check prerelease is correctly versioned
-      if: env.IS_PRERELEASE && ( env.py_is_pre != true || env.js_is_pre != true )
+      if: env.IS_PRERELEASE && !( env.py_is_pre && env.js_is_pre )
       uses: actions/github-script@v3
       with:
         script: |
