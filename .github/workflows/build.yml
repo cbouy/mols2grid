@@ -21,7 +21,7 @@ jobs:
       uses: actions/checkout@v2
     
     - name: Get prerelease version tags
-      if: env.IS_PRERELEASE
+      if: env.IS_PRERELEASE == 'true'
       run: |
         py_dirty_tag=$(grep "version_info =" ./mols2grid/_version.py | cut -d, -f4)
         py_is_pre=$(test -z "$py_dirty_tag" && echo "false" || echo "true")
@@ -32,7 +32,7 @@ jobs:
         echo "js_is_pre=$js_is_pre" >> $GITHUB_ENV
 
     - name: Fail if prerelease is not correctly versioned
-      if: env.IS_PRERELEASE && !( env.py_is_pre && env.js_is_pre )
+      if: (env.IS_PRERELEASE == 'true') && !( env.py_is_pre && env.js_is_pre )
       uses: actions/github-script@v3
       with:
         script: |
@@ -88,8 +88,8 @@ jobs:
     - name: Publish the Python package
       env:
         TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ env.IS_PRERELEASE && secrets.TEST_PYPI_TOKEN || secrets.PYPI_TOKEN }}
-        TWINE_REPOSITORY: ${{ env.IS_PRERELEASE && 'testpypi' || 'pypi' }}
+        TWINE_PASSWORD: ${{ env.IS_PRERELEASE == 'true' && secrets.TEST_PYPI_TOKEN || secrets.PYPI_TOKEN }}
+        TWINE_REPOSITORY: ${{ env.IS_PRERELEASE == 'true' && 'testpypi' || 'pypi' }}
       run: twine upload dist/mols2grid*.{tar.gz,whl}
 
     - name: Publish the NPM package
