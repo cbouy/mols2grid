@@ -4,12 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2022/09/05
+## [1.0.0] - 2022/09/04
 ### Added
-- Notebooks running in VSCode and Jupyter Lab now support Python callbacks and accessing
-  selections from Python.
+- Notebooks running in VSCode and Jupyter Lab now support accessing selections from
+  Python, executing Python callback functions, and filtering based on other widgets.
 ### Changed
-- Callbacks can now also be `lambda` functions.
+- Python callbacks can now also be `lambda` functions.
 - If ``prerender=True``, substructure highlighting will be automatically disabled by
   default instead of raising an error.
 - When exporting a selection to a SMILES file through the GUI, the output no longer
@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and the back-end/Python.
 - When calling `grid.filter` and other filtering methods, mols2grid will now use the
   filtering code based on ipywidgets, except for Streamlit where it will use the older
-  JavaScript version of the code.
+  JavaScript version of the code to maintain compatibility.
 ### Removed
 - `mapping` argument for renaming fields, replaced by `rename` in `v0.1.0`.
 - `mols2grid.selection`, replaced by `mols2grid.get_selection()` in `v0.1.0`.

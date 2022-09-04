@@ -1,7 +1,7 @@
 {
   "name": "mols2grid",
-  "version": "1.0.0-rc6",
-  "description": "Custom widget for mols2grid",
+  "version": "1.0.0",
+  "description": "Custom widget for the Python mols2grid package",
   "keywords": [
     "jupyter",
     "jupyterlab",
