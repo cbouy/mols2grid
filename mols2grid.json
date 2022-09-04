@@ -1,0 +1,5 @@
+{
+  "load_extensions": {
+    "mols2grid/extension": true
+  }
+}

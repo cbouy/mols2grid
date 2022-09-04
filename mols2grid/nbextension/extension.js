@@ -6,7 +6,7 @@ define(function() {
     window['requirejs'].config({
         map: {
             '*': {
-                'mols2grid_widget': 'nbextensions/mols2grid_widget/index',
+                'mols2grid': 'nbextensions/mols2grid/index',
             },
         }
     });

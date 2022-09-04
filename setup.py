@@ -17,7 +17,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 name = 'mols2grid'
 
 # Get the version
-version = get_version(pjoin(name, '_version.py'))
+version = get_version(pjoin(HERE, name, '_version.py'))
 
 # Representative files that should exist after a successful build
 jstargets = [
@@ -33,10 +33,10 @@ package_data_spec = {
 }
 
 data_files_spec = [
-    ('share/jupyter/nbextensions/mols2grid_widget', 'mols2grid/nbextension', '**'),
-    ('share/jupyter/labextensions/mols2grid_widget', 'mols2grid/labextension', '**'),
-    ('share/jupyter/labextensions/mols2grid_widget', '.', 'install.json'),
-    ('etc/jupyter/nbconfig/notebook.d', '.', 'mols2grid_widget.json'),
+    ('share/jupyter/nbextensions/mols2grid', 'mols2grid/nbextension', '**'),
+    ('share/jupyter/labextensions/mols2grid', 'mols2grid/labextension', '**'),
+    ('share/jupyter/labextensions/mols2grid', '.', 'install.json'),
+    ('etc/jupyter/nbconfig/notebook.d', '.', 'mols2grid.json'),
 ]
 
 cmdclass = create_cmdclass(

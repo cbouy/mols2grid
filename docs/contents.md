@@ -29,6 +29,11 @@ Alternatively, you can also use pip:
 pip install rdkit mols2grid
 ```
 
+To use it in **Jupyter Lab**, you must also install the extension:
+```shell
+jupyter labextension install mols2grid
+```
+
 **Compatibility**
 
 mols2grid is mainly meant to be used in notebooks (Jupyter notebooks, Jupyter Lab, and Google Colab) but it can also be used as a standalone HTML page opened with your favorite web browser, or embedded in a Streamlit app.

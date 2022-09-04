@@ -6,6 +6,7 @@ from .select import (get_selection,
 from .utils import (sdf_to_dataframe,
                     make_popup_callback)
 from ._version import __version__
+from .widget import _jupyter_labextension_paths, _jupyter_nbextension_paths
 
 try:
     from google.colab import output

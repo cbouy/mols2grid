@@ -40,7 +40,7 @@ module.exports = [
   },
 
   /**
-   * Embeddable mols2grid_widget bundle
+   * Embeddable mols2grid bundle
    *
    * This bundle is almost identical to the notebook extension bundle. The only
    * difference is in the configuration of the webpack public path for the
@@ -55,8 +55,8 @@ module.exports = [
         filename: 'index.js',
         path: path.resolve(__dirname, 'dist'),
         libraryTarget: 'amd',
-        library: "mols2grid_widget",
-        publicPath: 'https://unpkg.com/mols2grid_widget@' + version + '/dist/'
+        library: "mols2grid",
+        publicPath: 'https://unpkg.com/mols2grid@' + version + '/dist/'
     },
     devtool: 'source-map',
     module: {

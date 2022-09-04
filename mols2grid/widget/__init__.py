@@ -13,8 +13,8 @@ def _jupyter_labextension_paths():
         during widget installation
     """
     return [{
-        'src': '../labextension',
-        'dest': 'mols2grid_widget',
+        'src': './labextension',
+        'dest': 'mols2grid',
     }]
 
 
@@ -36,7 +36,7 @@ def _jupyter_nbextension_paths():
     """
     return [{
         'section': 'notebook',
-        'src': '../nbextension',
-        'dest': 'mols2grid_widget',
-        'require': 'mols2grid_widget/extension'
+        'src': './nbextension',
+        'dest': 'mols2grid',
+        'require': 'mols2grid/extension'
     }]
