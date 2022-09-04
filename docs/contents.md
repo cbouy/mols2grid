@@ -29,18 +29,15 @@ Alternatively, you can also use pip:
 pip install rdkit mols2grid
 ```
 
-To use it in **Jupyter Lab**, you must also install the extension:
-```shell
-jupyter labextension install mols2grid
-```
+If you notice that the selections, callbacks and interactive filtering aren't working as intended, you may have to manually activate the extension:
+- for Jupyter Lab: `jupyter labextension install mols2grid`
+- for Jupyter Notebook: `jupyter nbextension install mols2grid`
 
 **Compatibility**
 
 mols2grid is mainly meant to be used in notebooks (Jupyter notebooks, Jupyter Lab, and Google Colab) but it can also be used as a standalone HTML page opened with your favorite web browser, or embedded in a Streamlit app.
 
 Since Streamlit doesn't seem to support ipywidgets yet, some features aren't functional: retrieving the selection from Python (you can still export it from the GUI) and using Python callbacks.
-
-Note that running notebooks in VSCode lacks support for filtering based on other widgets (see the `filtering` example notebook).
 
 <img alt="knime logo" align="left" style="padding:6px" src="https://www.knime.com/sites/default/files/favicons/favicon-32x32.png"/>
 <p>You can also use mols2grid directly in <a href="https://www.knime.com/">KNIME</a>, by looking for the `Interactive Grid of Molecules` component on the Knime HUB.<br/>
