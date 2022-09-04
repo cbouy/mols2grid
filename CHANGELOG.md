@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+---
+
 ## [1.0.0] - 2022/09/04
 ### Added
 - Notebooks running in VSCode and Jupyter Lab now support accessing selections from
@@ -19,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - When calling `grid.filter` and other filtering methods, mols2grid will now use the
   filtering code based on ipywidgets, except for Streamlit where it will use the older
   JavaScript version of the code to maintain compatibility.
+### Fixed
+- Automatically fitting to the content's height in Streamlit.
 ### Removed
 - `mapping` argument for renaming fields, replaced by `rename` in `v0.1.0`.
 - `mols2grid.selection`, replaced by `mols2grid.get_selection()` in `v0.1.0`.
