@@ -107,6 +107,6 @@ window
     listObj.update();
     // resize iframe to fit content
     if (window.frameElement) {
-        window.parent.fit_height(window.frameElement);
+        fit_height(window.frameElement);
     }
 });

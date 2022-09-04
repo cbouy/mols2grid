@@ -581,6 +581,7 @@ class MolGrid:
 
         template = env.get_template('pages.html')
         template_kwargs = dict(
+            padding = 18,
             width = width,
             height = self.img_size[1],
             border = border,
@@ -819,6 +820,7 @@ class MolGrid:
 
         template = env.get_template('table.html')
         template_kwargs = dict(
+            padding = 18,
             border = border,
             textalign = textalign,
             cell_width = cell_width,
@@ -846,7 +848,7 @@ class MolGrid:
         """
         doc = self.render(**kwargs)
         iframe = (env.get_template("html/iframe.html")
-                     .render(width=width, height=height, padding=18,
+                     .render(width=width, height=height,
                              allow=iframe_allow, doc=escape(doc)))
         return HTML(iframe)
 
