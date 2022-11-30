@@ -6,7 +6,9 @@ var html = `
   <div class="modal-dialog" style="{{ style }}">
     <div class="modal-content">
       <div class="modal-header">
+      {% if title %}
         <h5 class="modal-title">{{ title }}</h5>
+      {% endif %}
         <button type="button" class="close" data-dismiss="modal">
           <span>&times;</span>
         </button>
