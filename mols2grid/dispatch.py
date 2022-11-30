@@ -199,6 +199,7 @@ def _(sdf, **kwargs):
 
 @display.register(Series)
 @display.register(list)
+@display.register(tuple)
 def _(mols, **kwargs):
     template, kwargs, render_kwargs = _prepare_kwargs(kwargs, "display")
     return MolGrid.from_mols(mols, **kwargs).display(template=template,
@@ -237,6 +238,7 @@ def _(sdf, **kwargs):
 
 @save.register(Series)
 @save.register(list)
+@display.register(tuple)
 def _(mols, **kwargs):
     template, kwargs, render_kwargs = _prepare_kwargs(kwargs, "save")
     output = kwargs.pop("output")
