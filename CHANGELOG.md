@@ -7,7 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Predefined JavaScript callbacks in the `mols2grid.callbacks` module. Those can be
+  extensively configured:
+  - `info`: displays a bigger image alongside some common descriptors for the molecule
+  - `show_3d`: displays the molecule in 3D
+  - `external_link`: opens a new tab. By default, opens [Leruli.com](https://leruli.com/)
+    using the SMILES of the molecule.
 - Support for `tuple` in `display` and `save`.
+
+### Changed
+- The ``"click"`` event is now automatically removed from ``tooltip_trigger`` when
+  specifying a callback.
+
+### Fixed
+- The link to the KNIME component on the corresponding badges has been fixed.
 
 ---
 
