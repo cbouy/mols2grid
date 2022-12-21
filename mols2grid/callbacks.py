@@ -59,9 +59,10 @@ def info(title="SMILES", img_size=(400, 300), style="max-width: 80%;"):
     return make_popup_callback(
         title=_get_title_field(title),
         js=f"""
-            var mol = RDKit.get_mol(data["SMILES"]);
-            var svg = mol.get_svg({img_size[0]}, {img_size[1]});
-            var desc = JSON.parse(mol.get_descriptors());
+            let mol = RDKit.get_mol(data["SMILES"]);
+            let svg = mol.get_svg({img_size[0]}, {img_size[1]});
+            let desc = JSON.parse(mol.get_descriptors());
+            let inchikey = RDKit.get_inchikey_for_inchi(mol.get_inchi());
             mol.delete();
         """,
         html="""
@@ -73,6 +74,8 @@ def info(title="SMILES", img_size=(400, 300), style="max-width: 80%;"):
                 <b>HBond Donors</b>: ${desc.NumHBD}<br/>
                 <b>TPSA</b>: ${desc.tpsa}<br/>
                 <b>ClogP</b>: ${desc.CrippenClogP}<br/>
+                <br/>
+                <b>InChIKey</b>: ${inchikey}
             </div>
             </div>""",
         style=style,
