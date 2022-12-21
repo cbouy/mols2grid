@@ -557,6 +557,9 @@ class MolGrid:
         item = item.format(checkbox=checkbox, content="".join(content))
 
         # callback
+        if callback and "click" in tooltip_trigger and len(tooltip_trigger.split()) > 1:
+            # remove click from triggers if callback is present
+            tooltip_trigger = tooltip_trigger.replace("click", "")
         if isinstance(callback, _JSCallback):
             if custom_header and callback.library_src:
                 custom_header += callback.library_src
