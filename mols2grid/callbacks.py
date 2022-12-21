@@ -124,3 +124,17 @@ def show_3d(
     return _JSCallback(code=code, library_src=library)
 
 
+def external_link(
+    url="https://leruli.com/search/{}/home",
+    field="SMILES",
+    url_encode=False,
+    b64_encode=True,
+):
+    if url_encode and b64_encode:
+        raise ValueError("Setting both URL and B64 encoding is not supported")
+    return env.get_template('js/callbacks/external_link.js').render(
+        url=url,
+        field=field,
+        url_encode=url_encode,
+        b64_encode=b64_encode,
+    )
