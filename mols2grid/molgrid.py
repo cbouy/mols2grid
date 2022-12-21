@@ -845,8 +845,14 @@ class MolGrid:
         return template.render(**template_kwargs)
 
     @requires("IPython.display")
-    def display(self, width="100%", height=None, iframe_allow="clipboard-write",
-                **kwargs):
+    def display(
+        self,
+        width="100%",
+        height=None,
+        iframe_allow="clipboard-write",
+        iframe_sandbox="allow-scripts allow-same-origin allow-downloads allow-popups allow-modals",
+        **kwargs
+    ):
         """Render and display the grid in a Jupyter notebook
         
         Returns
@@ -856,7 +862,8 @@ class MolGrid:
         doc = self.render(**kwargs)
         iframe = (env.get_template("html/iframe.html")
                      .render(width=width, height=height,
-                             allow=iframe_allow, doc=escape(doc)))
+                             allow=iframe_allow, sandbox=iframe_sandbox,
+                             doc=escape(doc)))
         return HTML(iframe)
 
     def save(self, output, **kwargs):
