@@ -130,18 +130,6 @@ def test_remove_coordinates():
     with pytest.raises(ValueError, match="Bad Conformer Id"):
         new.GetConformer()
 
-def test_make_popup_callback():
-    popup = utils.make_popup_callback(
-        title="${title}",
-        html='<span id="foo">${title}</span>',
-        js='var title = "FOOBAR";',
-        style="max-width: 42%;",
-    )
-    assert '<h5 class="modal-title">${title}</h5>' in popup
-    assert '<span id="foo">${title}</span>' in popup
-    assert '// prerequisite JavaScript code\nvar title = "FOOBAR";' in popup
-    assert '<div class="modal-dialog" style="max-width: 42%;">' in popup
-
 @pytest.mark.parametrize(["string", "expected"], [
     ("Mol", "Mol"),
     ("mol name", "mol-name"),
