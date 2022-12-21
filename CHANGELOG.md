@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for `tuple` in `display` and `save`.
 
 ### Changed
-- The ``"click"`` event is now automatically removed from ``tooltip_trigger`` when
+- The `"click"` event is now automatically removed from `tooltip_trigger` when
   specifying a callback.
 
 ### Fixed

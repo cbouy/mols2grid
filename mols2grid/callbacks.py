@@ -43,8 +43,8 @@ def _get_title_field(title):
 
 def info(title="SMILES", img_size=(400, 300), style="max-width: 80%;"):
     """Displays a bigger image of the molecule, alongside some useful descriptors:
-    molecular weight, number of Hydrogen bond donors and acceptors, TPSA and Crippen
-    ClogP.
+    molecular weight, number of Hydrogen bond donors and acceptors, TPSA, Crippen ClogP
+    and InChIKey.
 
     Parameters
     ----------
