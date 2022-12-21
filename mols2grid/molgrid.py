@@ -19,6 +19,7 @@ from .utils import (env,
                     is_running_within_streamlit,
                     slugify)
 from .select import register
+from .callbacks import _JSCallback
 try:
     from IPython.display import HTML, Javascript, display
 except ModuleNotFoundError:
@@ -556,6 +557,12 @@ class MolGrid:
         item = item.format(checkbox=checkbox, content="".join(content))
 
         # callback
+        if isinstance(callback, _JSCallback):
+            if custom_header and callback.library_src:
+                custom_header += callback.library_src
+            else:
+                custom_header = callback.library_src
+            callback = callback.code
         if callable(callback):
             callback_type = "python"
             cb_handler = partial(callback_handler, callback)
