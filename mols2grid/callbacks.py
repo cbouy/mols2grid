@@ -85,8 +85,8 @@ def show_3d(
         height="350px",
         style="max-width: 80%"
     ):
-    """Queries the API listed in ``resolver`` using the SMILES of the structure, to
-    fetch the 3D structure and display it with 3Dmol.js
+    """Queries the API(s) listed in ``query`` using the SMILES of the structure, to
+    fetch the 3D structure and display it with ``3Dmol.js``
 
     Parameters
     ----------
@@ -107,7 +107,6 @@ def show_3d(
         In this example, the value in the ``SMILES`` field will be URI-encoded and
         replace the curly-braces in the ``url`` strings to create the URL to fetch
         the 3D structure from in the SDF format.
-
     height : str
         Height of the 3Dmol.js viewer in the modal.
     style : str
@@ -130,6 +129,26 @@ def external_link(
     url_encode=False,
     b64_encode=True,
 ):
+    """Opens an external link using ``url`` as a template string and the value in the
+    corresponding ``field``. The value can be URL-encoded or base64-encoded if needed.
+
+    Parameters
+    ----------
+    url : str
+        Template string used to generate the URL that will be opened.
+    field : str
+        Field name used to generate the URL that will be opened. The value can be
+        encoded (see below).
+    url_encode : bool
+        Encode the value fetched from the specified field to replace characters that are
+        not allowed in a URL e.g., spaces become ``%20``.
+    b64_encode : bool
+        Base64-encode the value fetched from the field.
+    
+    Raises
+    ------
+    ValueError : Both ``url_encode`` and ``b64_encode`` have been specified.
+    """
     if url_encode and b64_encode:
         raise ValueError("Setting both URL and B64 encoding is not supported")
     return env.get_template('js/callbacks/external_link.js').render(
