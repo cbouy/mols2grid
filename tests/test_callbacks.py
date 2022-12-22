@@ -1,3 +1,5 @@
+import pytest
+
 from mols2grid import callbacks
 
 def test_make_popup_callback():
@@ -11,3 +13,12 @@ def test_make_popup_callback():
     assert '<span id="foo">${title}</span>' in popup
     assert '// prerequisite JavaScript code\nvar title = "FOOBAR";' in popup
     assert '<div class="modal-dialog" style="max-width: 42%;">' in popup
+
+
+@pytest.mark.parametrize("title, expected", [
+    ("SMILES", "${data['SMILES']}"),
+    (None, None),
+])
+def test_title_field(title, expected):
+    assert callbacks._get_title_field(title) == expected
+

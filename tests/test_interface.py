@@ -68,6 +68,16 @@ class FirefoxDriver(webdriver.Firefox):
         condition = EC.element_to_be_clickable((by, selector))
         return self.wait(condition, **kwargs)
 
+    def trigger_callback(self, selector="#mols2grid .cell .data-img *", pause=0.2):
+        self.wait_for_img_load()
+        el = self.find_clickable(By.CSS_SELECTOR, selector)
+        (ActionChains(self)
+            .move_to_element(el)
+            .pause(pause)
+            .click()
+            .perform()
+        )
+
     def find_by_css_selector(self, css_selector, **kwargs):
         condition = EC.presence_of_element_located((By.CSS_SELECTOR, css_selector))
         return self.wait(condition, **kwargs)
@@ -695,3 +705,57 @@ def test_highlight_with_hydrogens(driver: FirefoxDriver, df):
     assert (
         str(hash_) == "fdfffcfff8fffcfffdc7cdc780cf885bd901fb81f3b3f3bfff9fff1fff9fffbf"
     )
+
+def test_callbacks_info(driver: FirefoxDriver, grid):
+    doc = get_doc(grid, {"callback": mols2grid.callbacks.info()})
+    driver.get(doc)
+    driver.trigger_callback()
+    modal = driver.find_by_css_selector("div.modal-content")
+    assert (
+        modal
+        .find_element_by_css_selector(".modal-header .modal-title")
+        .get_attribute("innerHTML") == "CCC(C)CC"
+    )
+    content = (
+        modal
+        .find_element_by_css_selector(".modal-body .row .col:nth-child(2)")
+        .get_attribute("innerHTML")
+    )
+    assert "PFEOZHBOMNWTJB-UHFFFAOYSA-N" in content
+
+
+def test_callbacks_3D(driver: FirefoxDriver, grid):
+    doc = get_doc(grid, {"callback": mols2grid.callbacks.show_3d()})
+    driver.get(doc)
+    driver.trigger_callback()
+    modal = driver.find_by_css_selector("div.modal-content")
+    assert (
+        modal
+        .find_element_by_css_selector(".modal-header .modal-title")
+        .get_attribute("innerHTML") == "CCC(C)CC"
+    )
+    content = (
+        modal
+        .find_element_by_css_selector(".modal-body")
+        .get_attribute("innerHTML")
+    )
+    assert '<div id="molviewer' in content
+    # cannot test for actual rendering as there's no GL available
+    assert driver.execute_script("return typeof($3Dmol)") != "undefined"
+
+def test_callbacks_external_link(driver: FirefoxDriver, grid):
+    doc = get_doc(grid, {"callback": mols2grid.callbacks.external_link()})
+    driver.get(doc)
+    driver.trigger_callback()
+    # check if new tab was opened
+    assert len(driver.window_handles) > 1
+    urls = []
+    for handle in driver.window_handles[1:]:
+        driver.switch_to_window(handle)
+        driver.wait(EC.url_contains("https://"))
+        url = driver.current_url
+        if url == "https://leruli.com/search/Q0NDKEMpQ0M=/home":
+            break
+        urls.append(url)
+    else:
+        raise AssertionError("Corresponding URL not found", urls)
