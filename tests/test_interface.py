@@ -322,7 +322,7 @@ def test_coordgen(driver: FirefoxDriver, mols, coordGen, prerender, expected):
 @pytest.mark.parametrize(["removeHs", "prerender", "expected"], [
     (True, True, "fffffffffffffe7ffe7ffe7ffe7ffe7ffe7f3e7c8811c183e7e7ffffffffffff"),
     (False, True, (
-        "ffffff7fff3fffbff907e03fe13ff80fcb2fe33fe033cb07fa4ffa47ff97ffff"
+        "ffffff7fff3fffbff907e02fe13ff80fcbafe33fe033cb07fa4ffa4fff97ffd7"
         if rdkit_version == "2020.03.1" else "ff7ffe1ff91ffd3ff00ff0cffcbff0bff00ffd3fe1bff887f29ff30fff6fff7f"
     )),
     (True, False, "fffffffffffffe7ffe7ffe7ffe7ffe7ffe7f3e7c8811c183e7e7ffffffffffff"),
@@ -343,6 +343,8 @@ def test_removeHs(driver: FirefoxDriver, df, removeHs, prerender, expected):
         hash_ = driver.get_svg_hash()
     else:
         hash_ = driver.get_png_hash()
+    if expected == "":
+        raise AssertionError(str(hash_))
     diff = hash_ - imagehash.hex_to_hash(expected)
     assert diff <= 1
 
