@@ -19,6 +19,7 @@ from .utils import (env,
                     is_running_within_streamlit,
                     slugify)
 from .select import register
+from .callbacks import _JSCallback
 try:
     from IPython.display import HTML, Javascript, display
 except ModuleNotFoundError:
@@ -556,6 +557,15 @@ class MolGrid:
         item = item.format(checkbox=checkbox, content="".join(content))
 
         # callback
+        if callback and "click" in tooltip_trigger and len(tooltip_trigger.split()) > 1:
+            # remove click from triggers if callback is present
+            tooltip_trigger = tooltip_trigger.replace("click", "")
+        if isinstance(callback, _JSCallback):
+            if custom_header and callback.library_src:
+                custom_header += callback.library_src
+            else:
+                custom_header = callback.library_src
+            callback = callback.code
         if callable(callback):
             callback_type = "python"
             cb_handler = partial(callback_handler, callback)
@@ -838,8 +848,14 @@ class MolGrid:
         return template.render(**template_kwargs)
 
     @requires("IPython.display")
-    def display(self, width="100%", height=None, iframe_allow="clipboard-write",
-                **kwargs):
+    def display(
+        self,
+        width="100%",
+        height=None,
+        iframe_allow="clipboard-write",
+        iframe_sandbox="allow-scripts allow-same-origin allow-downloads allow-popups allow-modals",
+        **kwargs
+    ):
         """Render and display the grid in a Jupyter notebook
         
         Returns
@@ -849,7 +865,8 @@ class MolGrid:
         doc = self.render(**kwargs)
         iframe = (env.get_template("html/iframe.html")
                      .render(width=width, height=height,
-                             allow=iframe_allow, doc=escape(doc)))
+                             allow=iframe_allow, sandbox=iframe_sandbox,
+                             doc=escape(doc)))
         return HTML(iframe)
 
     def save(self, output, **kwargs):

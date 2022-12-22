@@ -51,6 +51,8 @@ jobs:
 
       - name: Prepare Selenium
         uses: browser-actions/setup-geckodriver@latest
+        with:
+          geckodriver-version: "0.32.0"
       
       - run: geckodriver --version
 

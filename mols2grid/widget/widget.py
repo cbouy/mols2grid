@@ -31,4 +31,4 @@ class MolGridWidget(DOMWidget):
     grid_id = Unicode("default").tag(sync=True)
     selection = Unicode("{}").tag(sync=True)
     callback_kwargs = Unicode("{}").tag(sync=True)
-    filter_mask = List(Bool, []).tag(sync=True)
+    filter_mask = List(Bool(), []).tag(sync=True)

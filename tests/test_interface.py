@@ -13,13 +13,13 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import (NoSuchElementException,
                                         StaleElementReferenceException)
+import imagehash
 import geckodriver_autoinstaller
 from rdkit import __version__ as rdkit_version
 from rdkit import Chem, RDConfig
 from rdkit.Chem import AllChem
 from PIL import Image
 from io import BytesIO
-from hashlib import md5
 from cairosvg import svg2png
 import mols2grid
 from mols2grid.utils import env
@@ -68,6 +68,16 @@ class FirefoxDriver(webdriver.Firefox):
         condition = EC.element_to_be_clickable((by, selector))
         return self.wait(condition, **kwargs)
 
+    def trigger_callback(self, selector="#mols2grid .cell .data-img *", pause=0.2):
+        self.wait_for_img_load()
+        el = self.find_clickable(By.CSS_SELECTOR, selector)
+        (ActionChains(self)
+            .move_to_element(el)
+            .pause(pause)
+            .click()
+            .perform()
+        )
+
     def find_by_css_selector(self, css_selector, **kwargs):
         condition = EC.presence_of_element_located((By.CSS_SELECTOR, css_selector))
         return self.wait(condition, **kwargs)
@@ -80,16 +90,21 @@ class FirefoxDriver(webdriver.Firefox):
         condition = EC.presence_of_all_elements_located((By.CLASS_NAME, name))
         return self.wait(condition, **kwargs)
 
-    def get_svg_md5_hash(self, selector="#mols2grid .cell .data-img"):
-        img = self.find_by_css_selector(selector)
-        im = svg2png(bytestring=(img.get_attribute("innerHTML")))
-        im = Image.open(BytesIO(im))
-        return md5(im.tobytes()).hexdigest()
+    def get_svg_hash(self, *args, **kwargs):
+        im = next(self.get_imgs_from_svgs(*args, **kwargs))
+        return imagehash.average_hash(im, hash_size=16)
+    
+    def get_imgs_from_svgs(self, selector="#mols2grid .cell .data-img"):
+        condition = EC.presence_of_all_elements_located((By.CSS_SELECTOR, selector))
+        svgs = self.wait(condition)
+        for svg in svgs:
+            im = svg2png(bytestring=(svg.get_attribute("innerHTML")))
+            yield Image.open(BytesIO(im))
 
-    def get_png_md5_hash(self, selector="#mols2grid .cell .data-img *"):
+    def get_png_hash(self, selector="#mols2grid .cell .data-img *"):
         img = self.find_by_css_selector(selector)
         im = Image.open(BytesIO(b64decode(img.get_attribute("src")[22:])))
-        return md5(im.tobytes()).hexdigest()
+        return imagehash.average_hash(im, hash_size=16)
 
     def substructure_query(self, smarts):
         self.find_clickable(By.ID, "searchBtn").click()
@@ -146,7 +161,7 @@ def html_doc(grid):
 
 # make sure non-parametrized test is ran first
 @pytest.mark.order(1)
-def test_no_subset_all_visible(driver, grid):
+def test_no_subset_all_visible(driver: FirefoxDriver, grid):
     doc = get_doc(grid, {"tooltip": [], "selection": False})
     driver.get(doc)
     columns = set(grid.dataframe.columns.drop("mol").to_list())
@@ -159,13 +174,13 @@ def test_no_subset_all_visible(driver, grid):
     classes = set(classes)
     assert classes == columns
 
-def test_smiles_hidden(driver, html_doc):
+def test_smiles_hidden(driver: FirefoxDriver, html_doc):
     driver.get(html_doc)
     el = driver.find_by_css_selector("#mols2grid .cell .data-SMILES")
     assert not el.is_displayed()
 
 @pytest.mark.parametrize("page", [1, 2, 3])
-def test_page_click(driver, grid, page):
+def test_page_click(driver: FirefoxDriver, grid, page):
     doc = get_doc(grid, dict(subset=["img", "_Name"], n_cols=3, n_rows=3))
     driver.get(doc)
     for i in range(2, page+1):
@@ -188,13 +203,13 @@ def test_page_click(driver, grid, page):
     ("textalign", "text-align", "right", "right"),
     ("custom_css", "background-color", ".cell { background-color: black; }", "rgb(0, 0, 0)"),
 ])
-def test_css_properties(driver, grid, name, css_prop, value, expected):
+def test_css_properties(driver: FirefoxDriver, grid, name, css_prop, value, expected):
     doc = get_doc(grid, {name: value})
     driver.get(doc)
     computed = driver.execute_script(f"return getComputedStyle(document.querySelector('#mols2grid .cell')).getPropertyValue({css_prop!r});")
     assert computed == expected
 
-def test_text_search(driver, html_doc):
+def test_text_search(driver: FirefoxDriver, html_doc):
     driver.get(html_doc)
     driver.wait_for_img_load()
     driver.text_search("iodopropane")
@@ -202,14 +217,14 @@ def test_text_search(driver, html_doc):
     assert el.get_attribute("innerHTML") == "CC(I)C"
 
 @flaky(max_runs=3, min_passes=1)
-def test_smarts_search(driver, html_doc):
+def test_smarts_search(driver: FirefoxDriver, html_doc):
     driver.get(html_doc)
     driver.wait_for_img_load()
     driver.substructure_query("CC(I)C")
     el = driver.find_by_css_selector("#mols2grid .cell .data-_Name")
     assert el.text == "2-iodopropane"
 
-def test_selection_click(driver, html_doc):
+def test_selection_click(driver: FirefoxDriver, html_doc):
     driver.get(html_doc)
     driver.wait_for_img_load()
     driver.find_clickable(By.CSS_SELECTOR, "input[type='checkbox']").click()
@@ -217,7 +232,7 @@ def test_selection_click(driver, html_doc):
     assert sel == {0: "CCC(C)CC"}
     register._clear()
 
-def test_selection_with_cache_check_and_uncheck(driver, df):
+def test_selection_with_cache_check_and_uncheck(driver: FirefoxDriver, df):
     register._init_grid("cached_sel")
     event = SimpleNamespace(new='{0: "CCC(C)CC"}')
     register.selection_updated("cached_sel", event)
@@ -232,7 +247,7 @@ def test_selection_with_cache_check_and_uncheck(driver, df):
     assert empty_sel is True
     register._clear()
 
-def test_selection_check_uncheck_invert(driver, html_doc):
+def test_selection_check_uncheck_invert(driver: FirefoxDriver, html_doc):
     driver.get(html_doc)
     driver.wait_for_img_load()
     # search
@@ -260,7 +275,7 @@ def test_selection_check_uncheck_invert(driver, html_doc):
     register._clear()
 
 @pytest.mark.parametrize("prerender", [True, False])
-def test_image_size(driver, df, prerender):
+def test_image_size(driver: FirefoxDriver, df, prerender):
     grid = get_grid(df, size=(100, 100), prerender=prerender)
     doc = get_doc(grid, {"selection": False, "border": "0", "substruct_highlight": False})
     driver.get(doc)
@@ -269,26 +284,28 @@ def test_image_size(driver, df, prerender):
     img = driver.find_by_css_selector("#mols2grid .cell .data-img *")
     assert img.size == {"height": 100.0, "width": 100.0}
 
-def test_image_use_coords(driver, df):
+def test_image_use_coords(driver: FirefoxDriver, df):
     mols = df["mol"][:1]
     AllChem.EmbedMolecule(mols[0], randomSeed=0xf00d)
     grid = mols2grid.MolGrid.from_mols(
         mols, use_coords=True, prerender=True, useSVG=False)
     doc = get_doc(grid, {"substruct_highlight": False})
     driver.get(doc)
-    md5_hash = driver.get_png_md5_hash()
-    if rdkit_version == "2020.03.1":
-        assert md5_hash == "aed60ed28347831d24f02dbb5be19007"
-    else:
-        assert md5_hash == "80ac785821c6aee7923c793930c4723e"
+    hash_ = driver.get_png_hash()
+    diff = (
+        hash_ - imagehash.hex_to_hash(
+            "ffffffffff7fff7ffe7ffe7ffe7ffe7ffe7fe07fc33f0fbc3f80ffc7ffffffff"
+        )
+    )
+    assert diff <= 2
 
 @pytest.mark.parametrize(["coordGen", "prerender", "expected"], [
-    (True,  True, "acf7cf7cd5cfaa5eaf4a4f257e290e49"),
-    (False, True, "34a44eef3c0d2af6503069fc068e705d"),
-    (True, False, "d8227a9948b6f801193085e5a8b257a2"),
-    (False, False, "a43327f2cfcff45a2aa87217cb658eb8"),
+    (True,  True, "fffffffffffffe7ffe7ffe7ffe7ffe7ffe7f3e7c8811c183e7e7ffffffffffff"),
+    (True, False, "fffffffffffffe7ffe7ffe7ffe7ffe7ffe7f3e7c8811c183e7e7ffffffffffff"),
+    (False, True, "ffffffff03fcf9fcfdf9fcf9fcfbfe03fe07fcfffcfffdfff9fffbffffffffff"),
+    (False, False, "ffffffff03fcf9fcfdf9fcf9fcfbfe03fe07fcfffcfffdfff9fffbffffffffff"),
 ])
-def test_coordgen(driver, mols, coordGen, prerender, expected):
+def test_coordgen(driver: FirefoxDriver, mols, coordGen, prerender, expected):
     useSVG = not prerender
     grid = mols2grid.MolGrid.from_mols(mols,
         coordGen=coordGen, prerender=prerender, useSVG=useSVG, use_coords=False)
@@ -297,20 +314,21 @@ def test_coordgen(driver, mols, coordGen, prerender, expected):
     if not prerender:
         driver.wait_for_img_load()
     if useSVG:
-        md5_hash = driver.get_svg_md5_hash()
+        hash_ = driver.get_svg_hash()
     else:
-        md5_hash = driver.get_png_md5_hash()
-    assert md5_hash == expected
+        hash_ = driver.get_png_hash()
+    assert str(hash_) == expected
 
 @pytest.mark.parametrize(["removeHs", "prerender", "expected"], [
-    (True, True, "acf7cf7cd5cfaa5eaf4a4f257e290e49"),
-    (False, True, ("2d30379732d312409d1d93ad5b3c3e60"
-                   if rdkit_version == "2020.03.1"
-                   else "b163a9cb19caee002ff9d739ed513672")),
-    (True, False, "d8227a9948b6f801193085e5a8b257a2"),
-    (False, False, "a8d830b6127c390dd5759a6ab1af8b3a"),
+    (True, True, "fffffffffffffe7ffe7ffe7ffe7ffe7ffe7f3e7c8811c183e7e7ffffffffffff"),
+    (False, True, (
+        "ffffff7fff3fffbff907e02fe13ff80fcbafe33fe033cb07fa4ffa4fff97ffd7"
+        if rdkit_version == "2020.03.1" else "ff7ffe1ff91ffd3ff00ff0cffcbff0bff00ffd3fe1bff887f29ff30fff6fff7f"
+    )),
+    (True, False, "fffffffffffffe7ffe7ffe7ffe7ffe7ffe7f3e7c8811c183e7e7ffffffffffff"),
+    (False, False, "ff7ffe1ff91ffd3ff00ff0cffcbff0bff00ffd3fe1bff887f29ff30fff6fff7f"),
 ])
-def test_removeHs(driver, df, removeHs, prerender, expected):
+def test_removeHs(driver: FirefoxDriver, df, removeHs, prerender, expected):
     useSVG = not prerender
     mol = df["mol"][0]
     mol.ClearProp("SMILES")
@@ -322,26 +340,33 @@ def test_removeHs(driver, df, removeHs, prerender, expected):
     if not prerender:
         driver.wait_for_img_load()
     if useSVG:
-        md5_hash = driver.get_svg_md5_hash()
+        hash_ = driver.get_svg_hash()
     else:
-        md5_hash = driver.get_png_md5_hash()
-    assert md5_hash == expected
+        hash_ = driver.get_png_hash()
+    if expected == "":
+        raise AssertionError(str(hash_))
+    diff = hash_ - imagehash.hex_to_hash(expected)
+    assert diff <= 1
 
 @pytest.mark.parametrize(["kwargs", "expected"], [
-    (dict(addAtomIndices=True), "e01cd9295b091e9e2167568bd3cf139d"),
-    (dict(fixedBondLength=10), "1dfa2a5c43022ce66a2ff26a517698cf"),
-    (dict(atomColourPalette={6: (0, .8, .8)}), "91d114d421fc6a05e4537d19ad4b8324"),
-    (dict(legend="foo"), "49cfe8038b8fc0b0401fd0056426d6b7"),
+    (dict(addAtomIndices=True),
+    "ffffffffff7ffe3ffe7ffefffeff3e7f3e791830c184e7cfe7cff7cfffffffff"),
+    (dict(fixedBondLength=10),
+    "fffffffffffffffffffffffffe7ffe7ff81ffc3fffffffffffffffffffffffff"),
+    (dict(atomColourPalette={6: (0, .8, .8)}),
+    "fffffffffffffffffe7ffe7ffe7ffe7ffe7f3e7c8819c183e7e7ffffffffffff"),
+    (dict(legend="foo"),
+    "fffffffffffffe7ffe7ffe7ffe7ffe7f3e7c1818c183e7e7fffffffffe7ffe7f"),
 ])
-def test_moldrawoptions(driver, df, kwargs, expected):
+def test_moldrawoptions(driver: FirefoxDriver, df, kwargs, expected):
     grid = get_grid(df, **kwargs)
     doc = get_doc(grid, dict(n_rows=1, n_cols=1, subset=["img"]))
     driver.get(doc)
     driver.wait_for_img_load()
-    md5_hash = driver.get_svg_md5_hash()
-    assert md5_hash == expected
+    hash_ = driver.get_svg_hash()
+    assert str(hash_) == expected
 
-def test_hover_color(driver, grid):
+def test_hover_color(driver: FirefoxDriver, grid):
     doc = get_doc(grid, {"hover_color": "red"})
     driver.get(doc)
     (ActionChains(driver)
@@ -351,7 +376,7 @@ def test_hover_color(driver, grid):
     assert color == "rgb(255, 0, 0)"
 
 @flaky(max_runs=3, min_passes=1)
-def test_tooltip(driver, grid):
+def test_tooltip(driver: FirefoxDriver, grid):
     doc = get_doc(grid, {"tooltip": ["_Name"]})
     driver.get(doc)
     driver.wait_for_img_load()
@@ -363,7 +388,7 @@ def test_tooltip(driver, grid):
     assert el.get_attribute("innerHTML") == "<strong>_Name</strong>: 3-methylpentane"
 
 @flaky(max_runs=3, min_passes=1)
-def test_tooltip_trigger(driver, grid):
+def test_tooltip_trigger(driver: FirefoxDriver, grid):
     doc = get_doc(grid, {"tooltip": ["_Name"], "tooltip_trigger": "click"})
     driver.get(doc)
     driver.wait_for_img_load()
@@ -378,7 +403,7 @@ def test_tooltip_trigger(driver, grid):
     assert el.get_attribute("innerHTML") == "<strong>_Name</strong>: 3-methylpentane"
 
 @flaky(max_runs=3, min_passes=1)
-def test_tooltip_fmt(driver, grid):
+def test_tooltip_fmt(driver: FirefoxDriver, grid):
     doc = get_doc(grid, {"tooltip": ["_Name"], "tooltip_fmt": "<em>{value}</em>"})
     driver.get(doc)
     driver.wait_for_img_load()
@@ -389,7 +414,7 @@ def test_tooltip_fmt(driver, grid):
     el = tooltip.find_element_by_class_name("popover-body")
     assert el.get_attribute("innerHTML") == "<em>3-methylpentane</em>"
 
-def test_tooltip_not_in_subset(driver, grid):
+def test_tooltip_not_in_subset(driver: FirefoxDriver, grid):
     doc = get_doc(grid, {"tooltip": ["_Name"], "subset": ["ID", "img"]})
     driver.get(doc)
     driver.wait_for_img_load()
@@ -401,7 +426,7 @@ def test_tooltip_not_in_subset(driver, grid):
     assert el.get_attribute("innerHTML") == "<strong>_Name</strong>: 3-methylpentane"
 
 @flaky(max_runs=3, min_passes=1)
-def test_style(driver, grid):
+def test_style(driver: FirefoxDriver, grid):
     doc = get_doc(grid, {
         "tooltip": ["_Name"],
         "style": {
@@ -422,7 +447,7 @@ def test_style(driver, grid):
     assert el.get_attribute("innerHTML") == '<strong>_Name</strong>: <span style="color: blue">3-methylpentane</span>'
 
 @flaky(max_runs=3, min_passes=1)
-def test_transform(driver, grid):
+def test_transform(driver: FirefoxDriver, grid):
     doc = get_doc(grid, {
         "tooltip": ["_Name"],
         "transform": {"_Name": lambda x: x.upper()}
@@ -440,7 +465,7 @@ def test_transform(driver, grid):
     assert el.get_attribute("innerHTML") == '<strong>_Name</strong>: 3-METHYLPENTANE'
 
 @flaky(max_runs=3, min_passes=1)
-def test_transform_style_tooltip(driver, grid):
+def test_transform_style_tooltip(driver: FirefoxDriver, grid):
     doc = get_doc(grid, {
         "tooltip": ["_Name"],
         "transform": {"_Name": lambda x: "foo"},
@@ -463,7 +488,7 @@ def test_transform_style_tooltip(driver, grid):
     assert el.get_attribute("innerHTML") == '<strong>_Name</strong>: <span style="color: blue">foo</span>'
 
 @pytest.mark.parametrize("selection", [True, False])
-def test_callback_js(driver, grid, selection):
+def test_callback_js(driver: FirefoxDriver, grid, selection):
     doc = get_doc(grid, {
         "subset": ["img", "_Name"],
         "callback": "$('#mols2grid .cell .data-_Name').html('foo')",
@@ -475,13 +500,13 @@ def test_callback_js(driver, grid, selection):
     el = driver.find_by_css_selector("#mols2grid .cell .data-_Name")
     assert el.text == "foo"
 
-def test_sort_by(driver, grid):
+def test_sort_by(driver: FirefoxDriver, grid):
     doc = get_doc(grid, {"subset": ["img", "_Name"], "sort_by": "_Name"})
     driver.get(doc)
     el = driver.find_by_css_selector("#mols2grid .cell .data-_Name")
     assert el.text == "1,1,2,2-tetrachloroethane"
 
-def test_sort_button(driver, html_doc):
+def test_sort_button(driver: FirefoxDriver, html_doc):
     driver.get(html_doc)
     driver.wait_for_img_load()
     driver.find_clickable(By.ID, "sortDropdown").click()
@@ -496,42 +521,46 @@ def test_sort_button(driver, html_doc):
     assert el.text == "tetrachloromethane"
 
 @pytest.mark.parametrize(["substruct_highlight", "expected"], [
-    (True,  "2d943c1c2ba5e4bc75ed307d9e1dc456"),
-    (False, "343b129e85fd56945a7bcfa7c12d63f7")
+    (True,  "fffffe7ffc3ffc3ffe7ffe7ffe7ffe7ffe7ffc3ff81fc003c3c3c7e3c7e3eff7"),
+    (False, "fe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffc3ff99fe3c7c7e3cff3")
 ])
-def test_substruct_highlight(driver, grid, substruct_highlight, expected):
+def test_substruct_highlight(driver: FirefoxDriver, grid, substruct_highlight, expected):
     doc = get_doc(grid, {"n_rows": 1, "substruct_highlight": substruct_highlight})
     driver.get(doc)
     driver.wait_for_img_load()
     driver.substructure_query("CC(I)C")
-    md5_hash = driver.get_svg_md5_hash()
-    assert md5_hash == expected
+    hash_ = driver.get_svg_hash()
+    assert str(hash_) == expected
 
-def test_substruct_clear_removes_highlight(driver, grid):
+def test_substruct_clear_removes_highlight(driver: FirefoxDriver, grid):
     doc = get_doc(grid, {"n_rows": 1, "substruct_highlight": True})
     driver.get(doc)
     driver.wait_for_img_load()
     driver.substructure_query("C")
-    md5_hash_hl = driver.get_svg_md5_hash()
+    hash_hl = driver.get_svg_hash()
     driver.find_by_id("searchbar").clear()
     driver.find_by_id("searchbar").send_keys(Keys.BACKSPACE)
     driver.wait_for_img_load()
-    md5_hash = driver.get_svg_md5_hash()
-    assert md5_hash != md5_hash_hl
-    assert md5_hash == "d8227a9948b6f801193085e5a8b257a2"
+    hash_ = driver.get_svg_hash()
+    assert hash_ != hash_hl
+    assert (
+        str(hash_) == "fffffffffffffe7ffe7ffe7ffe7ffe7ffe7f3e7c8811c183e7e7ffffffffffff"
+    )
 
-def test_smarts_to_text_search_removes_highlight(driver, grid):
+def test_smarts_to_text_search_removes_highlight(driver: FirefoxDriver, grid):
     doc = get_doc(grid, {"n_rows": 1, "substruct_highlight": True})
     driver.get(doc)
     driver.wait_for_img_load()
     driver.substructure_query("I")
-    md5_hash_hl = driver.get_svg_md5_hash()
+    hash_hl = driver.get_svg_hash()
     driver.text_search("odopropane")
-    md5_hash = driver.get_svg_md5_hash()
-    assert md5_hash != md5_hash_hl
-    assert md5_hash == "343b129e85fd56945a7bcfa7c12d63f7"
+    hash_ = driver.get_svg_hash()
+    assert hash_ != hash_hl
+    assert (
+        str(hash_) == "fe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffc3ff99fe3c7c7e3cff3"
+    )
 
-def test_filter(driver, grid):
+def test_filter(driver: FirefoxDriver, grid):
     doc = get_doc(grid, {"subset": ["img", "_Name"],})
     driver.get(doc)
     mask = grid.dataframe["_Name"].str.contains("iodopropane")
@@ -543,7 +572,7 @@ def test_filter(driver, grid):
     el = driver.find_by_css_selector("#mols2grid .cell .data-_Name")
     assert el.text == "2-iodopropane"
 
-def test_subset_gives_rows_order(driver, grid):
+def test_subset_gives_rows_order(driver: FirefoxDriver, grid):
     subset = ["_Name", "img", "ID"]
     doc = get_doc(grid, {"subset": subset, "n_rows": 1})
     driver.get(doc)
@@ -560,7 +589,7 @@ def test_subset_gives_rows_order(driver, grid):
         else:
             assert name == subset[i]
 
-def test_colname_with_spaces(driver, df):
+def test_colname_with_spaces(driver: FirefoxDriver, df):
     df = (df
         .rename(columns={"SMILES": "Molecule", "_Name": "Molecule name"})
         .drop(columns="mol"))
@@ -575,7 +604,7 @@ def test_colname_with_spaces(driver, df):
     assert el.text == "3-methylpentane"
 
 @flaky(max_runs=3, min_passes=1)
-def test_custom_header(driver, grid):
+def test_custom_header(driver: FirefoxDriver, grid):
     doc = get_doc(grid, {
         "subset": ["img"],
         "custom_header": '<script src="https://unpkg.com/@rdkit/rdkit@2021.9.2/Code/MinimalLib/dist/RDKit_minimal.js"></script>',
@@ -585,7 +614,7 @@ def test_custom_header(driver, grid):
     val = driver.execute_script("return RDKit.version();")
     assert val == "2021.09.2"
 
-def test_table_template(driver):
+def test_table_template(driver: FirefoxDriver):
     df = mols2grid.sdf_to_dataframe(sdf_path)[:15]
     grid = mols2grid.MolGrid(df, mol_col="mol", prerender=True)
     doc = get_doc(grid, dict(
@@ -603,13 +632,15 @@ def test_table_template(driver):
     tooltip = driver.find_by_css_selector('div.popover[role="tooltip"]')
     el = tooltip.find_element_by_class_name("popover-body")
     assert el.get_attribute("innerHTML") == "<strong>_Name</strong>: 1,3,5-trimethylbenzene"
-    md5_hash = driver.get_svg_md5_hash("#mols2grid td .data-img")
-    if rdkit_version == "2020.03.1":
-        assert md5_hash == "7ca709f65c41fcfe090e98525920fb40"
-    else:
-        assert md5_hash == "9a681d0d978a6cb7ed28a95850d775b8"
+    hash_ = driver.get_svg_hash("#mols2grid td .data-img")
+    diff = (
+        hash_ - imagehash.hex_to_hash(
+            "fffffe7ffe7ffe7ffe7ffe7ffc3ff10ff3cff3cff3cff3cff38fe1078c319e79"
+        )
+    )
+    assert diff <= 1
 
-def test_default_subset_tooltip(driver, grid):
+def test_default_subset_tooltip(driver: FirefoxDriver, grid):
     doc = get_doc(grid, {"n_rows": 1})
     driver.get(doc)
     driver.wait_for_img_load()
@@ -630,37 +661,38 @@ def test_default_subset_tooltip(driver, grid):
                and x.get_attribute("style") == "display: none;"]
     assert tooltip == expected_tooltip
 
-def test_multi_highlight(driver, html_doc):
+def test_multi_highlight(driver: FirefoxDriver, html_doc):
     driver.get(html_doc)
     driver.wait_for_img_load()
     driver.substructure_query("Br")
-    md5_hash = driver.get_svg_md5_hash()
-    assert md5_hash == "814a4c5dfa5226b629031861508505c5"
+    hash_ = driver.get_svg_hash()
+    assert (
+        str(hash_) == "ffffffff8fff87ff003f079f8fdfffcfffefffe1ffe1ffe0ffe1fff1ffffffff"
+    )
 
-def test_single_highlight(driver, grid):
+def test_single_highlight(driver: FirefoxDriver, grid):
     doc = get_doc(grid, {"single_highlight": True})
     driver.get(doc)
     driver.wait_for_img_load()
     driver.substructure_query("Br")
-    md5_hash = driver.get_svg_md5_hash()
-    assert md5_hash == "ca043475667e4f79a3b87a96d7dd731a"
+    hash_ = driver.get_svg_hash()
+    assert (
+        str(hash_) == "ffffffff8fff87ff003f001f87cfcfcfffefffe7fff3fff0fff1fff1ffffffff"
+    )
 
-def test_mol_depiction_aligned_to_query(driver, html_doc):
+def test_mol_depiction_aligned_to_query(driver: FirefoxDriver, html_doc):
     driver.get(html_doc)
     driver.wait_for_img_load()
     driver.substructure_query("CCCBr")
-    images = driver.wait(EC.presence_of_all_elements_located(
-                         (By.CSS_SELECTOR, "#mols2grid .cell .data-img")))
+    images = list(driver.get_imgs_from_svgs())
     for img, expected in zip(images, [
-        "4b19aa7cf16fe691ea7840a3ce9601b5",
-        "4d7a5d8cd6652c1fd8d04a6fffdd2e3a",
+        "fffffffffcf9f8f8f0708001070f0f8f9f9fffdfffdfff9fff8fff8fffffffff",
+        "fffffffffffffff9fff9fff9fff9f8f9f8f0d0018003078f8f8fffffffffffff",
     ]):
-        im = svg2png(bytestring=(img.get_attribute("innerHTML")))
-        im = Image.open(BytesIO(im))
-        md5_hash = md5(im.tobytes()).hexdigest()
-        assert md5_hash == expected
+        hash_ = imagehash.average_hash(img, hash_size=16)
+        assert str(hash_) == expected
 
-def test_highlight_with_hydrogens(driver, df):
+def test_highlight_with_hydrogens(driver: FirefoxDriver, df):
     mols = []
     for mol in df["mol"][25:]:
         m = Chem.AddHs(mol)
@@ -671,5 +703,61 @@ def test_highlight_with_hydrogens(driver, df):
     driver.get(doc)
     driver.wait_for_img_load()
     driver.substructure_query("Cl")
-    md5_hash = driver.get_svg_md5_hash()
-    assert md5_hash == "1133a4662a00bde52798fa5673251d8c"
+    hash_ = driver.get_svg_hash()
+    assert (
+        str(hash_) == "fdfffcfff8fffcfffdc7cdc780cf885bd901fb81f3b3f3bfff9fff1fff9fffbf"
+    )
+
+def test_callbacks_info(driver: FirefoxDriver, grid):
+    doc = get_doc(grid, {"callback": mols2grid.callbacks.info()})
+    driver.get(doc)
+    driver.trigger_callback()
+    modal = driver.find_by_css_selector("div.modal-content")
+    assert (
+        modal
+        .find_element_by_css_selector(".modal-header .modal-title")
+        .get_attribute("innerHTML") == "CCC(C)CC"
+    )
+    content = (
+        modal
+        .find_element_by_css_selector(".modal-body .row .col:nth-child(2)")
+        .get_attribute("innerHTML")
+    )
+    assert "PFEOZHBOMNWTJB-UHFFFAOYSA-N" in content
+
+
+def test_callbacks_3D(driver: FirefoxDriver, grid):
+    doc = get_doc(grid, {"callback": mols2grid.callbacks.show_3d()})
+    driver.get(doc)
+    driver.trigger_callback()
+    modal = driver.find_by_css_selector("div.modal-content")
+    assert (
+        modal
+        .find_element_by_css_selector(".modal-header .modal-title")
+        .get_attribute("innerHTML") == "CCC(C)CC"
+    )
+    content = (
+        modal
+        .find_element_by_css_selector(".modal-body")
+        .get_attribute("innerHTML")
+    )
+    assert '<div id="molviewer' in content
+    # cannot test for actual rendering as there's no GL available
+    assert driver.execute_script("return typeof($3Dmol)") != "undefined"
+
+def test_callbacks_external_link(driver: FirefoxDriver, grid):
+    doc = get_doc(grid, {"callback": mols2grid.callbacks.external_link()})
+    driver.get(doc)
+    driver.trigger_callback()
+    # check if new tab was opened
+    assert len(driver.window_handles) > 1
+    urls = []
+    for handle in driver.window_handles[1:]:
+        driver.switch_to_window(handle)
+        driver.wait(EC.url_contains("https://"))
+        url = driver.current_url
+        if url == "https://leruli.com/search/Q0NDKEMpQ0M=/home":
+            break
+        urls.append(url)
+    else:
+        raise AssertionError("Corresponding URL not found", urls)

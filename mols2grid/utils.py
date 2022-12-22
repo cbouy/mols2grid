@@ -86,34 +86,6 @@ def remove_coordinates(mol):
     mol.RemoveAllConformers()
     return mol
 
-def make_popup_callback(title, html, js="", style=""):
-    """Creates a JavaScript callback that displays a popup window
-
-    Parameters
-    ----------
-    title : str
-        Title of the popup. Use ``title='${data["Name"]}'`` to use the value
-        of the column "Name" as a title
-    html : str
-        Content of the popup window
-    js : str
-        JavaScript code executed before making the content of the popup window.
-        This allows you to create variables and reuse them later in the `html`
-        content of the popup, using the ``${my_variable}`` syntax
-    style : str
-        CSS style assigned to the popup window
-
-    Returns
-    -------
-    js_callback : str
-        JavaScript code that allows to display a popup window
-    """
-    return (env.get_template('js/popup.js')
-               .render(js=js,
-                       html=html,
-                       title=title,
-                       style=style))
-
 def slugify(string):
     """Replaces whitespaces with hyphens"""
     return re.sub(r"\s+", "-", string)
