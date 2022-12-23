@@ -4,6 +4,10 @@ from .utils import env
 
 
 class _JSCallback(NamedTuple):
+    """Class that holds JavaScript code for running a callback function. If an external
+    library is required for the callback to function correctly, it can be passed in
+    the optional ``library_src`` as a ``<script>`` tag.
+    """
     code: str
     library_src: Optional[str] = None
 
@@ -41,7 +45,7 @@ def _get_title_field(title):
     return "${data['" + title + "']}" if title else None
 
 
-def info(title="SMILES", img_size=(400, 300), style="max-width: 80%;"):
+def info(title="SMILES", img_size=(400, 300), style="max-width: 80%;") -> _JSCallback:
     """Displays a bigger image of the molecule, alongside some useful descriptors:
     molecular weight, number of Hydrogen bond donors and acceptors, TPSA, Crippen ClogP
     and InChIKey.
@@ -56,7 +60,7 @@ def info(title="SMILES", img_size=(400, 300), style="max-width: 80%;"):
     style : str
         CSS style applied to the modal window.
     """
-    return make_popup_callback(
+    code = make_popup_callback(
         title=_get_title_field(title),
         js=f"""
             let mol = RDKit.get_mol(data["SMILES"]);
@@ -80,6 +84,7 @@ def info(title="SMILES", img_size=(400, 300), style="max-width: 80%;"):
             </div>""",
         style=style,
     )
+    return _JSCallback(code=code)
 
 
 def show_3d(
@@ -87,7 +92,7 @@ def show_3d(
         query=["pubchem", "cactus"],
         height="350px",
         style="max-width: 80%"
-    ):
+    ) -> _JSCallback:
     """Queries the API(s) listed in ``query`` using the SMILES of the structure, to
     fetch the 3D structure and display it with ``3Dmol.js``
 
@@ -104,7 +109,7 @@ def show_3d(
                 "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/{}/SDF?record_type=3d",
                 "format": "sdf",
                 "field": "SMILES",
-                "encode": true,
+                "encode": True,
             }
 
         In this example, the value in the ``SMILES`` field will be URI-encoded and
@@ -131,7 +136,7 @@ def external_link(
     field="SMILES",
     url_encode=False,
     b64_encode=True,
-):
+) -> _JSCallback:
     """Opens an external link using ``url`` as a template string and the value in the
     corresponding ``field``. The value can be URL-encoded or base64-encoded if needed.
 
@@ -154,9 +159,10 @@ def external_link(
     """
     if url_encode and b64_encode:
         raise ValueError("Setting both URL and B64 encoding is not supported")
-    return env.get_template('js/callbacks/external_link.js').render(
+    code = env.get_template('js/callbacks/external_link.js').render(
         url=url,
         field=field,
         url_encode=url_encode,
         b64_encode=b64_encode,
     )
+    return _JSCallback(code=code)
