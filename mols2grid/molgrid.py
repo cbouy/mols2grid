@@ -562,7 +562,7 @@ class MolGrid:
             tooltip_trigger = tooltip_trigger.replace("click", "")
         if isinstance(callback, _JSCallback):
             if custom_header and callback.library_src:
-                custom_header += callback.library_src
+                custom_header = callback.library_src + custom_header
             else:
                 custom_header = callback.library_src
             callback = callback.code

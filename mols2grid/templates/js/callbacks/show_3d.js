@@ -42,6 +42,26 @@ function show_3d(data, apis_or_custom_resolver, viewer) {
             viewer.addModel(data, resolver.format);
             viewer.setStyle({}, {stick: {}});
             viewer.zoomTo();
+            viewer.setHoverable(
+                {}, 1,
+                function(atom, viewer, event, container) {
+                    if (!atom.label) {
+                        atom.label = viewer.addLabel(
+                            atom.serial + ':' + atom.atom, {
+                                position: atom,
+                                backgroundColor: 'mintcream',
+                                fontColor:'black'
+                            }
+                        );
+                    }
+                },
+                function(atom, viewer) { 
+                    if (atom.label) {
+                        viewer.removeLabel(atom.label);
+                        delete atom.label;
+                    }
+                }
+            );
             viewer.render();
         },
         error: function(hdr, status, err) {
@@ -58,6 +78,6 @@ $(document).ready(function() {
     let config = { backgroundColor: 'white' };
     let viewer = $3Dmol.createViewer(element, config);
     // prepare query to fetch 3D SDF from SMILES
-    let apis_or_custom_resolver = {{ query }};
+    let apis_or_custom_resolver = {{ query | tojson }};
     show_3d(data, apis_or_custom_resolver, viewer);
 });
