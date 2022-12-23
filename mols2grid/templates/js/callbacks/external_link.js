@@ -1,6 +1,6 @@
-const field = "{{ field }}";
+const field = {{ field | tojson }};
 let value = data[field];
-let url = "{{ url }}";
+let url = {{ url | tojson }};
 
 {% if url_encode %}
 value = encodeURIComponent(value);

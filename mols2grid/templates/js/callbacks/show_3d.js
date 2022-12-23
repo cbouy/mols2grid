@@ -78,6 +78,6 @@ $(document).ready(function() {
     let config = { backgroundColor: 'white' };
     let viewer = $3Dmol.createViewer(element, config);
     // prepare query to fetch 3D SDF from SMILES
-    let apis_or_custom_resolver = {{ query }};
+    let apis_or_custom_resolver = {{ query | tojson }};
     show_3d(data, apis_or_custom_resolver, viewer);
 });
