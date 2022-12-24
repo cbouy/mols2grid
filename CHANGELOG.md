@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.1.0-rc1] - 2022/12/24
+## [1.1.0] - 2022/12/24
 
 ### Added
 - Predefined JavaScript callbacks in the `mols2grid.callbacks` module. Those can be
@@ -31,7 +31,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `list.js` library.
 - The link to the KNIME component on the corresponding badges has been fixed.
 
----
 
 ## [1.0.0] - 2022/09/04
 ### Added
@@ -54,16 +53,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `mapping` argument for renaming fields, replaced by `rename` in `v0.1.0`.
 - `mols2grid.selection`, replaced by `mols2grid.get_selection()` in `v0.1.0`.
 
+
 ## [0.2.4] - 2022/05/29
 ### Fixed
 - Calling `MolGrid.get_selection()` when 2 grids with different names are present should
   now display the selection of the grid itself, and not the selection corresponding to
   indices of the grid that was last interacted with.
 
+
 ## [0.2.3] - 2022/05/10
 ### Fixed
 - Doing a substructure search on molecules with explicit hydrogens should now highlight
   the correct atoms.
+
 
 ## [0.2.2] - 2022/04/04
 ### Added
@@ -91,6 +93,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Displaying the grid with `template="table"` in a notebook now automatically fits to the
   content of the table.
 
+
 ## [0.2.1] - 2022/02/23
 ### Fixed
 - Field names containing spaces are now correctly delt with
@@ -98,6 +101,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   than inside the HTML code of the tooltip which included tags and other irrelevant text
 - Fixed an encoding bug when saving the grid as an HTML file on French Windows, which uses
   CP-1252 encoding instead of UTF-8
+
 
 ## [0.2.0] - 2022/02/10
 ### Added
@@ -136,6 +140,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Automatic resizing of the iframe (used in `mols2Grid.display`) should now work even
   better
 
+
 ## [0.1.0] - 2021/10/11
 ### Added
 - The grid can be filtered using pandas DataFrame's `query` and `loc` logic (mostly
@@ -169,9 +174,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Deprecated `mols2grid.selection` in favor of `mols2grid.get_selection()`.
 - Deprecated `mapping` in favor of `rename` in the MolGrid class and `mols2grid.display`.
 
+
 ## [0.0.6] - 2021/05/14
 ### Changed
 - Javascript module for RDKit is now sourced from `unpkg.com` and pinned to `v2021.3.2`
+
 
 ## [0.0.5] - 2021/04/08
 ### Added
@@ -183,6 +190,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Private molecule properties (i.e properties starting with `_`) were not registered when
   reading properties from RDKit molecules (SDF or list of mols).
 
+
 ## [0.0.4] - 2021/04/01
 ### Changed
 - The demo notebook can now be run on Google Colab
@@ -191,6 +199,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   converted to `nan` (not recognized by JS) instead of `NaN`.
 - Selection of molecules in Google Colab now works as expected.
 - Saved documents are now displayed properly
+
 
 ## [0.0.3] - 2021/03/31
 ### Added
@@ -224,6 +233,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `tooltip` and exclude the `img` field.
 - When using the `display` function, the `height` of the iframe is now automatically set
   based on the different parameters, instead of a fixed 600px height. Fixes: Issue #6
+
 
 ## [0.0.2] - 2021/03/23
 - First release
