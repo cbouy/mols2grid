@@ -37,11 +37,32 @@ function SmartsSearch(query, columns) {
     qmol.delete();
 }
 var search_type = "Text";
+// Temporary fix for regex characters being escaped by list.js
+// This extends String.replace to ignore the regex pattern used by list.js and returns
+// the string unmodified. Other calls should not be affected, unless they use the exact
+// same pattern and replacement value.
+// TODO: remove once the issue is fixed in list.js and released
+String.prototype.replace = (function(_super) {
+    return function() {
+        if (
+            (arguments[0].toString() === '/[-[\\]{}()*+?.,\\\\^$|#]/g')
+            && (arguments[1] === '\\$&')
+        ) {
+            if (this.length === 0) {
+                return ''
+            }
+            return this
+        }
+        return _super.apply(this, arguments);
+    };         
+})(String.prototype.replace);
+// Switch search type (Text or SMARTS)
 $('#mols2grid .search-btn').click(function() {
     search_type = $(this).text();
     $('#mols2grid button.search-btn.active').removeClass("active");
     $(this).addClass("active");
 });
+// Searchbar update event handler
 $('#mols2grid #searchbar').on("keyup", function(e) {
     var query = e.target.value;
     if (search_type === "Text") {
