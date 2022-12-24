@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [1.1.0-rc1] - 2022/12/24
+
 ### Added
 - Predefined JavaScript callbacks in the `mols2grid.callbacks` module. Those can be
   extensively configured:
