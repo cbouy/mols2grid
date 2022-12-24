@@ -216,6 +216,13 @@ def test_text_search(driver: FirefoxDriver, html_doc):
     el = driver.find_by_css_selector("#mols2grid .cell .data-SMILES")
     assert el.get_attribute("innerHTML") == "CC(I)C"
 
+def test_text_search_regex_chars(driver: FirefoxDriver, html_doc):
+    driver.get(html_doc)
+    driver.wait_for_img_load()
+    driver.text_search("1-pentene")
+    el = driver.find_by_css_selector("#mols2grid .cell .data-SMILES")
+    assert el.get_attribute("innerHTML") == "CCCC=C"
+
 @flaky(max_runs=3, min_passes=1)
 def test_smarts_search(driver: FirefoxDriver, html_doc):
     driver.get(html_doc)
