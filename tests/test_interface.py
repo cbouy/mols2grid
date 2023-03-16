@@ -31,7 +31,7 @@ geckodriver_autoinstaller.install()
 pytestmark = pytest.mark.webdriver
 GITHUB_ACTIONS = os.environ.get("GITHUB_ACTIONS")
 
-HEADLESS = False
+HEADLESS = True
 PAGE_LOAD_TIMEOUT = 10
 
 class selection_available:
@@ -246,14 +246,17 @@ def test_export_csv(driver: FirefoxDriver, html_doc):
     driver.wait_for_img_load()
     driver.find_clickable(By.CSS_SELECTOR, "input[type='checkbox']").click()
     driver.wait_for_selection(is_empty=False)
+    driver.find_clickable(By.ID, "sortDropdown").click()
+    driver.find_clickable(By.CSS_SELECTOR,
+                          'button.sort-btn[data-name="data-_Name"]').click()
+    driver.wait_for_img_load()
     driver.find_clickable(By.ID, "chkboxDropdown").click()
     now = datetime.now(tz=timezone.utc)
     driver.find_clickable(By.ID, "btn-chkbox-dlcsv").click()
     csv_files = sorted((Path.home() / "Downloads").glob("selection*.csv"), key=lambda x: x.stat().st_mtime)
     csv_file = csv_files[-1]
     file_mtime = datetime.fromtimestamp(csv_file.stat().st_mtime, tz=timezone.utc)
-    delta = (file_mtime - now)
-    assert delta.seconds < 1, "Could not find recent selection file"
+    assert (file_mtime - now).seconds < 1, "Could not find recent selection file"
     content = csv_file.read_text()
     assert content == "index\t_Name\tSMILES\n0\t3-methylpentane\tCCC(C)CC\n"
     csv_file.unlink()
