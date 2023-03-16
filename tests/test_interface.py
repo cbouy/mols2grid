@@ -239,6 +239,14 @@ def test_selection_click(driver: FirefoxDriver, html_doc):
     assert sel == {0: "CCC(C)CC"}
     register._clear()
 
+def test_export_csv(driver: FirefoxDriver, html_doc):
+    driver.get(html_doc)
+    driver.wait_for_img_load()
+    driver.find_clickable(By.CSS_SELECTOR, "input[type='checkbox']").click()
+    driver.wait_for_selection(is_empty=False)
+    
+    register._clear()
+
 def test_selection_with_cache_check_and_uncheck(driver: FirefoxDriver, df):
     register._init_grid("cached_sel")
     event = SimpleNamespace(new='{0: "CCC(C)CC"}')
