@@ -91,14 +91,16 @@ $("#btn-chkbox-dlcsv").click(function(e) {
     // csv content
     header = ["index"].concat(header).join(sep);
     var content = header + "\n";
-    for (let [index, smiles] of SELECTION.entries()) {
-        var data = listObj.items[index].values();
-        content += index;
-        columns.forEach((key) => {
-            content += sep + data[key];
-        })
-        content += "\n";
-    }
+    listObj.items.forEach(function (item) {
+        let data = item.values();
+        if (SELECTION.has(data["mols2grid-id"])) {
+            content += index;
+            columns.forEach((key) => {
+                content += sep + data[key];
+            })
+            content += "\n";
+        }
+    });
     var a = document.createElement("a");
     var file = new Blob([content], {type: "text/csv"});
     a.href = URL.createObjectURL(file);
