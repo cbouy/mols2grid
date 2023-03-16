@@ -85,15 +85,17 @@ $("#btn-chkbox-dlcsv").click(function(e) {
     var sep = "\t"
     // same order as subset + tooltip
     var columns = Array.from(listObj.items[0].elm.querySelectorAll("div.data"))
-                       .map(elm => elm.classList[1]);
-    // remove 'data-'
+                       .map(elm => elm.classList[1])
+                       .filter(name => name !== "data-img");
+    // remove 'data-' and img
     var header = columns.map(name => name.slice(5));
     // csv content
     header = ["index"].concat(header).join(sep);
     var content = header + "\n";
     listObj.items.forEach(function (item) {
         let data = item.values();
-        if (SELECTION.has(data["mols2grid-id"])) {
+        let index = data["mols2grid-id"];
+        if (SELECTION.has(index)) {
             content += index;
             columns.forEach((key) => {
                 content += sep + data[key];
