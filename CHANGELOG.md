@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.1.1] - 2023/03/XX
 
+### Fixed
+- CSV export when sorting the grid was not using the selected molecules.
+
 ---
 
 ## [1.1.0] - 2022/12/24
@@ -28,11 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   specifying a callback.
 
 ### Fixed
-- Issue #34: text searches containing any of the following regex characters
-  `-[]{}()*+?.,\^$|#` would automatically return an empty grid, preventing searching
-  for CAS numbers and any other identifier or text containing the above characters. This
-  has been temporarily patched until a proper fix is released in the underlying
-  `list.js` library.
+- Text searches containing any of the following regex characters `-[]{}()*+?.,\^$|#`
+  would automatically return an empty grid, preventing searching for CAS numbers and any
+  other identifier or text containing the above characters. This has been temporarily
+  patched until a proper fix is released in the underlying `list.js` library.
 - The link to the KNIME component on the corresponding badges has been fixed.
 
 
