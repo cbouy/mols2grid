@@ -56,7 +56,6 @@ tests = [
     "imagehash~=4.3",
     "ipython==7.12.0",
     "pytest-cov==2.12.1",
-    "pytest-order==1.0.1",
     "pytest==6.2.5",
     "selenium==3.141.0",
 ]
@@ -99,7 +98,7 @@ skip-if-exists = [
     "mols2grid/labextension/package.json",
 ]
 dependencies = [
-    "hatch-jupyter-builder>=0.8.2",
+    "hatch-jupyter-builder>=0.8.1",
 ]
 build-function = "hatch_jupyter_builder.npm_builder"
 
