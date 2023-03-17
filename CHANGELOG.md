@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.1.1] - 2023/03/XX
 
+### Added
+- Code and notebook formatting with `black` and `isort`.
+
 ### Changed
 - The hover tooltip placement has been changed from `"bottom"` to `"auto"`.
 

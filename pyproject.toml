@@ -6,3 +6,14 @@ requires = [
     "wheel",
 ]
 build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 88
+extend-exclude = '''
+(
+  ^/docs/conf.py
+)
+'''
+
+[tool.isort]
+profile = "black"
