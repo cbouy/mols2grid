@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.1.1] - 2023/03/XX
 
+### Changed
+- The hover tooltip placement has been changed from `"bottom"` to `"auto"`.
+
 ### Fixed
 - CSV export when sorting the grid was not using the selected molecules.
 

@@ -82,7 +82,7 @@ def display(arg, **kwargs):
         Format string of each key/value pair in the tooltip
     tooltip_trigger : str, default="click hover"
         Sequence of triggers for the tooltip: ``click``, ``hover`` or ``focus``
-    tooltip_placement : str, default="bottom"
+    tooltip_placement : str, default="auto"
         Position of the tooltip: ``auto``, ``top``, ``bottom``, ``left`` or
         ``right``
     n_cols : int, default=5

@@ -296,7 +296,7 @@ class MolGrid:
                  border="1px solid #cccccc", gap=0,
                  fontsize="12pt", fontfamily="'DejaVu', sans-serif",
                  textalign="center", tooltip_fmt="<strong>{key}</strong>: {value}",
-                 tooltip_trigger="click hover", tooltip_placement="bottom",
+                 tooltip_trigger="click hover", tooltip_placement="auto",
                  hover_color="#e7e7e7", style=None, selection=True, transform=None,
                  custom_css=None, custom_header=None, callback=None, sort_by=None,
                  substruct_highlight=None, single_highlight=False):
@@ -673,7 +673,7 @@ class MolGrid:
                  cell_width=160, border="1px solid #cccccc", gap=0,
                  fontsize="12pt", fontfamily="'DejaVu', sans-serif",
                  textalign="center", tooltip_fmt="<strong>{key}</strong>: {value}",
-                 tooltip_trigger="click hover", tooltip_placement="bottom",
+                 tooltip_trigger="click hover", tooltip_placement="auto",
                  hover_color="#e7e7e7", style=None, transform=None,
                  custom_css=None, custom_header=None, sort_by=None):
         """Returns the HTML document for the "table" template
