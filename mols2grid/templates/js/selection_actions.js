@@ -85,20 +85,24 @@ $("#btn-chkbox-dlcsv").click(function(e) {
     var sep = "\t"
     // same order as subset + tooltip
     var columns = Array.from(listObj.items[0].elm.querySelectorAll("div.data"))
-                       .map(elm => elm.classList[1]);
-    // remove 'data-'
+                       .map(elm => elm.classList[1])
+                       .filter(name => name !== "data-img");
+    // remove 'data-' and img
     var header = columns.map(name => name.slice(5));
     // csv content
     header = ["index"].concat(header).join(sep);
     var content = header + "\n";
-    for (let [index, smiles] of SELECTION.entries()) {
-        var data = listObj.items[index].values();
-        content += index;
-        columns.forEach((key) => {
-            content += sep + data[key];
-        })
-        content += "\n";
-    }
+    listObj.items.forEach(function (item) {
+        let data = item.values();
+        let index = data["mols2grid-id"];
+        if (SELECTION.has(index)) {
+            content += index;
+            columns.forEach((key) => {
+                content += sep + data[key];
+            })
+            content += "\n";
+        }
+    });
     var a = document.createElement("a");
     var file = new Blob([content], {type: "text/csv"});
     a.href = URL.createObjectURL(file);

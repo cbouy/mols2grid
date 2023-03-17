@@ -4,6 +4,8 @@ import pytest
 from flaky import flaky
 from ast import literal_eval
 from base64 import b64encode, b64decode
+from datetime import datetime, timezone
+from pathlib import Path
 from types import SimpleNamespace
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -237,6 +239,27 @@ def test_selection_click(driver: FirefoxDriver, html_doc):
     driver.find_clickable(By.CSS_SELECTOR, "input[type='checkbox']").click()
     sel = driver.wait_for_selection(is_empty=False)
     assert sel == {0: "CCC(C)CC"}
+    register._clear()
+
+def test_export_csv(driver: FirefoxDriver, html_doc):
+    driver.get(html_doc)
+    driver.wait_for_img_load()
+    driver.find_clickable(By.CSS_SELECTOR, "input[type='checkbox']").click()
+    driver.wait_for_selection(is_empty=False)
+    driver.find_clickable(By.ID, "sortDropdown").click()
+    driver.find_clickable(By.CSS_SELECTOR,
+                          'button.sort-btn[data-name="data-_Name"]').click()
+    driver.wait_for_img_load()
+    driver.find_clickable(By.ID, "chkboxDropdown").click()
+    now = datetime.now(tz=timezone.utc)
+    driver.find_clickable(By.ID, "btn-chkbox-dlcsv").click()
+    csv_files = sorted((Path.home() / "Downloads").glob("selection*.csv"), key=lambda x: x.stat().st_mtime)
+    csv_file = csv_files[-1]
+    file_mtime = datetime.fromtimestamp(csv_file.stat().st_mtime, tz=timezone.utc)
+    assert (file_mtime - now).seconds < 1, "Could not find recent selection file"
+    content = csv_file.read_text()
+    assert content == "index\t_Name\tSMILES\n0\t3-methylpentane\tCCC(C)CC\n"
+    csv_file.unlink()
     register._clear()
 
 def test_selection_with_cache_check_and_uncheck(driver: FirefoxDriver, df):
