@@ -108,11 +108,11 @@ build_cmd = "build:prod"
 
 [tool.black]
 line-length = 88
-extend-exclude = """
+extend-exclude = '''
 (
   ^/docs/conf.py
 )
-"""
+'''
 
 [tool.isort]
 profile = "black"
@@ -124,15 +124,8 @@ field = [
 ]
 
 [tool.tbump.version]
-current = "1.1.0"
-regex = """
-    (?P<major>\\d+)
-    \\.
-    (?P<minor>\\d+)
-    \\.
-    (?P<patch>\\d+)
-    ((?P<channel>a|b|rc|.dev)(?P<release>\\d+))?
-"""
+current = "1.1.1"
+regex = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)((?P<channel>a|b|rc|.dev)(?P<release>\\d+))?"
 
 [tool.tbump.git]
 message_template = "Bump to {new_version}"

@@ -23,7 +23,7 @@ jobs:
     - name: Get prerelease version tags
       if: env.IS_PRERELEASE == 'true'
       run: |
-        py_dirty_tag=$(grep "version_info =" ./mols2grid/_version.py | cut -d, -f4)
+        py_dirty_tag=$(awk '/__version__ = "[[:digit:]+]\.[[:digit:]+]\.[[:digit:]+]\-.+"/ {print $3}' ./mols2grid/_version.py)
         py_is_pre=$(test -z "$py_dirty_tag" && echo "false" || echo "true")
         js_version_string=$(grep '"version":' ./package.json)
         js_dirty_tag=$(echo "$js_version_string" | cut -d- -f2)
