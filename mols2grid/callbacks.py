@@ -1,4 +1,4 @@
-from typing import Optional, NamedTuple
+from typing import NamedTuple, Optional
 
 from .utils import env
 
@@ -8,6 +8,7 @@ class _JSCallback(NamedTuple):
     library is required for the callback to function correctly, it can be passed in
     the optional ``library_src`` as a ``<script>`` tag.
     """
+
     code: str
     library_src: Optional[str] = None
 
@@ -34,11 +35,9 @@ def make_popup_callback(title, html, js="", style=""):
     js_callback : str
         JavaScript code that allows to display a popup window
     """
-    return (env.get_template('js/popup.js')
-               .render(js=js,
-                       html=html,
-                       title=title,
-                       style=style))
+    return env.get_template("js/popup.js").render(
+        js=js, html=html, title=title, style=style
+    )
 
 
 def _get_title_field(title):
@@ -88,11 +87,8 @@ def info(title="SMILES", img_size=(400, 300), style="max-width: 80%;") -> _JSCal
 
 
 def show_3d(
-        title="SMILES",
-        query=["pubchem", "cactus"],
-        height="350px",
-        style="max-width: 80%"
-    ) -> _JSCallback:
+    title="SMILES", query=["pubchem", "cactus"], height="350px", style="max-width: 80%"
+) -> _JSCallback:
     """Queries the API(s) listed in ``query`` using the SMILES of the structure, to
     fetch the 3D structure and display it with ``3Dmol.js``
 
@@ -120,7 +116,7 @@ def show_3d(
     style : str
         CSS style applied to the modal window.
     """
-    js_script = env.get_template('js/callbacks/show_3d.js').render(query=query)
+    js_script = env.get_template("js/callbacks/show_3d.js").render(query=query)
     code = make_popup_callback(
         title=_get_title_field(title),
         js=js_script,
@@ -152,14 +148,14 @@ def external_link(
         not allowed in a URL e.g., spaces become ``%20``.
     b64_encode : bool
         Base64-encode the value fetched from the field.
-    
+
     Raises
     ------
     ValueError : Both ``url_encode`` and ``b64_encode`` have been specified.
     """
     if url_encode and b64_encode:
         raise ValueError("Setting both URL and B64 encoding is not supported")
-    code = env.get_template('js/callbacks/external_link.js').render(
+    code = env.get_template("js/callbacks/external_link.js").render(
         url=url,
         field=field,
         url_encode=url_encode,

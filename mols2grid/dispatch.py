@@ -1,8 +1,10 @@
-from functools import singledispatch
 import inspect
-from pandas import DataFrame, Series
-from .molgrid import MolGrid
+from functools import singledispatch
+from pathlib import Path
 
+from pandas import DataFrame, Series
+
+from .molgrid import MolGrid
 
 _SIGNATURE = {
     method: dict(inspect.signature(getattr(MolGrid, method)).parameters.items())
@@ -17,12 +19,19 @@ for method in ["render", "to_pages", "to_table", "display"]:
 def _prepare_kwargs(kwargs, kind):
     """Separate kwargs for the init and render methods of MolGrid"""
     template = kwargs.pop("template", _SIGNATURE["render"]["template"].default)
-    render_kwargs = {param: kwargs.pop(param, sig.default)
-                     for param, sig in _SIGNATURE[f'to_{template}'].items()}
+    render_kwargs = {
+        param: kwargs.pop(param, sig.default)
+        for param, sig in _SIGNATURE[f"to_{template}"].items()
+    }
     if kind == "display":
-        render_kwargs.update({param: kwargs.pop(param, sig.default)
-                              for param, sig in _SIGNATURE["display"].items()})
+        render_kwargs.update(
+            {
+                param: kwargs.pop(param, sig.default)
+                for param, sig in _SIGNATURE["display"].items()
+            }
+        )
     return template, kwargs, render_kwargs
+
 
 @singledispatch
 def display(arg, **kwargs):
@@ -82,7 +91,7 @@ def display(arg, **kwargs):
         Format string of each key/value pair in the tooltip
     tooltip_trigger : str, default="click hover"
         Sequence of triggers for the tooltip: ``click``, ``hover`` or ``focus``
-    tooltip_placement : str, default="bottom"
+    tooltip_placement : str, default="auto"
         Position of the tooltip: ``auto``, ``top``, ``bottom``, ``left`` or
         ``right``
     n_cols : int, default=5
@@ -176,7 +185,7 @@ def display(arg, **kwargs):
         If both ``subset`` and ``tooltip`` are ``None``, the index and image
         will be directly displayed on the grid while the remaining fields will
         be in the tooltip.
-    
+
     .. versionchanged:: 1.0.0
         ``callback`` can now be a *lambda* function. If ``prerender=True``,
         substructure highlighting will be automatically disabled if it wasn't
@@ -185,25 +194,28 @@ def display(arg, **kwargs):
     """
     raise TypeError(f"No display method registered for type {type(arg)!r}")
 
+
 @display.register(DataFrame)
 @display.register(dict)
 def _(df, **kwargs):
     template, kwargs, render_kwargs = _prepare_kwargs(kwargs, "display")
     return MolGrid(df, **kwargs).display(template=template, **render_kwargs)
 
+
 @display.register(str)
+@display.register(Path)
 def _(sdf, **kwargs):
     template, kwargs, render_kwargs = _prepare_kwargs(kwargs, "display")
-    return MolGrid.from_sdf(sdf, **kwargs).display(template=template,
-                                                   **render_kwargs)
+    return MolGrid.from_sdf(sdf, **kwargs).display(template=template, **render_kwargs)
+
 
 @display.register(Series)
 @display.register(list)
 @display.register(tuple)
 def _(mols, **kwargs):
     template, kwargs, render_kwargs = _prepare_kwargs(kwargs, "display")
-    return MolGrid.from_mols(mols, **kwargs).display(template=template,
-                                                     **render_kwargs)
+    return MolGrid.from_mols(mols, **kwargs).display(template=template, **render_kwargs)
+
 
 @singledispatch
 def save(arg, **kwargs):
@@ -222,19 +234,23 @@ def save(arg, **kwargs):
     """
     raise TypeError(f"No save method registered for type {type(arg)!r}")
 
+
 @save.register(DataFrame)
 def _(df, **kwargs):
     template, kwargs, render_kwargs = _prepare_kwargs(kwargs, "save")
     output = kwargs.pop("output")
-    return MolGrid(df, **kwargs).save(output, template=template,
-                                      **render_kwargs)
+    return MolGrid(df, **kwargs).save(output, template=template, **render_kwargs)
+
 
 @save.register(str)
+@save.register(Path)
 def _(sdf, **kwargs):
     template, kwargs, render_kwargs = _prepare_kwargs(kwargs, "save")
     output = kwargs.pop("output")
-    return MolGrid.from_sdf(sdf, **kwargs).save(output, template=template,
-                                                **render_kwargs)
+    return MolGrid.from_sdf(sdf, **kwargs).save(
+        output, template=template, **render_kwargs
+    )
+
 
 @save.register(Series)
 @save.register(list)
@@ -242,5 +258,6 @@ def _(sdf, **kwargs):
 def _(mols, **kwargs):
     template, kwargs, render_kwargs = _prepare_kwargs(kwargs, "save")
     output = kwargs.pop("output")
-    return MolGrid.from_mols(mols, **kwargs).save(output, template=template,
-                                                  **render_kwargs)
+    return MolGrid.from_mols(mols, **kwargs).save(
+        output, template=template, **render_kwargs
+    )

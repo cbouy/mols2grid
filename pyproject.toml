@@ -1,8 +1,143 @@
 [build-system]
 requires = [
-    "jupyter_packaging==0.12.0",
+    "hatchling",
     "jupyterlab==3.*",
-    "setuptools>=40.8.0",
-    "wheel",
 ]
-build-backend = "setuptools.build_meta"
+build-backend = "hatchling.build"
+
+[project]
+name = "mols2grid"
+description = "Interactive 2D small molecule viewer"
+readme = "README.md"
+requires-python = ">=3.7"
+authors = [
+    { name = "Cédric Bouysset", email = "cedric@bouysset.net" },
+]
+keywords = [
+    "cheminformatics",
+    "chemistry",
+    "jupyter",
+    "science",
+    "widgets",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: Jupyter",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Scientific/Engineering :: Chemistry",
+]
+dependencies = [
+    "ipywidgets>=7,<8",
+    "jinja2>=2.11.0",
+    "numpy",
+    "pandas",
+]
+version = "1.1.1"
+
+[project.license]
+file = "LICENSE"
+
+[project.optional-dependencies]
+build = [
+    "build",
+]
+tests = [
+    "cairosvg==2.5.2",
+    "codecov==2.1.12",
+    "flaky==3.7.0",
+    "geckodriver-autoinstaller==0.1.0",
+    "imagehash~=4.3",
+    "ipython==7.12.0",
+    "pytest-cov==2.12.1",
+    "pytest==6.2.5",
+    "selenium==3.141.0",
+]
+dev = [
+    "tbump",
+    "mols2grid[build,tests]",
+]
+
+[project.urls]
+Homepage = "https://github.com/cbouy/mols2grid"
+Documentation = "https://mols2grid.readthedocs.io/en/latest/"
+Discussions = "https://github.com/cbouy/mols2grid/discussions"
+Issues = "https://github.com/cbouy/mols2grid/issues"
+Changelog = "https://github.com/cbouy/mols2grid/blob/master/CHANGELOG.md"
+
+[tool.hatch.build]
+artifacts = [
+    "mols2grid/nbextension/index.*",
+    "mols2grid/labextension",
+]
+
+[tool.hatch.build.targets.wheel.shared-data]
+"mols2grid/nbextension" = "share/jupyter/nbextensions/mols2grid"
+"mols2grid/labextension" = "share/jupyter/labextensions/mols2grid"
+"./install.json" = "share/jupyter/labextensions/mols2grid/install.json"
+"./mols2grid.json" = "etc/jupyter/nbconfig/notebook.d/mols2grid.json"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    ".github",
+]
+
+[tool.hatch.build.hooks.jupyter-builder]
+ensured-targets = [
+    "mols2grid/nbextension/index.js",
+    "mols2grid/labextension/package.json",
+]
+skip-if-exists = [
+    "mols2grid/nbextension/index.js",
+    "mols2grid/labextension/package.json",
+]
+dependencies = [
+    "hatch-jupyter-builder>=0.8.1",
+]
+build-function = "hatch_jupyter_builder.npm_builder"
+
+[tool.hatch.build.hooks.jupyter-builder.build-kwargs]
+path = "."
+build_cmd = "build:prod"
+
+[tool.black]
+line-length = 88
+extend-exclude = '''
+(
+  ^/docs/conf.py
+)
+'''
+
+[tool.isort]
+profile = "black"
+
+[tool.tbump]
+field = [
+    { name = "channel", default = "" },
+    { name = "release", default = "" },
+]
+
+[tool.tbump.version]
+current = "1.1.1"
+regex = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)((?P<channel>a|b|rc|.dev)(?P<release>\\d+))?"
+
+[tool.tbump.git]
+message_template = "Bump to {new_version}"
+tag_template = "v{new_version}"
+
+[[tool.tbump.file]]
+src = "pyproject.toml"
+version_template = "version = \"{major}.{minor}.{patch}{channel}{release}\""
+
+[[tool.tbump.file]]
+src = "mols2grid/_version.py"
+
+[[tool.tbump.file]]
+src = "package.json"
+version_template = "\"version\": \"{major}.{minor}.{patch}{channel}{release}\""

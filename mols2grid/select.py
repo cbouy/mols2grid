@@ -1,6 +1,7 @@
 import warnings
 from ast import literal_eval
 
+
 class SelectionRegister:
     """Register for grid selections
 
@@ -11,6 +12,7 @@ class SelectionRegister:
     current_selection : str
         Name of the most recently updated grid
     """
+
     def __init__(self):
         self.SELECTIONS = {}
 
@@ -25,7 +27,7 @@ class SelectionRegister:
             )
         self.SELECTIONS[name] = {}
         self._update_current_grid(name)
-    
+
     def selection_updated(self, name, event):
         self.SELECTIONS[name] = literal_eval(event.new)
         self._update_current_grid(name)

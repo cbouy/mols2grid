@@ -1,5 +1,6 @@
 from .widget import MolGridWidget
 
+
 def _jupyter_labextension_paths():
     """Called by Jupyter Lab Server to detect if it is a valid labextension and
     to install the widget
@@ -12,10 +13,12 @@ def _jupyter_labextension_paths():
         from `src` directory into <jupyter path>/labextensions/<dest> directory
         during widget installation
     """
-    return [{
-        'src': './labextension',
-        'dest': 'mols2grid',
-    }]
+    return [
+        {
+            "src": "./labextension",
+            "dest": "mols2grid",
+        }
+    ]
 
 
 def _jupyter_nbextension_paths():
@@ -34,9 +37,11 @@ def _jupyter_nbextension_paths():
     require: Path to importable AMD Javascript module inside the
         <jupyter path>/nbextensions/<dest> directory
     """
-    return [{
-        'section': 'notebook',
-        'src': './nbextension',
-        'dest': 'mols2grid',
-        'require': 'mols2grid/extension'
-    }]
+    return [
+        {
+            "section": "notebook",
+            "src": "./nbextension",
+            "dest": "mols2grid",
+            "require": "mols2grid/extension",
+        }
+    ]
