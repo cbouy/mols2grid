@@ -5,8 +5,6 @@ import pytest
 import mols2grid as mg
 from mols2grid.select import register
 
-data = [{"SMILES": "C" * i, "ID": i} for i in range(1, 5)]
-
 
 @pytest.fixture(autouse=True)
 def clear_register_between_tests():
@@ -22,8 +20,8 @@ def test_clear_register():
     assert register.SELECTIONS == {}
 
 
-def test_update_current_grid():
-    mg.MolGrid(data, name="bar")
+def test_update_current_grid(smiles_records):
+    mg.MolGrid(smiles_records, name="bar")
     assert register.current_selection == "bar"
 
 

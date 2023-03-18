@@ -5,12 +5,10 @@ from unittest.mock import Mock, patch
 
 import pandas as pd
 import pytest
-from rdkit import Chem, RDConfig
+from rdkit import Chem
 from rdkit.Chem.rdDepictor import Compute2DCoords
 
 from mols2grid import utils
-
-sdf = f"{RDConfig.RDDocsDir}/Book/data/solubility.test.sdf"
 
 
 def test_requires():
@@ -114,7 +112,9 @@ def test_mol_to_record_custom_mol_col():
     assert new["foo"] is mol
 
 
-def test_sdf_to_dataframe():
+@pytest.mark.parametrize("sdf_source", ["sdf_path", "sdf_file"])
+def test_sdf_to_dataframe(sdf_source, request):
+    sdf = request.getfixturevalue(sdf_source)
     df = utils.sdf_to_dataframe(sdf)
     exp = {
         "ID": 5,
@@ -130,19 +130,20 @@ def test_sdf_to_dataframe():
     assert new == exp
 
 
-def test_sdf_to_dataframe_custom_mol_col():
-    df = utils.sdf_to_dataframe(sdf, mol_col="foo")
+def test_sdf_to_dataframe_custom_mol_col(sdf_path):
+    df = utils.sdf_to_dataframe(sdf_path, mol_col="foo")
     assert "mol" not in df.columns
     assert "foo" in df.columns
 
 
-def test_sdf_to_df_gz():
-    with NamedTemporaryFile("wb", suffix=".gz") as tf, open(sdf, "rb") as fi:
+def test_sdf_to_df_gz(sdf_path, tmp_path):
+    tmp_file = tmp_path / "mols.sdf.gz"
+    with open(sdf_path, "rb") as fi, open(tmp_file, "wb") as tf:
         gz = gzip.compress(fi.read(), compresslevel=1)
         tf.write(gz)
         tf.flush()
-        df = utils.sdf_to_dataframe(tf.name).drop(columns=["mol"])
-        ref = utils.sdf_to_dataframe(sdf).drop(columns=["mol"])
+        df = utils.sdf_to_dataframe(tmp_file).drop(columns=["mol"])
+        ref = utils.sdf_to_dataframe(sdf_path).drop(columns=["mol"])
         assert (df == ref).values.all()
 
 

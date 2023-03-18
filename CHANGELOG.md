@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The hover tooltip placement has been changed from `"bottom"` to `"auto"`.
 - Switched to `hatchling` for the build process, `tbump` for versioning, and migrated to
   using only the `pyproject.toml` file.
+- Refactored tests to use Pytest's `contest.py` file.
 
 ### Fixed
 - CSV export when sorting the grid was not using the selected molecules.
