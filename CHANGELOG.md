@@ -8,15 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.1.1] - 2023/03/XX
+## [1.1.1] - 2023/03/18
 
 ### Added
 - Support for `pathlib.Path` objects as input for `display`, `save`, `MolGrid.from_sdf`
   and `sdf_to_dataframe`.
-- Code and notebook formatting with `black` and `isort`.
 
 ### Changed
 - The hover tooltip placement has been changed from `"bottom"` to `"auto"`.
+- Code and notebook formatting with `black` and `isort`.
 - Switched to `hatchling` for the build process, `tbump` for versioning, and migrated to
   using only the `pyproject.toml` file.
 - Refactored tests to use Pytest's `contest.py` file.
