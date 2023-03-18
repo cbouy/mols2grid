@@ -74,7 +74,7 @@ def sdf_to_dataframe(sdf_path, mol_col="mol"):
 
     Parameters
     ----------
-    sdf_path : str
+    sdf_path : str, Path
         Path to the SDFile, ending with either ``.sdf`` or ``.sdf.gz``
     mol_col : str
         Name of the column containing the RDKit molecules in the dataframe
@@ -83,7 +83,7 @@ def sdf_to_dataframe(sdf_path, mol_col="mol"):
     -------
     df : pandas.DataFrame
     """
-    if sdf_path.endswith(".gz"):
+    if str(sdf_path).endswith(".gz"):
         read_file = gzip.open
     else:
         read_file = partial(open, mode="rb")

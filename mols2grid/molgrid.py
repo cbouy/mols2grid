@@ -206,7 +206,7 @@ class MolGrid:
 
         Parameters
         ----------
-        sdf_file : str
+        sdf_file : str, pathlib.Path
             Path to the SDF file (.sdf or .sdf.gz)
         kwargs : object
             Other arguments passed on initialization

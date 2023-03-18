@@ -1,5 +1,6 @@
 import inspect
 from functools import singledispatch
+from pathlib import Path
 
 from pandas import DataFrame, Series
 
@@ -202,6 +203,7 @@ def _(df, **kwargs):
 
 
 @display.register(str)
+@display.register(Path)
 def _(sdf, **kwargs):
     template, kwargs, render_kwargs = _prepare_kwargs(kwargs, "display")
     return MolGrid.from_sdf(sdf, **kwargs).display(template=template, **render_kwargs)
@@ -241,6 +243,7 @@ def _(df, **kwargs):
 
 
 @save.register(str)
+@save.register(Path)
 def _(sdf, **kwargs):
     template, kwargs, render_kwargs = _prepare_kwargs(kwargs, "save")
     output = kwargs.pop("output")

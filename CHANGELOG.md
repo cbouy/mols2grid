@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.1] - 2023/03/XX
 
 ### Added
+- Support for `pathlib.Path` objects as input for `display`, `save`, `MolGrid.from_sdf`
+  and `sdf_to_dataframe`.
 - Code and notebook formatting with `black` and `isort`.
 
 ### Changed
