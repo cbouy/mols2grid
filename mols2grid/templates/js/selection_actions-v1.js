@@ -1,46 +1,5 @@
-// Update selection on checkbox click
-listObj.on("updated", function (list) {
-    $("input:checkbox").change(function() {
-        var _id = parseInt($(this).closest(".cell").attr("data-mols2grid-id"));
-        if (this.checked) {
-            var _smiles = $($(this).siblings(".data-{{ smiles_col }}")[0]).text();
-            add_selection({{ grid_id | tojson }}, [_id], [_smiles]);
-        } else {
-            del_selection({{ grid_id | tojson }}, [_id]);
-        }
-    }); 
-});
-
-// Listen to selection dropdown
-$('#dropdown-select').change(function(e) {
-    var val = e.target.value
-    switch(val) {
-        case 'check-all':
-            checkAll()
-            break
-        case 'check-matching':
-            checkMatching()
-            break
-        case 'uncheck-all':
-            uncheckAll()
-            break
-        case 'invert':
-            invertSelection()
-            break
-        case 'copy':
-            copy()
-            break
-        case 'save-smiles':
-            saveSmiles()
-            break
-        case 'save-csv':
-            saveCSV()
-            break
-    }
-})
-
-// Check all
-function checkAll(e) {
+// check all
+$('#btn-chkbox-all').click(function (e) {
     var _id = [];
     var _smiles = [];
     listObj.items.forEach(function (item) {
@@ -55,11 +14,9 @@ function checkAll(e) {
         _smiles.push(item.values()["data-{{ smiles_col }}"]);
     });
     add_selection({{ grid_id | tojson }}, _id, _smiles);
-};
-
-
-// Check matching
-function checkMatching(e) {
+});
+// check matching
+$('#btn-chkbox-match').click(function (e) {
     var _id = [];
     var _smiles = [];
     listObj.matchingItems.forEach(function (item) {
@@ -74,10 +31,9 @@ function checkMatching(e) {
         _smiles.push(item.values()["data-{{ smiles_col }}"]);
     });
     add_selection({{ grid_id | tojson }}, _id, _smiles);
-};
-
-// Uncheck all
-function uncheckAll(e) {
+});
+// uncheck all
+$('#btn-chkbox-none').click(function (e) {
     var _id = [];
     listObj.items.forEach(function (item) {
         if (item.elm) {
@@ -90,10 +46,9 @@ function uncheckAll(e) {
         _id.push(item.values()["mols2grid-id"]);
     });
     del_selection({{ grid_id | tojson }}, _id);
-};
-
-// Invert selection
-function invertSelection(e) {
+});
+// invert
+$('#btn-chkbox-invert').click(function (e) {
     var _id_add = [];
     var _id_del = [];
     var _smiles = [];
@@ -116,20 +71,17 @@ function invertSelection(e) {
     });
     del_selection({{ grid_id | tojson }}, _id_del);
     add_selection({{ grid_id | tojson }}, _id_add, _smiles);
-};
-
-// Copy to clipboard
-function copy(e) {
+});
+// copy to clipboard
+$("#btn-chkbox-copy").click(function(e) {
     navigator.clipboard.writeText(SELECTION.to_dict());
-};
-
-// Export smiles
-function saveSmiles(e) {
+});
+// export smiles
+$("#btn-chkbox-dlsmi").click(function(e) {
     SELECTION.download_smi("selection.smi");
-};
-
-// Export CSV
-function saveCSV(e) {
+});
+// export CSV
+$("#btn-chkbox-dlcsv").click(function(e) {
     var sep = "\t"
     // same order as subset + tooltip
     var columns = Array.from(listObj.items[0].elm.querySelectorAll("div.data"))
@@ -157,4 +109,16 @@ function saveCSV(e) {
     a.download = "selection.csv";
     a.click();
     a.remove();
-};
+});
+// update selection on checkbox click
+listObj.on("updated", function (list) {
+    $("input:checkbox").change(function() {
+        var _id = parseInt($(this).closest(".cell").attr("data-mols2grid-id"));
+        if (this.checked) {
+            var _smiles = $($(this).siblings(".data-{{ smiles_col }}")[0]).text();
+            add_selection({{ grid_id | tojson }}, [_id], [_smiles]);
+        } else {
+            del_selection({{ grid_id | tojson }}, [_id]);
+        }
+    }); 
+});

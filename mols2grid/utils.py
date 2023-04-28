@@ -89,7 +89,8 @@ def sdf_to_dataframe(sdf_path, mol_col="mol"):
         read_file = partial(open, mode="rb")
     with read_file(sdf_path) as f:
         return pd.DataFrame(
-            [mol_to_record(mol, mol_col) for mol in Chem.ForwardSDMolSupplier(f)]
+            [mol_to_record(mol, mol_col)
+             for mol in Chem.ForwardSDMolSupplier(f)]
         )
 
 

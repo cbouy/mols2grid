@@ -1,30 +1,79 @@
-#mols2grid.gridcontainer {
-    display: block;
-    {# padding-left: 1em; #}
-    {# max-width: {{ width }}px; #}
-    {# width: {{ width }}px; #}
+/* Replacing Bootstrap - experimental */
+
+#mols2grid ul.pagination {
+    /* Unset defaults */
+    list-style-type: none;
+    margin-block-start: 0;
+    margin-block-end: 0;
+    margin-inline-start: 0;
+    margin-inline-end: 0;
+    padding-inline-start: 0;
+
+    display: flex;
 }
+#mols2grid ul.pagination li {
+    /* Unset defaults */
+    display: list-item;
+    text-align: -webkit-match-parent;
+
+
+    border: solid 1px;
+    width: 40px;
+    height: 40px;
+
+}
+
+#searchbar {
+    height: 40px;
+    line-height: 40px;
+    padding: 0 13px;
+    border: solid 1px rgba(0,0,0,.15);
+    background: #fff;
+    border-radius: 2px;
+}
+
+
+/*
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+*/
+
+
+
+
+
+{# padding-left: 1em; #}
+{# max-width: {{ width }}px; #}
+{# width: {{ width }}px; #}
+{# max-width: {{ cell_width }}px; #}
+{# width: {{ cell_width }}px; #}
+{# float: left; #}
+
+/* Grid */
 #mols2grid .list {
     display: flex;
     flex-wrap: wrap;
     align-items: flex-start;
     justify-content: flex-start;
-    margin-bottom: 20px;
+    margin-top: 20px;
+    padding: 1px; /* Compensate for negative padding on cell */
 }
 #mols2grid .cell {
     border: {{ border }};
     text-align: {{ textalign }};
     vertical-align: top;
-    {# max-width: {{ cell_width }}px; #}
-    {# width: {{ cell_width }}px; #}
     font-family: {{ fontfamily }};
     font-size: {{ fontsize }};
     padding: 0;
     margin: {{ gap }};
-    {# float: left; #}
-}
-#mols2grid .cell:hover {
-    background-color: {{ hover_color }} !important;
+    flex: 1 0 {{cell_width}}px;
+    
 }
 #mols2grid .cell .data-img {
     padding: 0;
@@ -52,13 +101,18 @@
     float:right;
 }
 
+/* Pagination */
+#mols2grid .pagination {
+    margin-right: 2rem;
+}
+
 
 /* Search bar switch */
 #searchbar {
     padding-right: 122px;
     margin-left: 0.5rem;
 }
-.search-options-wrap {
+#mols2grid .search-options-wrap {
     height: calc(1.5em + .75rem + 2px);
     width: 0;
     display: flex;
@@ -66,7 +120,7 @@
     justify-content: flex-end;
     {# border: solid 1px red; #}
 }
-.search-options {
+#mols2grid .search-options {
     font-size: 12px;
     display: flex;
     height: calc(1.5em + .75rem);
@@ -75,28 +129,34 @@
     border-radius: 2px;
     {# border: solid 1px; #}
 }
-.search-options .option {
+#mols2grid .search-options .option {
     background: #ddd;
     padding: 0 10px;
     cursor: default;
     user-select: none;
 }
-.search-options .option:not(.sel) {
+#mols2grid .search-options .option:not(.sel) {
     cursor: pointer;
 }
-.search-options .option:first-child {
+#mols2grid .search-options .option:first-child {
     border-radius: 3px 0 0 3px;
 }
 .search-options .option:last-child {
     border-radius: 0 3px 3px 0;
 }
-.search-options .option.sel {
+#mols2grid .search-options .option.sel {
     background: #333;
     color: #fff;
 }
 
+/**
+ * Hover states
+ */
 @media (hover:hover) {
-    .search-options .option:not(.sel):hover {
+    #mols2grid .cell:hover {
+        background-color: {{ hover_color }} !important;
+    }
+    #mols2grid .search-options .option:not(.sel):hover {
         background: #ccc;
     }
 }

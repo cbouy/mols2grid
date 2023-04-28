@@ -30,7 +30,8 @@ try:
 except ModuleNotFoundError:
     pass
 else:
-    warnings.filterwarnings("ignore", "Consider using IPython.display.IFrame instead")
+    warnings.filterwarnings(
+        "ignore", "Consider using IPython.display.IFrame instead")
 
 
 class MolGrid:
@@ -118,9 +119,11 @@ class MolGrid:
             )
         if not prerender:
             if not useSVG:
-                raise ValueError("On-the-fly rendering of PNG images not supported")
+                raise ValueError(
+                    "On-the-fly rendering of PNG images not supported")
             if use_coords and mol_col:
-                raise ValueError("Cannot use coordinates with on-the-fly rendering")
+                raise ValueError(
+                    "Cannot use coordinates with on-the-fly rendering")
         self.prefer_coordGen = coordGen
         self.removeHs = removeHs
         self.useSVG = useSVG
@@ -159,7 +162,8 @@ class MolGrid:
                     ):
                         opts[key] = value
             opts.update(kwargs)
-            opts.update({"width": self.img_size[0], "height": self.img_size[1]})
+            opts.update(
+                {"width": self.img_size[0], "height": self.img_size[1]})
             self.json_draw_opts = json.dumps(opts)
         # prepare smiles and images
         self._prepare_dataframe(dataframe)
@@ -178,7 +182,8 @@ class MolGrid:
             self._cached_selection = {}
             register._init_grid(name)
         # create widget
-        widget = MolGridWidget(grid_id=name, selection=str(self._cached_selection))
+        widget = MolGridWidget(
+            grid_id=name, selection=str(self._cached_selection))
         selection_handler = partial(register.selection_updated, name)
         widget.observe(selection_handler, names=["selection"])
         display(widget)
@@ -197,7 +202,8 @@ class MolGrid:
             Other arguments passed on initialization
         """
         mol_col = kwargs.pop("mol_col", "mol")
-        df = pd.DataFrame([mol_to_record(mol, mol_col=mol_col) for mol in mols])
+        df = pd.DataFrame([mol_to_record(mol, mol_col=mol_col)
+                          for mol in mols])
         return cls(df, mol_col=mol_col, **kwargs)
 
     @classmethod
@@ -275,7 +281,8 @@ class MolGrid:
                     remove_coordinates
                 )
             if self.removeHs:
-                dataframe[self.mol_col] = dataframe[self.mol_col].apply(Chem.RemoveHs)
+                dataframe[self.mol_col] = dataframe[self.mol_col].apply(
+                    Chem.RemoveHs)
             # render
             dataframe["img"] = dataframe[self.mol_col].apply(self.mol_to_img)
             # cleanup
@@ -286,7 +293,8 @@ class MolGrid:
             dataframe["img"] = None
         # generate smiles col if not present or needs to be updated
         if self.mol_col and self.smiles_col not in dataframe.columns:
-            dataframe[self.smiles_col] = dataframe[self.mol_col].apply(mol_to_smiles)
+            dataframe[self.smiles_col] = dataframe[self.mol_col].apply(
+                mol_to_smiles)
 
     def render(self, template="pages", **kwargs):
         """Returns the HTML document corresponding to the "pages" or "table"
@@ -315,8 +323,9 @@ class MolGrid:
         self,
         subset=None,
         tooltip=None,
-        n_cols=5,
-        n_rows=3,
+        # n_cols=5, # %%
+        # n_rows=3,
+        n_items_per_page=24,
         border="1px solid #cccccc",
         gap=0,
         fontsize="12pt",
@@ -471,7 +480,7 @@ class MolGrid:
         smiles = self.smiles_col
         content = []
         column_map = {}
-        width = n_cols * (cell_width + 2 * (gap + 2))
+        # width = n_cols * (cell_width + 2 * (gap + 2)) # %%
 
         if subset is None:
             if tooltip is None:
@@ -482,7 +491,8 @@ class MolGrid:
                 subset = [subset.pop(subset.index("img"))] + subset
 
         if "img" not in subset:
-            raise KeyError("Please add the 'img' field in the `subset` parameter")
+            raise KeyError(
+                "Please add the 'img' field in the `subset` parameter")
 
         # define fields that are searchable and sortable
         search_cols = [f"data-{col}" for col in subset if col != "img"]
@@ -563,7 +573,8 @@ class MolGrid:
                 name = f"style-{slugify(col)}"
                 df[name] = df[col].apply(func)
             final_columns.append(name)
-            value_names = value_names[:-1] + f", {{ attr: 'style', name: {name!r} }}]"
+            value_names = value_names[:-1] + \
+                f", {{ attr: 'style', name: {name!r} }}]"
 
         if tooltip:
             df["mols2grid-tooltip"] = df.apply(
@@ -588,7 +599,8 @@ class MolGrid:
                 ] = True
                 final_columns += ["cached_checkbox"]
                 value_names = (
-                    value_names[:-1] + ", {attr: 'checked', name: 'cached_checkbox'}]"
+                    value_names[:-1] +
+                    ", {attr: 'checked', name: 'cached_checkbox'}]"
                 )
             checkbox = (
                 '<input type="checkbox" '
@@ -644,14 +656,15 @@ class MolGrid:
         template = env.get_template("pages.html")
         template_kwargs = dict(
             padding=18,
-            width=width,
+            # width=width, # %%
             height=self.img_size[1],
             border=border,
             textalign=textalign,
             cell_width=cell_width,
             fontfamily=fontfamily,
             fontsize=fontsize,
-            gap=f"{gap}px",
+            # gap=f"{gap}px", %%
+            gap='-1px -1px 0 0' if gap == 0 else f'{gap}px',
             hover_color=hover_color,
             item=item,
             item_repr=repr(item),
@@ -659,7 +672,8 @@ class MolGrid:
             tooltip=tooltip,
             tooltip_trigger=repr(tooltip_trigger),
             tooltip_placement=repr(tooltip_placement),
-            n_items_per_page=n_rows * n_cols,
+            # n_items_per_page=n_rows * n_cols, # %%
+            n_items_per_page=n_items_per_page,
             search_cols=search_cols,
             data=json.dumps(
                 df.to_dict("records"), indent=None, default=lambda x: "🤷‍♂️"
@@ -940,14 +954,15 @@ class MolGrid:
         view : IPython.core.display.HTML
         """
         doc = self.render(**kwargs)
-        iframe = env.get_template("html/iframe.html").render(
-            width=width,
-            height=height,
-            allow=iframe_allow,
-            sandbox=iframe_sandbox,
-            doc=escape(doc),
-        )
-        return HTML(iframe)
+        # iframe = env.get_template("html/iframe.html").render(
+        #     width=width,
+        #     height=height,
+        #     allow=iframe_allow,
+        #     sandbox=iframe_sandbox,
+        #     doc=escape(doc),
+        # )
+        # return HTML(iframe)
+        return HTML(doc)
 
     def save(self, output, **kwargs):
         """Render and save the grid in an HTML document"""

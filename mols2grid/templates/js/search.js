@@ -56,12 +56,14 @@ String.prototype.replace = (function(_super) {
         return _super.apply(this, arguments);
     };         
 })(String.prototype.replace);
+
 // Switch search type (Text or SMARTS)
-$('#mols2grid .search-btn').click(function() {
+$('#mols2grid .search-options .option').click(function() {
     search_type = $(this).text();
-    $('#mols2grid button.search-btn.active').removeClass("active");
-    $(this).addClass("active");
+    $('#mols2grid .search-options .option.sel').removeClass("sel");
+    $(this).addClass("sel");
 });
+
 // Searchbar update event handler
 $('#mols2grid #searchbar').on("keyup", function(e) {
     var query = e.target.value;
