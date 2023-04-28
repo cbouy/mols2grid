@@ -12,9 +12,10 @@
   </head>
   <body>
     <div id="mols2grid" class="gridcontainer grid-{{ grid_id }}">
-      <div class="row mb-3">
+      <!-- <div class="row mb-3">
         <div class="list">{{ item }}</div>
-      </div>
+      </div> -->
+      <div class="list">{{ item }}</div>
       <div class="d-inline">
         <ul class="pagination float-left"></ul>
         <div id="controls" class="d-flex flex-row float-right">
@@ -41,7 +42,7 @@
               {% endif %}
             </div>
           </div>
-          <div class="input-group row pl-4">
+          <!-- <div class="input-group row pl-4">
             <input type="text" id="searchbar" class="form-control" placeholder="Search" aria-label="Search" aria-describedby="basic-addon1">
             <div class="input-group-append">
               <button id="searchBtn" class="btn btn-light dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">🔎</button>
@@ -50,7 +51,21 @@
                 <button id="smartsSearch" class="search-btn dropdown-item">SMARTS</button>
               </div>
             </div>
-          </div>
+          </div> -->
+          <input
+							type="text"
+							id="searchbar"
+							class="form-control"
+							placeholder="Search"
+							aria-label="Search"
+							aria-describedby="basic-addon1"
+						/>
+            <div class="search-options-wrap">
+              <div class="search-options">
+                <div class="option sel">Text</div>
+                <div class="option">SMARTS</div>
+              </div>
+            </div>
         </div>
       </div>
     </div>
