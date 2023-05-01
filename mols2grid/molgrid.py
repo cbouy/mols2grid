@@ -506,7 +506,7 @@ class MolGrid:
         else:
             tooltip = []
         sort_cols = search_cols[:]
-        sort_cols = ["mols2grid-id"] + sort_cols
+        sort_cols = ["data-mols2grid-id"] + sort_cols
         # get unique list but keep order
         sort_cols = list(dict.fromkeys(sort_cols))
         if style is None:
@@ -610,12 +610,12 @@ class MolGrid:
             checkbox = ""
         if whole_cell_style:
             item = (
-                '<div class="cell" data-mols2grid-id="0" '
+                '<div class="m2g-cell" data-mols2grid-id="0" '
                 'data-cellstyle="0">{checkbox}{content}</div>'
             )
         else:
             item = (
-                '<div class="cell" data-mols2grid-id="0">' "{checkbox}{content}</div>"
+                '<div class="m2g-cell" data-mols2grid-id="0">' "{checkbox}{content}</div>"
             )
         item = item.format(checkbox=checkbox, content="".join(content))
 
@@ -882,9 +882,9 @@ class MolGrid:
             td = [f'<td class="col-{ncol}">']
             if "__all__" in style.keys():
                 s = style["__all__"](row)
-                div = [f'<div class="cell-{i}" style="{s}">']
+                div = [f'<div class="m2g-cell-{i}" style="{s}">']  # %%
             else:
-                div = [f'<div class="cell-{i}">']
+                div = [f'<div class="m2g-cell-{i}">']  # %%
             for col in subset:
                 v = row[col]
                 if col == "img" and tooltip:

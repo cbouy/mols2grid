@@ -70,7 +70,7 @@ def test_no_subset_all_visible(driver: FirefoxDriver, grid):
     doc = get_doc(grid, {"tooltip": [], "selection": False})
     driver.get(doc)
     columns = set(grid.dataframe.columns.drop("mol").to_list())
-    cell = driver.find_by_css_selector("#mols2grid .cell")
+    cell = driver.find_by_css_selector("#mols2grid .m2g-cell")
     data_el = cell.find_elements_by_class_name("data")
     classes = [
         c.replace("data-", "").replace("-copy", "")
@@ -84,7 +84,7 @@ def test_no_subset_all_visible(driver: FirefoxDriver, grid):
 
 def test_smiles_hidden(driver: FirefoxDriver, html_doc):
     driver.get(html_doc)
-    el = driver.find_by_css_selector("#mols2grid .cell .data-SMILES")
+    el = driver.find_by_css_selector("#mols2grid .m2g-cell .data-SMILES")
     assert not el.is_displayed()
 
 
@@ -96,7 +96,7 @@ def test_page_click(driver: FirefoxDriver, grid, page):
         driver.wait_for_img_load()
         next_page = driver.find_by_css_selector(f'a.page-link[data-i="{i}"]')
         next_page.click()
-    first_cell = driver.find_by_class_name("cell")
+    first_cell = driver.find_by_class_name("m2g-cell")
     mols2grid_id = 9 * (page - 1)
     name = first_cell.find_element_by_class_name("data-_Name")
     ref = grid.dataframe.iloc[mols2grid_id]
@@ -116,7 +116,7 @@ def test_page_click(driver: FirefoxDriver, grid, page):
         (
             "custom_css",
             "background-color",
-            ".cell { background-color: black; }",
+            ".m2g-cell { background-color: black; }",
             "rgb(0, 0, 0)",
         ),
     ],
@@ -125,7 +125,7 @@ def test_css_properties(driver: FirefoxDriver, grid, name, css_prop, value, expe
     doc = get_doc(grid, {name: value})
     driver.get(doc)
     computed = driver.execute_script(
-        f"return getComputedStyle(document.querySelector('#mols2grid .cell')).getPropertyValue({css_prop!r});"
+        f"return getComputedStyle(document.querySelector('#mols2grid .m2g-cell')).getPropertyValue({css_prop!r});"
     )
     assert computed == expected
 
@@ -134,7 +134,7 @@ def test_text_search(driver: FirefoxDriver, html_doc):
     driver.get(html_doc)
     driver.wait_for_img_load()
     driver.text_search("iodopropane")
-    el = driver.find_by_css_selector("#mols2grid .cell .data-SMILES")
+    el = driver.find_by_css_selector("#mols2grid .m2g-cell .data-SMILES")
     assert el.get_attribute("innerHTML") == "CC(I)C"
 
 
@@ -142,7 +142,7 @@ def test_text_search_regex_chars(driver: FirefoxDriver, html_doc):
     driver.get(html_doc)
     driver.wait_for_img_load()
     driver.text_search("1-pentene")
-    el = driver.find_by_css_selector("#mols2grid .cell .data-SMILES")
+    el = driver.find_by_css_selector("#mols2grid .m2g-cell .data-SMILES")
     assert el.get_attribute("innerHTML") == "CCCC=C"
 
 
@@ -151,7 +151,7 @@ def test_smarts_search(driver: FirefoxDriver, html_doc):
     driver.get(html_doc)
     driver.wait_for_img_load()
     driver.substructure_query("CC(I)C")
-    el = driver.find_by_css_selector("#mols2grid .cell .data-_Name")
+    el = driver.find_by_css_selector("#mols2grid .m2g-cell .data-_Name")
     assert el.text == "2-iodopropane"
 
 
@@ -182,7 +182,8 @@ def test_export_csv(driver: FirefoxDriver, html_doc):
         key=lambda x: x.stat().st_mtime,
     )
     csv_file = csv_files[-1]
-    file_mtime = datetime.fromtimestamp(csv_file.stat().st_mtime, tz=timezone.utc)
+    file_mtime = datetime.fromtimestamp(
+        csv_file.stat().st_mtime, tz=timezone.utc)
     assert (file_mtime - now).seconds < 1, "Could not find recent selection file"
     content = csv_file.read_text()
     assert content == "index\t_Name\tSMILES\n0\t3-methylpentane\tCCC(C)CC\n"
@@ -243,7 +244,7 @@ def test_image_size(driver: FirefoxDriver, df, prerender):
     driver.get(doc)
     if not prerender:
         driver.wait_for_img_load()
-    img = driver.find_by_css_selector("#mols2grid .cell .data-img *")
+    img = driver.find_by_css_selector("#mols2grid .m2g-cell .data-img *")
     assert img.size == {"height": 100.0, "width": 100.0}
 
 
@@ -389,11 +390,11 @@ def test_hover_color(driver: FirefoxDriver, grid):
     driver.get(doc)
     (
         ActionChains(driver)
-        .move_to_element(driver.find_by_css_selector("#mols2grid .cell"))
+        .move_to_element(driver.find_by_css_selector("#mols2grid .m2g-cell"))
         .perform()
     )
     color = driver.execute_script(
-        f"return getComputedStyle(document.querySelector('#mols2grid .cell')).getPropertyValue('background-color');"
+        f"return getComputedStyle(document.querySelector('#mols2grid .m2g-cell')).getPropertyValue('background-color');"
     )
     assert color == "rgb(255, 0, 0)"
 
@@ -405,12 +406,13 @@ def test_tooltip(driver: FirefoxDriver, grid):
     driver.wait_for_img_load()
     (
         ActionChains(driver)
-        .move_to_element(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
+        .move_to_element(driver.find_by_css_selector("#mols2grid .m2g-cell .data-img *"))
         .perform()
     )
     tooltip = driver.find_by_css_selector('div.popover[role="tooltip"]')
     el = tooltip.find_element_by_class_name("popover-body")
-    assert el.get_attribute("innerHTML") == "<strong>_Name</strong>: 3-methylpentane"
+    assert el.get_attribute(
+        "innerHTML") == "<strong>_Name</strong>: 3-methylpentane"
 
 
 @flaky(max_runs=3, min_passes=1)
@@ -420,25 +422,28 @@ def test_tooltip_trigger(driver: FirefoxDriver, grid):
     driver.wait_for_img_load()
     (
         ActionChains(driver)
-        .move_to_element(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
+        .move_to_element(driver.find_by_css_selector("#mols2grid .m2g-cell .data-img *"))
         .perform()
     )
     with pytest.raises(NoSuchElementException):
         driver.find_element_by_css_selector('div.popover[role="tooltip"]')
-    driver.find_clickable(By.CSS_SELECTOR, "#mols2grid .cell .data-img *").click()
+    driver.find_clickable(
+        By.CSS_SELECTOR, "#mols2grid .m2g-cell .data-img *").click()
     tooltip = driver.find_by_css_selector('div.popover[role="tooltip"]')
     el = tooltip.find_element_by_class_name("popover-body")
-    assert el.get_attribute("innerHTML") == "<strong>_Name</strong>: 3-methylpentane"
+    assert el.get_attribute(
+        "innerHTML") == "<strong>_Name</strong>: 3-methylpentane"
 
 
 @flaky(max_runs=3, min_passes=1)
 def test_tooltip_fmt(driver: FirefoxDriver, grid):
-    doc = get_doc(grid, {"tooltip": ["_Name"], "tooltip_fmt": "<em>{value}</em>"})
+    doc = get_doc(grid, {"tooltip": ["_Name"],
+                  "tooltip_fmt": "<em>{value}</em>"})
     driver.get(doc)
     driver.wait_for_img_load()
     (
         ActionChains(driver)
-        .move_to_element(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
+        .move_to_element(driver.find_by_css_selector("#mols2grid .m2g-cell .data-img *"))
         .perform()
     )
     tooltip = driver.find_by_css_selector('div.popover[role="tooltip"]')
@@ -452,12 +457,13 @@ def test_tooltip_not_in_subset(driver: FirefoxDriver, grid):
     driver.wait_for_img_load()
     (
         ActionChains(driver)
-        .move_to_element(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
+        .move_to_element(driver.find_by_css_selector("#mols2grid .m2g-cell .data-img *"))
         .perform()
     )
     tooltip = driver.find_by_css_selector('div.popover[role="tooltip"]')
     el = tooltip.find_element_by_class_name("popover-body")
-    assert el.get_attribute("innerHTML") == "<strong>_Name</strong>: 3-methylpentane"
+    assert el.get_attribute(
+        "innerHTML") == "<strong>_Name</strong>: 3-methylpentane"
 
 
 @flaky(max_runs=3, min_passes=1)
@@ -474,13 +480,13 @@ def test_style(driver: FirefoxDriver, grid):
     )
     driver.get(doc)
     driver.wait_for_img_load()
-    el = driver.find_by_css_selector("#mols2grid .cell")
+    el = driver.find_by_css_selector("#mols2grid .m2g-cell")
     assert el.value_of_css_property("color") == "rgb(255, 0, 0)"
-    el = driver.find_by_css_selector("#mols2grid .cell .data-_Name")
+    el = driver.find_by_css_selector("#mols2grid .m2g-cell .data-_Name")
     assert el.value_of_css_property("color") == "rgb(0, 0, 255)"
     (
         ActionChains(driver)
-        .move_to_element(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
+        .move_to_element(driver.find_by_css_selector("#mols2grid .m2g-cell .data-img *"))
         .perform()
     )
     tooltip = driver.find_by_css_selector('div.popover[role="tooltip"]')
@@ -494,21 +500,23 @@ def test_style(driver: FirefoxDriver, grid):
 @flaky(max_runs=3, min_passes=1)
 def test_transform(driver: FirefoxDriver, grid):
     doc = get_doc(
-        grid, {"tooltip": ["_Name"], "transform": {"_Name": lambda x: x.upper()}}
+        grid, {"tooltip": ["_Name"], "transform": {
+            "_Name": lambda x: x.upper()}}
     )
     driver.get(doc)
-    name = driver.find_by_css_selector("#mols2grid .cell .data-_Name")
+    name = driver.find_by_css_selector("#mols2grid .m2g-cell .data-_Name")
     assert name.text == "3-METHYLPENTANE"
     driver.wait_for_img_load()
     (
         ActionChains(driver)
-        .move_to_element(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
+        .move_to_element(driver.find_by_css_selector("#mols2grid .m2g-cell .data-img *"))
         .pause(0.5)
         .perform()
     )
     tooltip = driver.find_by_css_selector('div.popover[role="tooltip"]')
     el = tooltip.find_element_by_class_name("popover-body")
-    assert el.get_attribute("innerHTML") == "<strong>_Name</strong>: 3-METHYLPENTANE"
+    assert el.get_attribute(
+        "innerHTML") == "<strong>_Name</strong>: 3-METHYLPENTANE"
 
 
 @flaky(max_runs=3, min_passes=1)
@@ -526,13 +534,13 @@ def test_transform_style_tooltip(driver: FirefoxDriver, grid):
     )
     driver.get(doc)
     driver.wait_for_img_load()
-    cell = driver.find_by_css_selector("#mols2grid .cell")
+    cell = driver.find_by_css_selector("#mols2grid .m2g-cell")
     assert cell.value_of_css_property("background-color") == "rgb(255, 0, 0)"
     name = cell.find_element_by_class_name("data-_Name")
     assert name.text == "foo"
     (
         ActionChains(driver)
-        .move_to_element(driver.find_by_css_selector("#mols2grid .cell .data-img *"))
+        .move_to_element(driver.find_by_css_selector("#mols2grid .m2g-cell .data-img *"))
         .pause(0.5)
         .perform()
     )
@@ -550,21 +558,22 @@ def test_callback_js(driver: FirefoxDriver, grid, selection):
         grid,
         {
             "subset": ["img", "_Name"],
-            "callback": "$('#mols2grid .cell .data-_Name').html('foo')",
+            "callback": "$('#mols2grid .m2g-cell .data-_Name').html('foo')",
             "selection": selection,
         },
     )
     driver.get(doc)
     driver.wait_for_img_load()
-    driver.find_clickable(By.CSS_SELECTOR, "#mols2grid .cell .data-img").click()
-    el = driver.find_by_css_selector("#mols2grid .cell .data-_Name")
+    driver.find_clickable(
+        By.CSS_SELECTOR, "#mols2grid .m2g-cell .data-img").click()
+    el = driver.find_by_css_selector("#mols2grid .m2g-cell .data-_Name")
     assert el.text == "foo"
 
 
 def test_sort_by(driver: FirefoxDriver, grid):
     doc = get_doc(grid, {"subset": ["img", "_Name"], "sort_by": "_Name"})
     driver.get(doc)
-    el = driver.find_by_css_selector("#mols2grid .cell .data-_Name")
+    el = driver.find_by_css_selector("#mols2grid .m2g-cell .data-_Name")
     assert el.text == "1,1,2,2-tetrachloroethane"
 
 
@@ -575,13 +584,13 @@ def test_sort_button(driver: FirefoxDriver, html_doc):
     driver.find_clickable(
         By.CSS_SELECTOR, 'button.sort-btn[data-name="data-_Name"]'
     ).click()
-    el = driver.find_by_css_selector("#mols2grid .cell .data-_Name")
+    el = driver.find_by_css_selector("#mols2grid .m2g-cell .data-_Name")
     assert el.text == "1,1,2,2-tetrachloroethane"
     driver.find_clickable(By.ID, "sortDropdown").click()
     driver.find_clickable(
         By.CSS_SELECTOR, 'button.sort-btn[data-name="data-_Name"]'
     ).click()
-    el = driver.find_by_css_selector("#mols2grid .cell .data-_Name")
+    el = driver.find_by_css_selector("#mols2grid .m2g-cell .data-_Name")
     assert el.text == "tetrachloromethane"
 
 
@@ -595,7 +604,8 @@ def test_sort_button(driver: FirefoxDriver, html_doc):
 def test_substruct_highlight(
     driver: FirefoxDriver, grid, substruct_highlight, expected
 ):
-    doc = get_doc(grid, {"n_rows": 1, "substruct_highlight": substruct_highlight})
+    doc = get_doc(
+        grid, {"n_rows": 1, "substruct_highlight": substruct_highlight})
     driver.get(doc)
     driver.wait_for_img_load()
     driver.substructure_query("CC(I)C")
@@ -609,8 +619,9 @@ def test_substruct_clear_removes_highlight(driver: FirefoxDriver, grid):
     driver.wait_for_img_load()
     driver.substructure_query("C")
     hash_hl = driver.get_svg_hash()
-    driver.find_by_id("searchbar").clear()
-    driver.find_by_id("searchbar").send_keys(Keys.BACKSPACE)
+    driver.find_by_css_selector("#mols2grid .m2g-searchbar").clear()
+    driver.find_by_css_selector(
+        "#mols2grid .m2g-searchbar").send_keys(Keys.BACKSPACE)
     driver.wait_for_img_load()
     hash_ = driver.get_svg_hash()
     assert hash_ != hash_hl
@@ -647,7 +658,7 @@ def test_filter(driver: FirefoxDriver, grid):
     )
     driver.wait_for_img_load()
     driver.execute_script(filter_code)
-    el = driver.find_by_css_selector("#mols2grid .cell .data-_Name")
+    el = driver.find_by_css_selector("#mols2grid .m2g-cell .data-_Name")
     assert el.text == "2-iodopropane"
 
 
@@ -656,11 +667,12 @@ def test_subset_gives_rows_order(driver: FirefoxDriver, grid):
     doc = get_doc(grid, {"subset": subset, "n_rows": 1})
     driver.get(doc)
     driver.wait_for_img_load()
-    cell = driver.find_by_css_selector("#mols2grid .cell")
+    cell = driver.find_by_css_selector("#mols2grid .m2g-cell")
     elements = cell.find_elements_by_class_name("data")
     for i, el in enumerate(elements):
         class_list = el.get_attribute("class").split()
-        name = [x.replace("data-", "") for x in class_list if x.startswith("data-")][0]
+        name = [x.replace("data-", "")
+                for x in class_list if x.startswith("data-")][0]
         if i == len(elements) - 1:
             assert name == "SMILES"
             assert el.value_of_css_property("display") == "none"
@@ -674,11 +686,12 @@ def test_colname_with_spaces(driver: FirefoxDriver, df):
     )
     grid = mols2grid.MolGrid(df, smiles_col="Molecule")
     doc = get_doc(
-        grid, dict(subset=["Molecule name", "img"], tooltip=["Molecule"], n_rows=1)
+        grid, dict(subset=["Molecule name", "img"],
+                   tooltip=["Molecule"], n_rows=1)
     )
     driver.get(doc)
     driver.wait_for_img_load()
-    el = driver.find_by_css_selector("#mols2grid .cell .data")
+    el = driver.find_by_css_selector("#mols2grid .m2g-cell .data")
     assert el.text == "3-methylpentane"
 
 
@@ -741,7 +754,7 @@ def test_default_subset_tooltip(driver: FirefoxDriver, grid):
         for x in grid.dataframe.columns.drop("mol").to_list()
         if x not in expected_subset
     ]
-    cell = driver.find_by_css_selector("#mols2grid .cell")
+    cell = driver.find_by_css_selector("#mols2grid .m2g-cell")
     data_elements = cell.find_elements_by_class_name("data")
     subset = [
         c.replace("data-", "").replace("-copy", "")

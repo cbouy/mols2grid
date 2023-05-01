@@ -113,7 +113,7 @@ $("#btn-chkbox-dlcsv").click(function(e) {
 // update selection on checkbox click
 listObj.on("updated", function (list) {
     $("input:checkbox").change(function() {
-        var _id = parseInt($(this).closest(".cell").attr("data-mols2grid-id"));
+        var _id = parseInt($(this).closest(".m2g-cell").attr("data-mols2grid-id"));
         if (this.checked) {
             var _smiles = $($(this).siblings(".data-{{ smiles_col }}")[0]).text();
             add_selection({{ grid_id | tojson }}, [_id], [_smiles]);

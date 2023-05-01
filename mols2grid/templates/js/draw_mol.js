@@ -20,8 +20,10 @@ function draw_mol(smiles, index, template_mol) {
     }
     return svg;
 }
+
+// Update images when the list is updated
 listObj.on("updated", function (list) {
-    var query = $('#mols2grid #searchbar').val();
+    var query = $('#mols2grid .m2g-searchbar').val();
     var template_mol;
     if (query === "") {
         smarts_matches = {};
@@ -30,7 +32,7 @@ listObj.on("updated", function (list) {
         template_mol = RDKit.get_qmol(query);
         template_mol.set_new_coords({{ prefer_coordGen | tojson }});
     }
-    $('#mols2grid .cell').each(function() {
+    $('#mols2grid .m2g-cell').each(function() {
         var $t = $(this);
         var smiles = $t.children(".data-{{ smiles_col }}").first().text();
         var index = parseInt(this.getAttribute("data-mols2grid-id"));

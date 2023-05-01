@@ -1,7 +1,7 @@
 // Update selection on checkbox click
 listObj.on("updated", function (list) {
     $("input:checkbox").change(function() {
-        var _id = parseInt($(this).closest(".cell").attr("data-mols2grid-id"));
+        var _id = parseInt($(this).closest(".m2g-cell").attr("data-mols2grid-id"));
         if (this.checked) {
             var _smiles = $($(this).siblings(".data-{{ smiles_col }}")[0]).text();
             add_selection({{ grid_id | tojson }}, [_id], [_smiles]);
@@ -15,14 +15,14 @@ listObj.on("updated", function (list) {
 $('#dropdown-select').change(function(e) {
     var val = e.target.value
     switch(val) {
-        case 'check-all':
-            checkAll()
+        case 'select-all':
+            selectAll()
             break
-        case 'check-matching':
-            checkMatching()
+        case 'select-matching':
+            selectMatching()
             break
-        case 'uncheck-all':
-            uncheckAll()
+        case 'unselect-all':
+            unselectAll()
             break
         case 'invert':
             invertSelection()
@@ -37,10 +37,11 @@ $('#dropdown-select').change(function(e) {
             saveCSV()
             break
     }
+    $(this).val('') // Reset dropdown
 })
 
 // Check all
-function checkAll(e) {
+function selectAll(e) {
     var _id = [];
     var _smiles = [];
     listObj.items.forEach(function (item) {
@@ -59,7 +60,7 @@ function checkAll(e) {
 
 
 // Check matching
-function checkMatching(e) {
+function selectMatching(e) {
     var _id = [];
     var _smiles = [];
     listObj.matchingItems.forEach(function (item) {
@@ -77,7 +78,7 @@ function checkMatching(e) {
 };
 
 // Uncheck all
-function uncheckAll(e) {
+function unselectAll(e) {
     var _id = [];
     listObj.items.forEach(function (item) {
         if (item.elm) {

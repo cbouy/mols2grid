@@ -1,7 +1,7 @@
 listObj.on("updated", function (list) {
     $('#mols2grid .data-img').click(function(e) {
         var data = {}
-        data["mols2grid-id"] = parseInt($(this).closest(".cell")
+        data["mols2grid-id"] = parseInt($(this).closest(".m2g-cell")
                                                .attr("data-mols2grid-id"));
         data["img"] = this.innerHTML;
         $(this).siblings(".data").each(function() {

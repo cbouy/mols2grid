@@ -38,7 +38,8 @@ class FirefoxDriver(webdriver.Firefox):
 
     def wait(self, condition, max_delay=5):
         return WebDriverWait(
-            self, max_delay, ignored_exceptions=[StaleElementReferenceException]
+            self, max_delay, ignored_exceptions=[
+                StaleElementReferenceException]
         ).until(condition)
 
     def find_by_id(self, element_id, **kwargs):
@@ -55,7 +56,8 @@ class FirefoxDriver(webdriver.Firefox):
         (ActionChains(self).move_to_element(el).pause(pause).click().perform())
 
     def find_by_css_selector(self, css_selector, **kwargs):
-        condition = EC.presence_of_element_located((By.CSS_SELECTOR, css_selector))
+        condition = EC.presence_of_element_located(
+            (By.CSS_SELECTOR, css_selector))
         return self.wait(condition, **kwargs)
 
     def find_by_class_name(self, name, **kwargs):
@@ -71,7 +73,8 @@ class FirefoxDriver(webdriver.Firefox):
         return imagehash.average_hash(im, hash_size=16)
 
     def get_imgs_from_svgs(self, selector="#mols2grid .cell .data-img"):
-        condition = EC.presence_of_all_elements_located((By.CSS_SELECTOR, selector))
+        condition = EC.presence_of_all_elements_located(
+            (By.CSS_SELECTOR, selector))
         svgs = self.wait(condition)
         for svg in svgs:
             im = svg2png(bytestring=(svg.get_attribute("innerHTML")))
@@ -85,11 +88,12 @@ class FirefoxDriver(webdriver.Firefox):
     def substructure_query(self, smarts):
         self.find_clickable(By.ID, "searchBtn").click()
         self.find_clickable(By.ID, "smartsSearch").click()
-        self.find_by_id("searchbar").send_keys(smarts)
+        self.find_by_css_selector(
+            "#mols2grid .m2g-searchbar").send_keys(smarts)
         self.wait_for_img_load()
 
     def text_search(self, txt):
         self.find_clickable(By.ID, "searchBtn").click()
         self.find_clickable(By.ID, "txtSearch").click()
-        self.find_by_id("searchbar").send_keys(txt)
+        self.find_by_css_selector("#mols2grid .m2g-searchbar").send_keys(txt)
         self.wait_for_img_load()

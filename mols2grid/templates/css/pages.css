@@ -1,95 +1,3 @@
-/* Replacing Bootstrap - experimental */
-
-#mols2grid ul.pagination {
-    /* Unset defaults */
-    list-style-type: none;
-    margin-block-start: 0;
-    margin-block-end: 0;
-    margin-inline-start: 0;
-    margin-inline-end: 0;
-    padding-inline-start: 0;
-
-    display: flex;
-}
-#mols2grid ul.pagination li {
-    /* Unset defaults */
-    display: list-item;
-    text-align: -webkit-match-parent;
-
-
-    border: solid 1px;
-    width: 40px;
-    height: 40px;
-
-}
-
-#searchbar {
-    height: 40px;
-    line-height: 40px;
-    padding: 0 13px;
-    border: solid 1px rgba(0,0,0,.15);
-    background: #fff;
-    border-radius: 2px;
-}
-
-
-/*
- *
- *
- *
- *
- *
- *
- *
- *
-*/
-
-
-
-
-
-{# padding-left: 1em; #}
-{# max-width: {{ width }}px; #}
-{# width: {{ width }}px; #}
-{# max-width: {{ cell_width }}px; #}
-{# width: {{ cell_width }}px; #}
-{# float: left; #}
-
-/* Grid */
-#mols2grid .list {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    justify-content: flex-start;
-    margin-top: 20px;
-    padding: 1px; /* Compensate for negative padding on cell */
-}
-#mols2grid .cell {
-    border: {{ border }};
-    text-align: {{ textalign }};
-    vertical-align: top;
-    font-family: {{ fontfamily }};
-    font-size: {{ fontsize }};
-    padding: 0;
-    margin: {{ gap }};
-    flex: 1 0 {{cell_width}}px;
-    
-}
-#mols2grid .cell .data-img {
-    padding: 0;
-    margin: 0;
-}
-#mols2grid .cell img, #mols2grid .cell svg {
-    max-width: 100%;
-    height: auto;
-    padding: 0;
-}
-#mols2grid .data {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    display: block;
-}
 #mols2grid .arrow-asc:after {
     content: '↑';
     text-align: right;
@@ -101,59 +9,423 @@
     float:right;
 }
 
-/* Pagination */
-#mols2grid .pagination {
-    margin-right: 2rem;
+/* padding-left: 1em; */
+/* max-width: {{ width }}px; */
+/* width: {{ width }}px; */
+/* max-width: {{ cell_width }}px; */
+/* width: {{ cell_width }}px; */
+/* float: left; */
+
+/**
+ * Functions section
+ */
+
+#mols2grid {
+    font-family: sans-serif;
+    font-size: 14px;
+
+    /* Colors */
+    --black: rgba(0,0,0,.75);
+    --black-soft: rgba(0,0,0,.35);
+    --bg: #f6f6f6;
+    --border: solid 1px rgba(0,0,0,.1);
+    --hl: #555; /* Highlight color */
+    
+    /* Corners */
+    --br: 3px; /* Border radius */
+    --br-l: var(--br) 0 0 var(--br); /* Left-only */
+    --br-r: 0 var(--br) var(--br) 0; /* Right-only */
+
+    /* Layout */
+    --h: 40px; /* Height */
+}
+#mols2grid .m2g-functions {
+    display: flex;
+}
+#mols2grid .m2g-functions > * {
+    flex: 0 0;
+    margin-right: 10px;
+}
+#mols2grid .m2g-functions > *:last-child {
+    margin-right: 0;
+}
+#mols2grid .m2g-functions > .m2g-gap {
+    flex: 1 1;
+    /* background: pink; */
 }
 
 
-/* Search bar switch */
-#searchbar {
-    padding-right: 122px;
-    margin-left: 0.5rem;
+
+/*
+ * Pagination
+ */
+
+#mols2grid ul.pagination {
+    /* Unset defaults */
+    list-style-type: none;
+    margin-block-start: 0;
+    margin-block-end: 0;
+    margin-inline-start: 0;
+    margin-inline-end: 0;
+    padding-inline-start: 0;
+
+    /* Custom */
+    display: flex;
 }
-#mols2grid .search-options-wrap {
-    height: calc(1.5em + .75rem + 2px);
-    width: 0;
+#mols2grid ul.pagination li {
+    background: var(--bg) ;
+    border: var(--border);
+    height: var(--h);
+    min-width: var(--h);
+    position: relative;
+    user-select: none;
+    
+    /* Compensate for double border */
+    margin-right: -1px;
+    
+    /* Center text */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#mols2grid ul.pagination li a {
+    text-decoration: none;
+    color: var(--black);
+    padding: 0 10px;
+    width: 100%;
+    height: var(--h);
+    line-height: var(--h);
+    text-align: center;
+    /* Compensate for border so there's no gap between click areas  */
+    margin: 0 -1px;
+}
+
+/* Corner shape */
+#mols2grid ul.pagination li:first-child {
+    border-radius: var(--br-l);
+}
+#mols2grid ul.pagination li:last-child {
+    border-radius: var(--br-r);
+    margin-right: 0;
+}
+
+/* Focus state */
+#mols2grid ul.pagination li:focus-within {
+    border-color: var(--hl);
+    box-shadow: inset 0 0 0 1px var(--hl);
+    z-index: 1;
+}
+#mols2grid ul.pagination li:focus-within a {
+    outline: none;
+}
+
+/* Active state */
+#mols2grid ul.pagination li.active {
+    background: var(--hl);
+    z-index: 1;
+}
+#mols2grid ul.pagination li.active a {
+    cursor: default;
+    color: #fff;
+}
+
+/* Disabled sate */
+#mols2grid ul.pagination li.disabled a {
+    cursor: default;
+    color: rgba(0,0,0,.25);
+    pointer-events: none;
+}
+
+
+
+/*
+ * Dropdowns
+ */
+#mols2grid .m2g-dropdown {
+    background: var(--bg);
+    border: var(--border);
+    border-radius: var(--br);
+    position: relative;
+}
+#mols2grid .m2g-dropdown select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -ms-appearance: none;
+    appearance: none;
+    background: transparent;
+    border: none;
+    height: 100%;
+    padding: 0 13px;
+    min-width: 0;
+    padding-right: 70px; /* Space for "Sort:" */
+    max-width: 250px;
+    color: var(--black);
+    cursor: pointer;
+}
+#mols2grid ::placeholder {
+    color: var(--black-soft);
+}
+
+/* Icon */
+#mols2grid .m2g-dropdown .m2g-icon {
+    width: 30px;
+    height: var(--h);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    right: 0;
+    pointer-events: none;
+}
+#mols2grid .m2g-dropdown .m2g-icon svg:not(.m2g-stroke) {
+    fill: var(--black);
+}
+#mols2grid .m2g-dropdown .m2g-icon svg.m2g-stroke {
+    stroke: var(--black);
+}
+
+/* Display */
+/* We hide the native select element because
+ * it is limited in styling. Instead, we display
+ * the selected value in a div. */
+#mols2grid .m2g-dropdown .m2g-display {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    pointer-events: none;
+    color: var(--black);
+    line-height: var(--h);
+    padding: 0 25px 0 13px;
+
+    /* Truncate text */
+    white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	font-size: $regular;
+}
+
+/* Focus state */
+#mols2grid .m2g-dropdown:focus-within {
+    border-color: var(--hl);
+    box-shadow: inset 0 0 0 1px var(--hl);
+}
+#mols2grid .m2g-dropdown:focus-within select {
+    outline: none;
+}
+
+
+
+/**
+ * Action dropdown
+ */
+
+#mols2grid .m2g-dropdown.m2g-select {
+    width: var(--h);
+    padding: 0;
+}
+#mols2grid .m2g-dropdown.m2g-select select {
+    opacity: 0;
+    width: 100%;
+}
+#mols2grid .m2g-dropdown.m2g-select .m2g-icon {
+    width: var(--h);
+}
+
+
+
+/*
+ * Sort dropdown
+ */
+
+#mols2grid .m2g-dropdown.m2g-sort {
+    border-radius: var(--br);
+    display: flex;
+}
+#mols2grid .m2g-dropdown.m2g-sort select {
+    opacity: 0;
+}
+#mols2grid .m2g-dropdown.m2g-sort .m2g-display {
+    right: 31px;
+    background: var(--bg);
+    padding-right: 30px;
+}
+#mols2grid .m2g-dropdown.m2g-sort .m2g-display::before {
+    content: 'Sort: ';
+}
+
+/* Focus state */
+#mols2grid .m2g-dropdown:focus-within .m2g-display,
+#mols2grid .m2g-dropdown:focus-within .m2g-order {
+    background-color: transparent;
+}
+
+/* Ascending icon - default */
+
+/* Sort order */
+#mols2grid .m2g-order {
+    background: var(--bg) url('data:image/svg+xml;utf8,<svg width="20" fill="rgba(0,0,0,.75)" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M9.5713 13.285L6.2543 7.757C6.0543 7.424 6.2953 7 6.6823 7L13.3173 7C13.7053 7 13.9463 7.424 13.7453 7.757L10.4283 13.285C10.2343 13.609 9.7653 13.609 9.5713 13.285Z"/></svg>') no-repeat center;
+    flex: 0 0 30px;
+    height: 100%;
+    border-left: var(--border);
+    cursor: pointer;
+}
+#mols2grid .m2g-dropdown.m2g-sort.m2d-arrow-desc .m2g-order {
+    transform: rotate(180deg);
+    border-left: none;
+    border-right: var(--border);
+}
+
+
+
+
+/*
+ * Search bar
+ */
+
+#mols2grid .m2g-search-wrap {
+    height: var(--h);
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    {# border: solid 1px red; #}
+    background: var(--bg);
+    border: var(--border);
+    border-radius: var(--br);
 }
-#mols2grid .search-options {
+#mols2grid .m2g-searchbar {
+    height: var(--h);
+    padding: 0 13px;
+    border-radius: var(--br);
+    border: none;
+    background: none;
+    color: var(--black);
+    cursor: text;
+}
+
+/* Focus state */
+#mols2grid .m2g-search-wrap:focus-within {
+    border-color: var(--hl);
+    box-shadow: inset 0 0 0 1px var(--hl);
+}
+#mols2grid .m2g-searchbar:focus {
+    outline: none;
+}
+
+/* Option buttons */
+#mols2grid .m2g-search-options {
     font-size: 12px;
     display: flex;
     height: calc(1.5em + .75rem);
     line-height: calc(1.5em + .75rem);
-    margin-right: 4px;
-    border-radius: 2px;
-    {# border: solid 1px; #}
+    margin-right: 5px;
+    border-radius: var(--br);
+    color: var(--black);
 }
-#mols2grid .search-options .option {
+#mols2grid .m2g-search-options .m2g-option {
     background: #ddd;
-    padding: 0 10px;
+    padding: 0 13px;
     cursor: default;
     user-select: none;
 }
-#mols2grid .search-options .option:not(.sel) {
+#mols2grid .m2g-search-options .m2g-option:not(.sel) {
     cursor: pointer;
 }
-#mols2grid .search-options .option:first-child {
-    border-radius: 3px 0 0 3px;
+#mols2grid .m2g-search-options .m2g-option:first-child {
+    border-radius: 2px 0 0 2px;
 }
-.search-options .option:last-child {
-    border-radius: 0 3px 3px 0;
+#mols2grid .m2g-search-options .m2g-option:last-child {
+    border-radius: 0 2px 2px 0;
 }
-#mols2grid .search-options .option.sel {
-    background: #333;
+#mols2grid .m2g-search-options .m2g-option.sel {
+    background: var(--hl);
     color: #fff;
 }
+
+
+
+/**
+ * Grid
+ */
+
+/* Container */
+#mols2grid .m2g-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: flex-start;
+    margin-top: 20px;
+    padding: 1px; /* Compensate for negative padding on cell */
+}
+
+/* Cell */
+#mols2grid .m2g-cell {
+    border: {{ border }};
+    text-align: {{ textalign }};
+    vertical-align: top;
+    font-family: {{ fontfamily }};
+    font-size: {{ fontsize }};
+    padding: 0;
+    margin: {{ gap }};
+    flex: 1 0 {{cell_width}}px;
+}
+
+/* Image */
+#mols2grid .m2g-cell .data-img {
+    /* Wrapper */
+    padding: 0;
+    margin: 0;
+}
+#mols2grid .m2g-cell img,
+#mols2grid .m2g-cell svg {
+    max-width: 100%;
+    height: auto;
+    padding: 0;
+}
+
+/* Text below image */
+#mols2grid .data {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: block;
+}
+
 
 /**
  * Hover states
  */
 @media (hover:hover) {
-    #mols2grid .cell:hover {
+    /* Pagination */
+    #mols2grid ul.pagination li:not(.active):not(.disabled):hover {
+        background: #f0f0f0;
+        z-index: 1;
+    }
+    #mols2grid ul.pagination li.active + li:hover {
+        /* Keeping the hover border consiistent */
+        margin-left: 1px;
+        border-left: none;
+        flex-basis: 39px;
+    }
+
+    /* Dropdowns & search */
+    #mols2grid .m2g-dropdown:not(:focus-within):hover,
+    #mols2grid .m2g-search-wrap:not(:focus-within):hover,
+    #mols2grid .m2g-sort:not(:focus-within) .m2g-order:hover {
+        background-color: #f0f0f0;
+    }
+    #mols2grid .m2g-search-wrap:not(:focus-within):hover {
+        background: transparent;
+        border-color: rgba(0,0,0,.3);
+    }
+    /* Hocus pocus to have separate hover states for dropdown and arrow */
+    #mols2grid .m2g-dropdown.m2g-sort:not(:focus-within):hover .m2g-order:not(:hover) + .m2g-display {
+        background-color: transparent;
+    }
+
+    /* Grid */
+    #mols2grid .m2g-cell:hover {
         background-color: {{ hover_color }} !important;
     }
     #mols2grid .search-options .option:not(.sel):hover {

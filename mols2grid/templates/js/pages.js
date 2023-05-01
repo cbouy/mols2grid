@@ -1,11 +1,12 @@
 // list.js
 var listObj = new List('mols2grid', {
+    listClass: 'm2g-list',
     valueNames: {{ value_names }},
     item: {{ item_repr }},
     page: {{ n_items_per_page }},
     pagination: {
         name: "pagination",
-        item: '<li class="page-item"><a class="page page-link" href="#" onclick="event.preventDefault()"></a></li>',
+        item: '<li data="x" class="page-item"><a class="page page-link" href="#" onclick="event.preventDefault()"></a></li>',
         innerWindow: 1,
         outerWindow: 1,
     },
@@ -33,7 +34,7 @@ var SELECTION = new MolStorage();
 // restore checkbox state
 SELECTION.multi_set({{ cached_selection[0] }}, {{ cached_selection[1] }});
 listObj.on("updated", function (list) {
-    $('#mols2grid .cell input[checked="false"]').prop("checked", false);
+    $('#mols2grid .m2g-cell input[checked="false"]').prop("checked", false);
 });
 {% endif %}
 
@@ -43,7 +44,7 @@ listObj.on("updated", function (list) {
 {% if whole_cell_style %}
 // add style for whole cell
 listObj.on("updated", function (list) {
-    $('#mols2grid div.cell').each(function() {
+    $('#mols2grid div.m2g-cell').each(function() {
         var $t = $(this);
         $t.attr({style: $t.attr('data-cellstyle')})
           .removeAttr('data-cellstyle');
