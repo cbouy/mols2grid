@@ -1,14 +1,3 @@
-#mols2grid .arrow-asc:after {
-    content: '↑';
-    text-align: right;
-    float:right;
-}
-#mols2grid .arrow-desc:after {
-    content: '↓';
-    text-align: right;
-    float:right;
-}
-
 /* padding-left: 1em; */
 /* max-width: {{ width }}px; */
 /* width: {{ width }}px; */
@@ -21,9 +10,6 @@
  */
 
 #mols2grid {
-    font-family: sans-serif;
-    font-size: 14px;
-
     /* Colors */
     --black: rgba(0,0,0,.75);
     --black-soft: rgba(0,0,0,.35);
@@ -36,8 +22,16 @@
     --br-l: var(--br) 0 0 var(--br); /* Left-only */
     --br-r: 0 var(--br) var(--br) 0; /* Right-only */
 
+    /* Text */
+    --fs: 14px; /* Default */
+    --fs-s: 12px; /* Small */
+
     /* Layout */
     --h: 40px; /* Height */
+
+    /* Styling */
+    font-family: sans-serif;
+    font-size: var(--fs);
 }
 #mols2grid .m2g-functions {
     display: flex;
@@ -141,6 +135,10 @@
 /*
  * Dropdowns
  */
+
+#mols2grid ::placeholder {
+    color: var(--black-soft);
+}
 #mols2grid .m2g-dropdown {
     background: var(--bg);
     border: var(--border);
@@ -161,9 +159,6 @@
     max-width: 250px;
     color: var(--black);
     cursor: pointer;
-}
-#mols2grid ::placeholder {
-    color: var(--black-soft);
 }
 
 /* Icon */
@@ -222,15 +217,15 @@
  * Action dropdown
  */
 
-#mols2grid .m2g-dropdown.m2g-select {
+#mols2grid .m2g-dropdown.m2g-actions {
     width: var(--h);
     padding: 0;
 }
-#mols2grid .m2g-dropdown.m2g-select select {
+#mols2grid .m2g-dropdown.m2g-actions select {
     opacity: 0;
     width: 100%;
 }
-#mols2grid .m2g-dropdown.m2g-select .m2g-icon {
+#mols2grid .m2g-dropdown.m2g-actions .m2g-icon {
     width: var(--h);
 }
 
@@ -257,15 +252,15 @@
 }
 
 /* Focus state */
-#mols2grid .m2g-dropdown:focus-within .m2g-display,
-#mols2grid .m2g-dropdown:focus-within .m2g-order {
+#mols2grid .m2g-dropdown.m2g-sort:focus-within .m2g-display,
+#mols2grid .m2g-dropdown.m2g-sort:focus-within .m2g-order {
     background-color: transparent;
 }
 
 /* Ascending icon - default */
 
 /* Sort order */
-#mols2grid .m2g-order {
+#mols2grid .m2g-dropdown.m2g-sort .m2g-order {
     background: var(--bg) url('data:image/svg+xml;utf8,<svg width="20" fill="rgba(0,0,0,.75)" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M9.5713 13.285L6.2543 7.757C6.0543 7.424 6.2953 7 6.6823 7L13.3173 7C13.7053 7 13.9463 7.424 13.7453 7.757L10.4283 13.285C10.2343 13.609 9.7653 13.609 9.5713 13.285Z"/></svg>') no-repeat center;
     flex: 0 0 30px;
     height: 100%;
@@ -315,7 +310,7 @@
 
 /* Option buttons */
 #mols2grid .m2g-search-options {
-    font-size: 12px;
+    font-size: var(--fs-s);
     display: flex;
     height: calc(1.5em + .75rem);
     line-height: calc(1.5em + .75rem);
@@ -324,7 +319,7 @@
     color: var(--black);
 }
 #mols2grid .m2g-search-options .m2g-option {
-    background: #ddd;
+    background: rgba(0,0,0,.1);
     padding: 0 13px;
     cursor: default;
     user-select: none;
@@ -357,6 +352,8 @@
     justify-content: flex-start;
     margin-top: 20px;
     padding: 1px; /* Compensate for negative padding on cell */
+    user-select: none;
+    
 }
 
 /* Cell */
@@ -366,14 +363,77 @@
     vertical-align: top;
     font-family: {{ fontfamily }};
     font-size: {{ fontsize }};
-    padding: 0;
+    padding: 5px 0;
     margin: {{ gap }};
     flex: 1 0 {{cell_width}}px;
+    position: relative;
+    font-size: var(--fs);
+    cursor: pointer;
+}
+
+/* Checkbox & ID */
+#mols2grid .m2g-cb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    display: flex;
+    {# background: #fff; #}
+    border-radius: 2px;
+    font-size: 0;
+    line-height: 0;
+    padding: 3px;
+    padding-right: 0;
+}
+#mols2grid .m2g-cb input[type=checkbox] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+}
+#mols2grid .m2g-cb .data-mols2grid-id-display {
+    padding: 0 5px 0 5px;
+    font-size: var(--fs);
+    line-height: 16px;
+    {# background: pink; #}
+}
+#mols2grid .m2g-cb .data-name-display {
+    font-size: var(--fs);
+    line-height: 16px;
+    {# background: orange; #}
+}
+
+/* Info button */
+#mols2grid .m2g-info {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 2px;
+    line-height: 28px;
+    font-family: Georgia, serif;
+    font-style: italic;
+    padding: 0;
+    {# border: solid 1px rgba(0,0,0,.2); #}
+    {# box-sizing: border-box; #}
+}
+#mols2grid .m2g-keep-tooltip .m2g-info {
+    color: #fff;
+    /* background: rgba(255, 0, 0, .2); */
+}
+#mols2grid .m2g-keep-tooltip .m2g-info::before {
+    content: 'i';
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    background: var(--hl);
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    border-radius: 9px;
 }
 
 /* Image */
 #mols2grid .m2g-cell .data-img {
-    /* Wrapper */
     padding: 0;
     margin: 0;
 }
@@ -383,6 +443,9 @@
     height: auto;
     padding: 0;
 }
+#mols2grid .m2g-cell svg > rect:first-child {
+    fill: transparent !important;
+}
 
 /* Text below image */
 #mols2grid .data {
@@ -390,6 +453,64 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     display: block;
+}
+#mols2grid div.data {
+    height: 16px;
+    line-height: 16px;
+}
+.m2g-copy-blink {
+    animation: m2g-blink 150ms 3;
+}
+@keyframes m2g-blink {
+    0% {
+        opacity: 1;
+    }
+    49% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+
+
+/**
+ * Popover
+ */
+.popover {
+    background: white;
+    border: solid 1px rgba(0,0,0,.2);
+    font-size: 12px;
+    line-height: 15px;
+    font-family: sans-serif;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 20px rgba(0,0,0,.15);
+}
+.popover h3 {
+    margin: 0;
+}
+.popover .arrow {
+    width: 10px;
+    height: 10px;
+    background: #fff;
+    border: solid 1px rgba(0,0,0,.2);
+    box-sizing: border-box;
+    position: absolute;
+    top: calc(50% - 5px);
+    right: -10px;
+    transform-origin: 0 0;
+    transform: rotate(45deg);
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+.popover[x-placement='right'] .arrow {
+    right: auto;
+    left: 0;
+    clip-path: polygon(0 0, 0 100%, 100% 100%);
 }
 
 
@@ -424,11 +545,19 @@
         background-color: transparent;
     }
 
+    /* Search options */
+    #mols2grid .m2g-search-options .m2g-option:not(.sel):hover {
+        background: rgba(0,0,0,.15);
+    }
+
     /* Grid */
     #mols2grid .m2g-cell:hover {
-        background-color: {{ hover_color }} !important;
+        background-color: {{ hover_color }};
     }
-    #mols2grid .search-options .option:not(.sel):hover {
-        background: #ccc;
+    #mols2grid div.data:hover::before {
+        content: '[ '
+    }
+    #mols2grid div.data:hover::after {
+        content: ' ]'
     }
 }

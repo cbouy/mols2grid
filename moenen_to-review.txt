@@ -1,3 +1,8 @@
 - I replaced #searchbar with #mols2grid .searchbar to be consistent. Didn't test:
     --> test_interface.py: driver.find_by_css_selector("#mols2grid .searchbar") instead of driver.find_by_id("#searchbar")
     --> webdriver_utils.py: same with self
+- I automaticlaly add 'img' to the subset:
+    if "img" not in subset:
+            subset.insert(0, "img")
+            # raise KeyError(
+            #     "Please add the 'img' field in the `subset` parameter")

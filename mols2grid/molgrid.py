@@ -332,7 +332,7 @@ class MolGrid:
         fontfamily="'DejaVu', sans-serif",
         textalign="center",
         tooltip_fmt="<strong>{key}</strong>: {value}",
-        tooltip_trigger="click hover",
+        tooltip_trigger="manual",  # Formerly "click hover"
         tooltip_placement="auto",
         hover_color="#e7e7e7",
         style=None,
@@ -478,7 +478,7 @@ class MolGrid:
             df = self.dataframe.copy()
         cell_width = self.img_size[0]
         smiles = self.smiles_col
-        content = []
+        content = []  # Gets filled with the HTML content of each cell
         column_map = {}
         # width = n_cols * (cell_width + 2 * (gap + 2)) # %%
 
@@ -490,9 +490,10 @@ class MolGrid:
                 subset = df.columns.tolist()
                 subset = [subset.pop(subset.index("img"))] + subset
 
+        if "mols2grid-id" not in subset:
+            subset.insert(0, "mols2grid-id")
         if "img" not in subset:
-            raise KeyError(
-                "Please add the 'img' field in the `subset` parameter")
+            subset.insert(0, "img")
 
         # define fields that are searchable and sortable
         search_cols = [f"data-{col}" for col in subset if col != "img"]
@@ -523,17 +524,42 @@ class MolGrid:
             final_columns.extend(tooltip)
         final_columns = list(set(final_columns))
 
-        # make a copy if id shown explicitely
+        # # make a copy if id shown explicitely
+        # if "mols2grid-id" in subset:
+        #     id_name = "mols2grid-id-copy"
+        #     df[id_name] = df["mols2grid-id"]
+        #     value_names.append(f"data-{id_name}")
+        #     final_columns.append(id_name)
+        #     subset = [id_name if x == "mols2grid-id" else x for x in subset]
+
+        # make a copy of id shown explicitely
+        id_display = ""
         if "mols2grid-id" in subset:
-            id_name = "mols2grid-id-copy"
+            id_name = "mols2grid-id-display"
             df[id_name] = df["mols2grid-id"]
             value_names.append(f"data-{id_name}")
             final_columns.append(id_name)
             subset = [id_name if x == "mols2grid-id" else x for x in subset]
+            id_display = f'<div class="data-{id_name}"></div>'
+
+        # make a copy of name shown explicitly
+        name_display = ""
+        # cols_lowercase = [x.lower() for x in df.columns.tolist()]
+        # if "name" in cols_lowercase:
+        #     name_name = "name-display"
+        #     original_field = df.columns.tolist()[cols_lowercase.index("name")]
+        #     df[name_name] = df[original_field]
+        #     value_names.append(f"data-{name_name}")
+        #     final_columns.append(name_name)
+        #     column_map[name_name] = f"data-{name_name}"
+        #     name_display = f'<div class="data-{name_name}"></div>'
+
         # organize data
         temp = []
         for col in subset:
-            if col == "img" and tooltip:
+            if col == "mols2grid-id-display":
+                s = ''  # Avoid an empty div to be created for the display id.
+            elif col == "img" and tooltip:
                 s = (
                     f'<a tabindex="0" class="data data-{col} mols2grid-tooltip" '
                     'data-toggle="popover" data-content="."></a>'
@@ -608,16 +634,24 @@ class MolGrid:
             )
         else:
             checkbox = ""
+
         if whole_cell_style:
             item = (
-                '<div class="m2g-cell" data-mols2grid-id="0" '
-                'data-cellstyle="0">{checkbox}{content}</div>'
+                '<div class="m2g-cell" data-mols2grid-id="0" data-cellstyle="0">'
+                '<div class="m2g-cb">{checkbox}{id_display}</div><div class="m2g-info">i</div>{content}'
+                '</div>'
             )
         else:
             item = (
-                '<div class="m2g-cell" data-mols2grid-id="0">' "{checkbox}{content}</div>"
+                '<div class="m2g-cell" data-mols2grid-id="0">'
+                '<div class="m2g-cb">{checkbox}{id_display}</div><div class="m2g-info">i</div>{content}'
+                '</div>'
             )
-        item = item.format(checkbox=checkbox, content="".join(content))
+
+        item = item.format(checkbox=checkbox,
+                           id_display=id_display,
+                           name_display=name_display,
+                           content="".join(content))
 
         # callback
         if callback and "click" in tooltip_trigger and len(tooltip_trigger.split()) > 1:

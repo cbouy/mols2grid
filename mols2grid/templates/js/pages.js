@@ -13,6 +13,7 @@ var listObj = new List('mols2grid', {
 });
 listObj.remove("mols2grid-id", "0");
 listObj.add({{ data }});
+console.log({{data}})
 // filter
 if (window.parent.mols2grid_lists === undefined) {
     window.parent.mols2grid_lists = {};
