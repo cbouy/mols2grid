@@ -1,7 +1,11 @@
-#mols2grid table {
-    border-collapse: collapse;
+/* Note: #mols2grid is the table element */
+#mols2grid {
+    border-collapse: {{ 'collapse' if gap == 0 else 'separate' }};
+    border-spacing: {{ gap }}px;
+    /* Compensate for gap so table stays aligned with content above */
+    margin: {{ 0 if gap == 0 else -gap }}px;
 }
-#mols2grid table, tr, td {
+#mols2grid, tr, td {
     border: none;
 }
 #mols2grid td {
@@ -13,26 +17,22 @@
     font-family: {{ fontfamily }};
     font-size: {{ fontsize }};
     margin: 0;
-    padding: 0;
+    padding: {{ pad }}px;
+    position: relative;
 }
-#mols2grid td div {
-    padding: 0;
-    margin: {{ gap }};
+
+#mols2grid .data-mols2grid-id-display {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 5px;
 }
+
 #mols2grid td div img {
     max-width: {{ cell_width }}px;
     width: {{ cell_width }}px;
     height: auto;
     padding: 0;
-}
-#mols2grid td:hover {
-    background-color: {{ hover_color }};
-}
-#mols2grid .data {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    display: block;
 }
 #mols2grid tr {
     page-break-inside: avoid !important;

@@ -73,7 +73,7 @@ def test_no_subset_all_visible(driver: FirefoxDriver, grid):
     cell = driver.find_by_css_selector("#mols2grid .m2g-cell")
     data_el = cell.find_elements_by_class_name("data")
     classes = [
-        c.replace("data-", "").replace("-copy", "")
+        c.replace("data-", "").replace("-display", "")
         for x in data_el
         for c in x.get_attribute("class").split(" ")
         if c.startswith("data-")
@@ -757,14 +757,14 @@ def test_default_subset_tooltip(driver: FirefoxDriver, grid):
     cell = driver.find_by_css_selector("#mols2grid .m2g-cell")
     data_elements = cell.find_elements_by_class_name("data")
     subset = [
-        c.replace("data-", "").replace("-copy", "")
+        c.replace("data-", "").replace("-display", "")
         for x in data_elements
         for c in x.get_attribute("class").split(" ")
         if c.startswith("data-") and not x.get_attribute("style")
     ]
     assert subset == expected_subset
     tooltip = [
-        c.replace("data-", "").replace("-copy", "")
+        c.replace("data-", "").replace("-display", "")
         for x in data_elements
         for c in x.get_attribute("class").split(" ")
         if c.startswith("data-") and x.get_attribute("style") == "display: none;"

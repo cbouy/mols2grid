@@ -22,7 +22,6 @@ function sort(e) {
     $(this).parent().find('.m2g-display').text(sort_field.replace(/^data-/, ''))
 }
 
-// Why is .prettierrc proseWrap / printWidth not respected??
 // prettier-ignore
 function flipSort() {
     $(this).parent().removeClass('m2d-arrow-' + sort_order)
@@ -30,26 +29,6 @@ function flipSort() {
     $(this).parent().addClass('m2d-arrow-' + sort_order)
     sort()
 }
-
-// // Legacy sort – kept here for reference of arrow functionality
-// $('#mols2grid button.sort-btn').click(function (e) {
-//     var _field = $(this).attr('data-name')
-//     if (_field == sort_field) {
-//         $(this).removeClass('arrow-' + sort_order)
-//         sort_order = sort_order === 'desc' ? 'asc' : 'desc'
-//     } else {
-//         $('#mols2grid button.sort-btn.active').removeClass('active arrow-' + sort_order)
-//         sort_order = 'asc'
-//         sort_field = _field
-//         $(this).addClass('active')
-//     }
-//     $(this).addClass('arrow-' + sort_order)
-//     if (sort_field == 'checkbox') {
-//         listObj.sort('mols2grid-id', { order: sort_order, sortFunction: checkboxSort })
-//     } else {
-//         listObj.sort(_field, { order: sort_order, sortFunction: mols2gridSortFunction })
-//     }
-// })
 
 function mols2gridSortFunction(itemA, itemB, options) {
     var x = itemA.values()[options.valueName]

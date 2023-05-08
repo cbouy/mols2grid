@@ -4,15 +4,29 @@ listObj.on("updated", initInteraction);
 function initInteraction(list) {
     initCellClick()
     initToolTip()
+    initKeyboard()
     initCheckbox()
+
+    // Hide navigation if there is only one page.
+    if (listObj.matchingItems.length <= listObj.page) {
+        $('#mols2grid .m2g-pagination').hide()
+    } else {
+        $('#mols2grid .m2g-pagination').show()
+    }
+
+    // Add a bunch of phantom cells.
+    // These are used as filler to make sure that
+    // no grid cells need to be resized when there's
+    // not enough results to fill the row.
+    $('#mols2grid .m2g-list').append('<div class="m2g-cell m2g-phantom"></div>'.repeat(11));
 }
 
 // Cell click handler.
 function initCellClick() {
-    $('#mols2grid .m2g-cell').click(function(e) {
+    $('#mols2grid .m2g-cell').off('click').click(function(e) {
         if ($(e.target).hasClass('m2g-info')) {
             var isVisible = $('div.popover[role=tooltip]').length
-        } else if ($(e.target).hasClass('data')) {
+        } else if ($(e.target).is('div') && $(e.target).hasClass('data')) {
             // Copy text when clicking a data string.
             var text = $(e.target).text()
             navigator.clipboard.writeText(text)
@@ -31,9 +45,52 @@ function initCellClick() {
     })
 }
 
+// Keyboard actions.
+function initKeyboard() {
+    // Disable scroll when pressing UP/DOWN arrows
+    $('#mols2grid .m2g-cell').off('keydown').keydown(function(e) {
+        if (e.which == 38 || e.which == 40) {
+            e.preventDefault()
+        }
+    })
+
+    $('#mols2grid .m2g-cell').off('keyup').keyup(function(e) {
+        // console.log(e.which)
+        var chkbox = $(this).find('input:checkbox')[0]
+        if (e.which == 13) {
+            // ENTER: toggle
+            chkbox.checked = !chkbox.checked
+            $(chkbox).trigger('change')
+        } else if (e.which == 27 || e.which == 8) {
+            // ESC/BACKSPACE: unselect
+            chkbox.checked = false
+            $(chkbox).trigger('change')
+        } else if (e.which == 37) {
+            // LEFT
+            $(this).prev().focus()
+        } else if (e.which == 39) {
+            // RIGHT
+            $(this).next().focus()
+        } else if (e.which == 38) {
+            // UP
+            var columns = Math.round($(this).parent().width() / $(this).width())
+            var index = $(this).index() 
+            var indexAbove = Math.max(index - columns, 0)
+            $(this).parent().children().eq(indexAbove).focus()
+        } else if (e.which == 40) {
+            // DOWN
+            var columns = Math.round($(this).parent().width() / $(this).width())
+            var index = $(this).index()
+            var total = $(this).parent().children().length
+            var indexBelow = Math.min(index + columns, total)
+            $(this).parent().children().eq(indexBelow).focus()
+        }
+    })
+}
+
 // Show tooltip when hovering the info icon.
 function initToolTip() {
-    $('#mols2grid .m2g-info').mouseenter(function() {
+    $('#mols2grid .m2g-info').off('mouseover').off('mouseleave').off('click').mouseenter(function() {
         // Show on enter
         $(this).parent().find('.mols2grid-tooltip[data-toggle="popover"]').popover('show')
     }).mouseleave(function() {
@@ -56,7 +113,7 @@ function initToolTip() {
 
 // Update selection on checkbox click.
 function initCheckbox() {
-    $("input:checkbox").change(function() {
+    $("input:checkbox").off('change').change(function() {
         var _id = parseInt($(this).closest(".m2g-cell").attr("data-mols2grid-id"));
         if (this.checked) {
             var _smiles = $($(this).siblings(".data-{{ smiles_col }}")[0]).text();

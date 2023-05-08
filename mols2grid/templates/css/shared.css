@@ -1,0 +1,10 @@
+#mols2grid .data {
+    /* Break text into multiple lines by default... */
+    word-wrap: {{ 'break-word' if not truncate else 'normal' }};
+
+    /* ...or truncate text if desired. */
+    overflow: {{ 'hidden' if truncate else 'visible' }};
+    white-space: {{ 'nowrap' if truncate else 'normal' }};
+    text-overflow: {{ 'ellipsis' if truncate else 'clip' }};
+
+}

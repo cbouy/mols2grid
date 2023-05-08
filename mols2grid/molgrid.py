@@ -34,6 +34,16 @@ else:
         "ignore", "Consider using IPython.display.IFrame instead")
 
 
+# Detect if mols2grid is running inside a notebook.
+# We wrap the HTML in an iframe if it is.
+try:
+    # from IPython.display import display, HTML
+    get_ipython()  # This is callable only in Jupyter Notebook.
+    from_notebook = True
+except:
+    from_notebook = False
+
+
 class MolGrid:
     """Class that handles drawing molecules, rendering the HTML document and
     saving or displaying it in a notebook
@@ -186,7 +196,6 @@ class MolGrid:
             grid_id=name, selection=str(self._cached_selection))
         selection_handler = partial(register.selection_updated, name)
         widget.observe(selection_handler, names=["selection"])
-        display(widget)
         self.widget = widget
 
     @classmethod
@@ -321,27 +330,36 @@ class MolGrid:
 
     def to_pages(
         self,
+
+        # Content
         subset=None,
         tooltip=None,
-        # n_cols=5, # %%
-        # n_rows=3,
+        tooltip_fmt="<strong>{key}</strong>: {value}",
+        tooltip_trigger="manual",
+        tooltip_placement="auto",
         n_items_per_page=24,
+        selection=True,
+        truncate=True,
+        sort_by=None,
+        use_iframe=False,
+
+        # CSS Styling
         border="1px solid #cccccc",
         gap=0,
-        fontsize="12pt",
-        fontfamily="'DejaVu', sans-serif",
+        pad=5,
+        fontsize="12px",
+        fontfamily="Arial, Helvetica, sans-serif",
         textalign="center",
-        tooltip_fmt="<strong>{key}</strong>: {value}",
-        tooltip_trigger="manual",  # Formerly "click hover"
-        tooltip_placement="auto",
         hover_color="#e7e7e7",
         style=None,
-        selection=True,
+
+        # Customization
         transform=None,
         custom_css=None,
         custom_header=None,
         callback=None,
-        sort_by=None,
+
+        # Mols styling
         substruct_highlight=None,
         single_highlight=False,
     ):
@@ -349,6 +367,9 @@ class MolGrid:
 
         Parameters
         ----------
+
+        # Content
+        --
         subset : list or None
             Columns to be displayed in each cell of the grid. Each column's
             value will be displayed from top to bottom in the same order given
@@ -357,6 +378,18 @@ class MolGrid:
         tooltip : list or None
             Columns to be displayed as a tooltip when hovering/clicking on the
             image of a cell.
+        n_items_per_page
+            Number of items to display per page.
+            It is recommended to keep this number a multiple of 12 for optimal display.
+        selection : bool
+            Enables the selection of molecules and displays a checkbox at the
+            top of each cell. In the context of a Jupyter notebook, this gives
+            you access to your selection (index and SMILES) through :func:`mols2grid.get_selection()`
+            or :meth:`MolGrid.get_selection()`. In all cases, you can export your
+            selection by clicking on the ☑ icon.
+        truncate: bool
+            Whether to truncate the text in each cell if it's too long.
+            Defaults to True for interactive grids, False for static grid.
         tooltip_fmt : str
             Format string of each key/value pair in the tooltip
         tooltip_trigger : str
@@ -365,22 +398,30 @@ class MolGrid:
         tooltip_placement : str
             Position of the tooltip: ``auto``, ``top``, ``bottom``, ``left``
             or ``right``
-        n_cols : int
-            Number of columns per page
-        n_rows : int
-            Number of rows per page
+        sort_by : str or None
+            Sort the grid according to the following field (which must be
+            present in ``subset`` or ``tooltip``).
+        use_iframe : bool
+            Whether to wrap everything in an iframe.
+            Defaults to True when using Jupyter Notebook, False otherwise.
+
+
+        # CSS Styling
+        --
         border : str
-            Styling of the border around each cell (CSS)
+            Styling of the border around each cell
         gap : int
-            Size of the margin around each cell in px
+            Size in pixels of the gap between cells
+        pad : int
+            Size in pixels of the cell padding
         fontsize : str
-            Font size of the text displayed in each cell (CSS)
+            Font size of the text displayed in each cell
         fontfamily : str
-            Font used for the text in each cell (CSS)
+            Font used for the text in each cell
         textalign : str
-            Alignment of the text in each cell (CSS)
+            Alignment of the text in each cell
         hover_color : str
-            Background color when hovering a cell (CSS)
+            Background color when hovering a cell
         style : dict or None
             CSS styling applied to each item in a cell. The dict must follow a
             ``key: function`` structure where the key must correspond to one of the
@@ -396,12 +437,9 @@ class MolGrid:
 
                 style={"__all__": lambda x: "color: red" if x["Solubility"] < -5 else ""}
 
-        selection : bool
-            Enables the selection of molecules and displays a checkbox at the
-            top of each cell. In the context of a Jupyter notebook, this gives
-            you access to your selection (index and SMILES) through :func:`mols2grid.get_selection()`
-            or :meth:`MolGrid.get_selection()`. In all cases, you can export your
-            selection by clicking on the ☑ icon.
+
+        # Customization
+        --
         transform : dict or None
             Functions applied to specific items in all cells. The dict must follow
             a ``key: function`` structure where the key must correspond to one of
@@ -427,14 +465,17 @@ class MolGrid:
             which is always an integer. Note that fields containing spaces in
             their name will be replaced by hyphens, i.e. "mol weight" becomes
             available as ``data["mol-weight"]``.
-        sort_by : str or None
-            Sort the grid according to the following field (which must be
-            present in ``subset`` or ``tooltip``).
+
+
+        # Mols styling
+        --
         substruct_highlight : bool or None
             Highlight substructure when using the SMARTS search. Only available
             when ``prerender=False``
         single_highlight : bool
             Highlight only the first match of the substructure query
+
+
 
         Returns
         -------
@@ -487,13 +528,16 @@ class MolGrid:
                 subset = ["mols2grid-id", "img"]
                 tooltip = [x for x in df.columns.tolist() if x not in subset]
             else:
+                # When no subset is defined, all columns are displayed.
                 subset = df.columns.tolist()
-                subset = [subset.pop(subset.index("img"))] + subset
 
         if "mols2grid-id" not in subset:
             subset.insert(0, "mols2grid-id")
         if "img" not in subset:
             subset.insert(0, "img")
+
+        # Always make surer the image comes first.
+        subset = [subset.pop(subset.index("img"))] + subset
 
         # define fields that are searchable and sortable
         search_cols = [f"data-{col}" for col in subset if col != "img"]
@@ -524,35 +568,15 @@ class MolGrid:
             final_columns.extend(tooltip)
         final_columns = list(set(final_columns))
 
-        # # make a copy if id shown explicitely
-        # if "mols2grid-id" in subset:
-        #     id_name = "mols2grid-id-copy"
-        #     df[id_name] = df["mols2grid-id"]
-        #     value_names.append(f"data-{id_name}")
-        #     final_columns.append(id_name)
-        #     subset = [id_name if x == "mols2grid-id" else x for x in subset]
-
         # make a copy of id shown explicitely
-        id_display = ""
-        if "mols2grid-id" in subset:
-            id_name = "mols2grid-id-display"
-            df[id_name] = df["mols2grid-id"]
-            value_names.append(f"data-{id_name}")
-            final_columns.append(id_name)
-            subset = [id_name if x == "mols2grid-id" else x for x in subset]
-            id_display = f'<div class="data-{id_name}"></div>'
-
-        # make a copy of name shown explicitly
-        name_display = ""
-        # cols_lowercase = [x.lower() for x in df.columns.tolist()]
-        # if "name" in cols_lowercase:
-        #     name_name = "name-display"
-        #     original_field = df.columns.tolist()[cols_lowercase.index("name")]
-        #     df[name_name] = df[original_field]
-        #     value_names.append(f"data-{name_name}")
-        #     final_columns.append(name_name)
-        #     column_map[name_name] = f"data-{name_name}"
-        #     name_display = f'<div class="data-{name_name}"></div>'
+        # id_display = ""
+        # if "mols2grid-id" in subset: # Not needed - trash
+        id_name = "mols2grid-id-display"
+        df[id_name] = df["mols2grid-id"]
+        value_names.append(f"data-{id_name}")
+        final_columns.append(id_name)
+        subset = [id_name if x == "mols2grid-id" else x for x in subset]
+        id_display = f'<div class="data-{id_name}"></div>'
 
         # organize data
         temp = []
@@ -561,7 +585,7 @@ class MolGrid:
                 s = ''  # Avoid an empty div to be created for the display id.
             elif col == "img" and tooltip:
                 s = (
-                    f'<a tabindex="0" class="data data-{col} mols2grid-tooltip" '
+                    f'<a class="data data-{col} mols2grid-tooltip" '
                     'data-toggle="popover" data-content="."></a>'
                 )
             else:
@@ -629,7 +653,7 @@ class MolGrid:
                     ", {attr: 'checked', name: 'cached_checkbox'}]"
                 )
             checkbox = (
-                '<input type="checkbox" '
+                '<input type="checkbox" tabindex="-1" '
                 'class="position-relative float-left cached_checkbox">'
             )
         else:
@@ -643,14 +667,13 @@ class MolGrid:
             )
         else:
             item = (
-                '<div class="m2g-cell" data-mols2grid-id="0">'
+                '<div class="m2g-cell" data-mols2grid-id="0" tabindex="0">'
                 '<div class="m2g-cb">{checkbox}{id_display}</div><div class="m2g-info">i</div>{content}'
                 '</div>'
             )
 
         item = item.format(checkbox=checkbox,
                            id_display=id_display,
-                           name_display=name_display,
                            content="".join(content))
 
         # callback
@@ -689,16 +712,19 @@ class MolGrid:
 
         template = env.get_template("pages.html")
         template_kwargs = dict(
+            use_iframe=use_iframe,
             padding=18,
             # width=width, # %%
             height=self.img_size[1],
             border=border,
             textalign=textalign,
+            truncate=truncate,
             cell_width=cell_width,
             fontfamily=fontfamily,
             fontsize=fontsize,
-            # gap=f"{gap}px", %%
-            gap='-1px -1px 0 0' if gap == 0 else f'{gap}px',
+            gap=gap,
+            gap_px='-1px -1px 0 0' if gap == 0 else f'{gap}px',
+            pad=pad,
             hover_color=hover_color,
             item=item,
             item_repr=repr(item),
@@ -706,7 +732,6 @@ class MolGrid:
             tooltip=tooltip,
             tooltip_trigger=repr(tooltip_trigger),
             tooltip_placement=repr(tooltip_placement),
-            # n_items_per_page=n_rows * n_cols, # %%
             n_items_per_page=n_items_per_page,
             search_cols=search_cols,
             data=json.dumps(
@@ -778,29 +803,40 @@ class MolGrid:
 
     def to_table(
         self,
+
+        # Content
         subset=None,
         tooltip=None,
-        n_cols=5,
-        cell_width=160,
-        border="1px solid #cccccc",
-        gap=0,
-        fontsize="12pt",
-        fontfamily="'DejaVu', sans-serif",
-        textalign="center",
         tooltip_fmt="<strong>{key}</strong>: {value}",
         tooltip_trigger="click hover",
         tooltip_placement="auto",
+        n_cols=5,
+        truncate=False,
+        sort_by=None,
+        use_iframe=False,
+
+        # CSS Styling
+        border="1px solid #cccccc",
+        gap=0,
+        pad=10,
+        fontsize="12px",
+        fontfamily="Arial, Helvetica, sans-serif",
+        textalign="center",
         hover_color="#e7e7e7",
         style=None,
+
+        # Customization
         transform=None,
         custom_css=None,
         custom_header=None,
-        sort_by=None,
     ):
         """Returns the HTML document for the "table" template
 
         Parameters
         ----------
+
+        # Content
+        --
         subset : list or None
             Columns to be displayed in each cell of the grid. Each column's
             value will be displayed from top to bottom in the same order given
@@ -819,18 +855,32 @@ class MolGrid:
             or ``right``
         n_cols : int
             Number of columns in the table
+        truncate: bool
+            Whether to truncate the text in each cell if it's too long.
+            Defaults to True for interactive grids, False for static grid.
+        sort_by : str or None
+            Sort the table according to the following field
+        use_iframe : bool
+            Whether to wrap everything in an iframe.
+            Defaults to True when using Jupyter Notebook, False otherwise.
+
+
+        # CSS Styling
+        --
         border : str
-            Styling of the border around each cell (CSS)
-        gap : int or str
-            Size of the margin around each cell (CSS)
+            Styling of the border around each cell
+        gap : int
+            Size in pixels of the gap between cells
+        pad : int
+            Size in pixels of the cell padding
         fontsize : str
-            Font size of the text displayed in each cell (CSS)
+            Font size of the text displayed in each cell
         fontfamily : str
-            Font used for the text in each cell (CSS)
+            Font used for the text in each cell
         textalign : str
-            Alignment of the text in each cell (CSS)
+            Alignment of the text in each cell
         hover_color : str
-            Background color when hovering a cell (CSS)
+            Background color when hovering a cell
         style : dict or None
             CSS styling applied to each item in a cell. The dict must follow a
             ``key: function`` structure where the key must correspond to one of the
@@ -846,6 +896,9 @@ class MolGrid:
 
                 style={"__all__": lambda x: "color: red" if x["Solubility"] < -5 else ""}
 
+
+        # Customization
+        --
         transform : dict or None
             Functions applied to specific items in all cells. The dict must follow
             a ``key: function`` structure where the key must correspond to one of
@@ -861,8 +914,8 @@ class MolGrid:
             Custom CSS properties applied to the content of the HTML document
         custom_header : str or None
             Custom libraries to be loaded in the header of the document
-        sort_by : str or None
-            Sort the table according to the following field
+
+
 
         Returns
         -------
@@ -901,8 +954,27 @@ class MolGrid:
                 subset = ["mols2grid-id", "img"]
                 tooltip = [x for x in df.columns.tolist() if x not in subset]
             else:
+                # When no subset is defined, all columns are displayed.
                 subset = df.columns.tolist()
-                subset = [subset.pop(subset.index("img"))] + subset
+
+        if "mols2grid-id" not in subset:
+            subset.insert(0, "mols2grid-id")
+        if "img" not in subset:
+            subset.insert(0, "img")
+
+        # Always make surer the image comes first.
+        subset = [subset.pop(subset.index("img"))] + subset
+
+        # make a copy of id shown explicitely
+        # id_display = ""
+        # if "mols2grid-id" in subset: # Not needed - trash
+        id_name = "mols2grid-id-display"
+        df[id_name] = df["mols2grid-id"]
+        # value_names.append(f"data-{id_name}")
+        # final_columns.append(id_name)
+        subset = [id_name if x == "mols2grid-id" else x for x in subset]
+        id_display = f'<div class="data-{id_name}"></div>'
+
         if style is None:
             style = {}
         if transform is None:
@@ -919,6 +991,7 @@ class MolGrid:
                 div = [f'<div class="m2g-cell-{i}" style="{s}">']  # %%
             else:
                 div = [f'<div class="m2g-cell-{i}">']  # %%
+            div.append(id_display)
             for col in subset:
                 v = row[col]
                 if col == "img" and tooltip:
@@ -955,13 +1028,16 @@ class MolGrid:
 
         template = env.get_template("table.html")
         template_kwargs = dict(
+            use_iframe=use_iframe,
             padding=18,
             border=border,
             textalign=textalign,
+            truncate=truncate,
             cell_width=cell_width,
             fontfamily=fontfamily,
             fontsize=fontsize,
             gap=gap,
+            pad=pad,
             hover_color=hover_color,
             tooltip=tooltip,
             tooltip_trigger=repr(tooltip_trigger),
@@ -975,6 +1051,7 @@ class MolGrid:
     @requires("IPython.display")
     def display(
         self,
+        use_iframe=False,
         width="100%",
         height=None,
         iframe_allow="clipboard-write",
@@ -987,16 +1064,20 @@ class MolGrid:
         -------
         view : IPython.core.display.HTML
         """
-        doc = self.render(**kwargs)
-        # iframe = env.get_template("html/iframe.html").render(
-        #     width=width,
-        #     height=height,
-        #     allow=iframe_allow,
-        #     sandbox=iframe_sandbox,
-        #     doc=escape(doc),
-        # )
-        # return HTML(iframe)
-        return HTML(doc)
+        use_iframe = from_notebook or use_iframe
+        doc = self.render(**kwargs, use_iframe=use_iframe)
+        if use_iframe:
+            # Display the HTML in a Jupyter notebook.
+            iframe = env.get_template("html/iframe.html").render(
+                width=width,
+                height=height,
+                allow=iframe_allow,
+                sandbox=iframe_sandbox,
+                doc=escape(doc),
+            )
+            return HTML(iframe)
+        else:
+            return HTML(doc)
 
     def save(self, output, **kwargs):
         """Render and save the grid in an HTML document"""

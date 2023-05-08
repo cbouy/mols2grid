@@ -1,8 +1,16 @@
+<style>
+    /* This undoes an unfortunate max-width parameter
+    in the Jupyter notebook CSS which causes the output
+    area to be too narrow on smaller screens. */
+    div.output_subarea {
+        max-width: none;
+    }
+</style>
+
+<!-- prettier-ignore -->
 <iframe class="mols2grid-iframe" frameborder="0" width="{{ width }}"
 {% if height %}
 height="{{ height }}"
-{% else %}
-height="200"
 {% endif %}
 {% if allow %}
 allow="{{ allow }}"

@@ -1,13 +1,8 @@
-/* padding-left: 1em; */
 /* max-width: {{ width }}px; */
 /* width: {{ width }}px; */
 /* max-width: {{ cell_width }}px; */
 /* width: {{ cell_width }}px; */
 /* float: left; */
-
-/**
- * Functions section
- */
 
 #mols2grid {
     /* Colors */
@@ -16,35 +11,64 @@
     --bg: #f6f6f6;
     --border: solid 1px rgba(0,0,0,.1);
     --hl: #555; /* Highlight color */
+    --hl-shadow: inset 0 0 0 1px var(--hl);
     
-    /* Corners */
-    --br: 3px; /* Border radius */
+    /* Border radius */
+    --br: 3px;
     --br-l: var(--br) 0 0 var(--br); /* Left-only */
     --br-r: 0 var(--br) var(--br) 0; /* Right-only */
 
     /* Text */
-    --fs: 14px; /* Default */
-    --fs-s: 12px; /* Small */
+    --fs: 14px; /* UI font-size */
+    --fs-cell: {{ fontsize }}; /* Cell font-size */
 
     /* Layout */
     --h: 40px; /* Height */
 
-    /* Styling */
-    font-family: sans-serif;
+    /*
+     * Styling */
+    font-family: {{ fontfamily }};
     font-size: var(--fs);
 }
+
+/* Fixes */
+#mols2grid * {
+    box-sizing: border-box;
+    outline: none;
+}
+
+
+
+/**
+ * Functions section
+ */
+
 #mols2grid .m2g-functions {
     display: flex;
 }
-#mols2grid .m2g-functions > * {
+#mols2grid .m2g-functions .m2g-row {
+    flex: 0;
+    display: flex;
+}
+
+/* Individual elements don't scale */
+#mols2grid .m2g-functions .m2g-row > * {
     flex: 0 0;
     margin-right: 10px;
 }
-#mols2grid .m2g-functions > *:last-child {
+#mols2grid .m2g-functions .m2g-row:last-child > *:last-child {
     margin-right: 0;
 }
-#mols2grid .m2g-functions > .m2g-gap {
-    flex: 1 1;
+
+/* Row 1: pagination + gap + sort */
+#mols2grid .m2g-functions .m2g-row:first-child {
+    flex: 1; /* Scale */
+}
+#mols2grid .m2g-functions .m2g-gap {
+    /* The gap in between will scale, so the pagination
+    stays on the left, while the rest moves to the right */
+    flex: 1;
+    margin-right: 0;
     /* background: pink; */
 }
 
@@ -54,7 +78,7 @@
  * Pagination
  */
 
-#mols2grid ul.pagination {
+#mols2grid ul.m2g-pagination {
     /* Unset defaults */
     list-style-type: none;
     margin-block-start: 0;
@@ -66,11 +90,11 @@
     /* Custom */
     display: flex;
 }
-#mols2grid ul.pagination li {
+#mols2grid ul.m2g-pagination li {
     background: var(--bg) ;
     border: var(--border);
     height: var(--h);
-    min-width: var(--h);
+    min-width: calc(var(--h) + 1px);
     position: relative;
     user-select: none;
     
@@ -82,7 +106,10 @@
     align-items: center;
     justify-content: center;
 }
-#mols2grid ul.pagination li a {
+#mols2grid ul.m2g-pagination li:last-child {
+    min-width: var(--h);
+}
+#mols2grid ul.m2g-pagination li a {
     text-decoration: none;
     color: var(--black);
     padding: 0 10px;
@@ -95,36 +122,33 @@
 }
 
 /* Corner shape */
-#mols2grid ul.pagination li:first-child {
+#mols2grid ul.m2g-pagination li:first-child {
     border-radius: var(--br-l);
 }
-#mols2grid ul.pagination li:last-child {
+#mols2grid ul.m2g-pagination li:last-child {
     border-radius: var(--br-r);
     margin-right: 0;
 }
 
 /* Focus state */
-#mols2grid ul.pagination li:focus-within {
+#mols2grid ul.m2g-pagination li:focus-within {
     border-color: var(--hl);
-    box-shadow: inset 0 0 0 1px var(--hl);
+    box-shadow: var(--hl-shadow);
     z-index: 1;
-}
-#mols2grid ul.pagination li:focus-within a {
-    outline: none;
 }
 
 /* Active state */
-#mols2grid ul.pagination li.active {
+#mols2grid ul.m2g-pagination li.active {
     background: var(--hl);
     z-index: 1;
 }
-#mols2grid ul.pagination li.active a {
+#mols2grid ul.m2g-pagination li.active a {
     cursor: default;
     color: #fff;
 }
 
 /* Disabled sate */
-#mols2grid ul.pagination li.disabled a {
+#mols2grid ul.m2g-pagination li.disabled a {
     cursor: default;
     color: rgba(0,0,0,.25);
     pointer-events: none;
@@ -140,6 +164,7 @@
     color: var(--black-soft);
 }
 #mols2grid .m2g-dropdown {
+    height: var(--h);
     background: var(--bg);
     border: var(--border);
     border-radius: var(--br);
@@ -155,7 +180,6 @@
     height: 100%;
     padding: 0 13px;
     min-width: 0;
-    padding-right: 70px; /* Space for "Sort:" */
     max-width: 250px;
     color: var(--black);
     cursor: pointer;
@@ -199,16 +223,12 @@
     white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: hidden;
-	font-size: $regular;
 }
 
 /* Focus state */
 #mols2grid .m2g-dropdown:focus-within {
     border-color: var(--hl);
-    box-shadow: inset 0 0 0 1px var(--hl);
-}
-#mols2grid .m2g-dropdown:focus-within select {
-    outline: none;
+    box-shadow: var(--hl-shadow);
 }
 
 
@@ -223,7 +243,7 @@
 }
 #mols2grid .m2g-dropdown.m2g-actions select {
     opacity: 0;
-    width: 100%;
+    width: var(--h);
 }
 #mols2grid .m2g-dropdown.m2g-actions .m2g-icon {
     width: var(--h);
@@ -236,28 +256,19 @@
  */
 
 #mols2grid .m2g-dropdown.m2g-sort {
+    flex: 0 0 200px;
+    width: 200px; /* Needed in addition to flex-basis for small sizes! */
     border-radius: var(--br);
     display: flex;
 }
+
+/* Dropdown */
 #mols2grid .m2g-dropdown.m2g-sort select {
+    flex: 1 1;
     opacity: 0;
+    /* padding-right: 70px; Space for "Sort:" */
+    box-sizing: border-box;
 }
-#mols2grid .m2g-dropdown.m2g-sort .m2g-display {
-    right: 31px;
-    background: var(--bg);
-    padding-right: 30px;
-}
-#mols2grid .m2g-dropdown.m2g-sort .m2g-display::before {
-    content: 'Sort: ';
-}
-
-/* Focus state */
-#mols2grid .m2g-dropdown.m2g-sort:focus-within .m2g-display,
-#mols2grid .m2g-dropdown.m2g-sort:focus-within .m2g-order {
-    background-color: transparent;
-}
-
-/* Ascending icon - default */
 
 /* Sort order */
 #mols2grid .m2g-dropdown.m2g-sort .m2g-order {
@@ -271,6 +282,22 @@
     transform: rotate(180deg);
     border-left: none;
     border-right: var(--border);
+}
+
+/* Display */
+#mols2grid .m2g-dropdown.m2g-sort .m2g-display {
+    right: 31px;
+    padding-right: 13px;
+    background: var(--bg);
+}
+#mols2grid .m2g-dropdown.m2g-sort .m2g-display::before {
+    content: 'Sort: ';
+}
+
+/* Focus state */
+#mols2grid .m2g-dropdown.m2g-sort:focus-within .m2g-display,
+#mols2grid .m2g-dropdown.m2g-sort:focus-within .m2g-order {
+    background-color: transparent;
 }
 
 
@@ -290,27 +317,24 @@
     border-radius: var(--br);
 }
 #mols2grid .m2g-searchbar {
+    width: 170px;
     height: var(--h);
     padding: 0 13px;
-    border-radius: var(--br);
     border: none;
-    background: none;
     color: var(--black);
     cursor: text;
+    background: transparent;
 }
 
 /* Focus state */
 #mols2grid .m2g-search-wrap:focus-within {
     border-color: var(--hl);
-    box-shadow: inset 0 0 0 1px var(--hl);
-}
-#mols2grid .m2g-searchbar:focus {
-    outline: none;
+    box-shadow: var(--hl-shadow);
 }
 
 /* Option buttons */
 #mols2grid .m2g-search-options {
-    font-size: var(--fs-s);
+    font-size: 12px;
     display: flex;
     height: calc(1.5em + .75rem);
     line-height: calc(1.5em + .75rem);
@@ -350,9 +374,10 @@
     flex-wrap: wrap;
     align-items: flex-start;
     justify-content: flex-start;
-    margin-top: 20px;
     padding: 1px; /* Compensate for negative padding on cell */
     user-select: none;
+    margin: {{ 0 if gap == 0 else -gap }}px;
+    margin-top: {{ 0 if gap == 0 else -gap + 20 }}px;
     
 }
 
@@ -361,14 +386,29 @@
     border: {{ border }};
     text-align: {{ textalign }};
     vertical-align: top;
-    font-family: {{ fontfamily }};
-    font-size: {{ fontsize }};
-    padding: 5px 0;
-    margin: {{ gap }};
-    flex: 1 0 {{cell_width}}px;
+    font-family: var(--font-family);
+    padding: {{ pad }}px;
+    margin: {{ gap_px }};
+    flex: 1 0 {{ cell_width }}px;
     position: relative;
-    font-size: var(--fs);
+    font-size: var(--fs-cell); /* %% */
     cursor: pointer;
+    box-sizing: border-box;
+    color: var(--black);
+    overflow: hidden;
+}
+#mols2grid .m2g-cell:focus {
+    z-index: 1;
+    border-color: var(--hl);
+    box-shadow: var(--hl-shadow);
+}
+
+/* Phantom cells to maintain grid structure with less results */
+#mols2grid .m2g-cell.m2g-phantom {
+    border: none;
+    pointer-events: none;
+    height: 0;
+    padding: 0;
 }
 
 /* Checkbox & ID */
@@ -391,7 +431,7 @@
 }
 #mols2grid .m2g-cb .data-mols2grid-id-display {
     padding: 0 5px 0 5px;
-    font-size: var(--fs);
+    font-size: var(--fs-cell);
     line-height: 16px;
     {# background: pink; #}
 }
@@ -418,7 +458,6 @@
 }
 #mols2grid .m2g-keep-tooltip .m2g-info {
     color: #fff;
-    /* background: rgba(255, 0, 0, .2); */
 }
 #mols2grid .m2g-keep-tooltip .m2g-info::before {
     content: 'i';
@@ -435,7 +474,6 @@
 /* Image */
 #mols2grid .m2g-cell .data-img {
     padding: 0;
-    margin: 0;
 }
 #mols2grid .m2g-cell img,
 #mols2grid .m2g-cell svg {
@@ -448,16 +486,6 @@
 }
 
 /* Text below image */
-#mols2grid .data {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    display: block;
-}
-#mols2grid div.data {
-    height: 16px;
-    line-height: 16px;
-}
 .m2g-copy-blink {
     animation: m2g-blink 150ms 3;
 }
@@ -482,11 +510,10 @@
  * Popover
  */
 .popover {
+    font-family: {{ fontfamily }};
     background: white;
     border: solid 1px rgba(0,0,0,.2);
-    font-size: 12px;
-    line-height: 15px;
-    font-family: sans-serif;
+    font-size: {{ fontsize }};
     padding: 10px;
     border-radius: 5px;
     box-shadow: 0 0 20px rgba(0,0,0,.15);
@@ -501,16 +528,28 @@
     border: solid 1px rgba(0,0,0,.2);
     box-sizing: border-box;
     position: absolute;
-    top: calc(50% - 5px);
-    right: -10px;
-    transform-origin: 0 0;
-    transform: rotate(45deg);
+    transform-origin: 5px 5px;
     clip-path: polygon(0 0, 100% 0, 100% 100%);
 }
+.popover[x-placement='left'] .arrow {
+    transform: rotate(45deg);
+    top: 50%;
+    right: -5px;
+}
 .popover[x-placement='right'] .arrow {
-    right: auto;
-    left: 0;
-    clip-path: polygon(0 0, 0 100%, 100% 100%);
+    transform: rotate(-135deg);
+    top: 50%;
+    left: -5px;
+}
+.popover[x-placement='top'] .arrow {
+    transform: rotate(135deg);
+    left: 50%;
+    bottom: -5px;
+}
+.popover[x-placement='bottom'] .arrow {
+    transform: rotate(-45deg);
+    left: 50%;
+    top: -5px;
 }
 
 
@@ -519,15 +558,15 @@
  */
 @media (hover:hover) {
     /* Pagination */
-    #mols2grid ul.pagination li:not(.active):not(.disabled):hover {
+    #mols2grid ul.m2g-pagination li:not(.active):not(.disabled):hover {
         background: #f0f0f0;
         z-index: 1;
     }
-    #mols2grid ul.pagination li.active + li:hover {
+    #mols2grid ul.m2g-pagination li.active + li:hover {
         /* Keeping the hover border consiistent */
         margin-left: 1px;
         border-left: none;
-        flex-basis: 39px;
+        min-width: 40px;
     }
 
     /* Dropdowns & search */
@@ -559,5 +598,133 @@
     }
     #mols2grid div.data:hover::after {
         content: ' ]'
+    }
+}
+
+
+
+/**
+ * Responsive behavior.
+ * - - -
+ * Note: container queries won't work in older browsers,
+ * but this is purely aesthetical behavior so that's ok.
+ * https://caniuse.com/css-container-queries
+ */
+
+/* This sets the msg-list div as reference container */
+#mols2grid {
+    container-type: inline-size;
+}
+
+
+
+/**
+ * Functions section
+ */
+
+/* When there's not enough space to put everything in one row, we break it into two.
+ * - - -
+ * 870px = pagination 280 + sort 200 + search 300 + menu 40 + (3*10 gap) = 850 + 20 buffer.
+ * Buffer required because the button width inside the search depends on the font.
+ */
+@container (max-width: 870px) {
+    #mols2grid .m2g-functions {
+        flex-direction: column-reverse;
+        gap: 10px;
+    }
+    #mols2grid .m2g-functions .m2g-row:last-child {
+        justify-content: flex-end;
+    }
+    #mols2grid .m2g-functions .m2g-row:first-child *:last-child {
+        margin-right: 0;
+    }
+}
+
+/* When there's not enough room for pagination + sort on one row,
+ * we reduce the sort drodpwon width.
+ */
+@container (max-width: 500px) {
+    #mols2grid .m2g-functions .m2g-sort {
+        width: 80px;
+        flex-basis: 80px;
+    }
+    #mols2grid .m2g-functions .m2g-sort .m2g-display {
+        font-size: 0;
+        line-height: 0;
+        padding-right: 0;
+    }
+    #mols2grid .m2g-functions .m2g-sort .m2g-display::before {
+        content: 'Sort';
+        font-size: var(--fs);
+        line-height: var(--h);
+    }
+}
+
+/* When there's not enough room for pagination + reduced sort on one row,
+ * we reduce the pagination width.
+ */
+@container (max-width: 500px) {
+    /* We're overriding min-width from different
+    locations, including responsive rules */
+    #mols2grid ul.m2g-pagination li,
+    #mols2grid ul.m2g-pagination li:last-child,
+    #mols2grid ul.m2g-pagination li.active + li:hover {
+        min-width: 0;
+    }
+}
+
+/* When there's not enough room for searchbar + menu
+ * we scale down the searchbar to fit the container.
+ */
+@container (max-width: 370px) {
+    #mols2grid .m2g-functions .m2g-row .m2g-search-wrap {
+        flex: 1;
+    }
+    #mols2grid .m2g-searchbar {
+        width: calc(100% - 50px);
+    }
+    #mols2grid .m2g-search-options {
+        width: 50px;
+    }
+
+    /* Collapse options in T/M buttons */
+    #mols2grid .m2g-search-options .m2g-option {
+        width: 25px;
+        text-align: center;
+        padding: 0;
+        overflow: hidden;
+    }
+    #mols2grid .m2g-search-options .m2g-option:first-child::before {
+        content: 'T\A'
+    }
+    #mols2grid .m2g-search-options .m2g-option:last-child::before {
+        content: 'S\A'
+    }
+}
+
+
+
+/**
+ * Grid
+ */
+
+/* When there's room for 5 columns, fall back to 4 */
+@container (min-width: {{ cell_width * 4 - 1 }}px) and (max-width: {{ cell_width * 6 - 1 }}px) {
+    #mols2grid .m2g-cell {
+        flex-basis: calc(100% / 4);
+    }
+}
+
+/* When there's room for 7-11 columns, fall back to 6 */
+@container (min-width: {{ cell_width * 6 - 1 }}px) and (max-width: {{ cell_width * 12 - 1 }}px) {
+    #mols2grid .m2g-cell {
+        flex-basis: calc(100% / 6);
+    }
+}
+
+/* When there's room for 13+ columns, fall back to 12 */
+@container (min-width: {{ cell_width * 12 - 1 }}px) {
+    #mols2grid .m2g-cell {
+        flex-basis: calc(100% / 12);
     }
 }

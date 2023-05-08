@@ -1,0 +1,40 @@
+Notes:
+- - - -
+- I replaced #searchbar with #mols2grid .searchbar to be consistent. Didn't test:
+    --> test_interface.py: driver.find_by_css_selector("#mols2grid .searchbar") instead of driver.find_by_id("#searchbar")
+    --> webdriver_utils.py: same with self instead of driver
+- Removed the iframe's default height=200, which is overwritten anyways by fit_height
+
+
+
+Proposed improvements:
+- - - -
+- Instead of throwing an error when useSVG is set to False when prerender is left on default False, I'd suggest to automatically prerender when useSVG is turned off? Or if that's not acceptable, at least we can add this requirement to the docstring. I didn't realize prerender was an option when I got the error, so I assumed it was a bug.
+- I would suggest instead of pages/table, which is confusing and requires you to go dig in docs to understand what they do, we would use "interactive" vs "static" --> also disable tooltips for static page
+
+Things to verify:
+- 
+
+
+Implemented improvements:
+- - - -
+- Removed bootstrap CSS
+- Rebuilt navigation components (pagination, sort, search, select menu) as native components with minimal, name-spaced CSS
+- Detect if code is running inside a notebook and only return iframe in notebook
+- Added a 'use_iframe' parameter which can be used to override iframe default
+- Made interactive grid fully responsive. Instead of specifying how many columns
+- Default to a smaller font size (12px)
+- Made mols SVG images transparent (nicer hover state)
+- Limited tooltip to small (i) icon in the corner, so it is not interfering with regular browsing
+- Clicking the (i) icon toggles tooltip and indicated if it's on or off
+- Made entire cell clickable
+- Implemented basic intuitive keyboard navigation: ENTER/ESC for selecting/unselecting, arrows for navigation
+- We're now automaticlaly adding 'img' to the subset without throwing an error (Previous behavior: throw error and tell user to add it)
+- Added a 'pad' parameter that controls cell padding
+- Added a 'truncate' parameter which defaults to False for table and True for pages. When set to False, cells will scale up to fit all text instead of truncating it, causing a less organized grid
+
+
+Bug fixes:
+- pad in table template didn't work
+- I no longer resize the iframe if a custom height is set by the display function (Previous behavior: parameter was overwritten by the style tag, hence useless)
+- Removed cell_width parameter as it was being overwritten and not documented

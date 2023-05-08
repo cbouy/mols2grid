@@ -5,15 +5,16 @@ var listObj = new List('mols2grid', {
     item: {{ item_repr }},
     page: {{ n_items_per_page }},
     pagination: {
-        name: "pagination",
-        item: '<li data="x" class="page-item"><a class="page page-link" href="#" onclick="event.preventDefault()"></a></li>',
+        paginationClass: "m2g-pagination",
+        item: '<li class="page-item"><a class="page page-link" href="#" onclick="event.preventDefault()"></a></li>',
         innerWindow: 1,
         outerWindow: 1,
     },
 });
 listObj.remove("mols2grid-id", "0");
 listObj.add({{ data }});
-console.log({{data}})
+
+
 // filter
 if (window.parent.mols2grid_lists === undefined) {
     window.parent.mols2grid_lists = {};
@@ -98,17 +99,23 @@ window
     window.RDKit = RDKit;
     window.RDKitModule = RDKit;
 
-    // search bar
+    // Searchbar
     {% include 'js/search.js' %}
 
     {% if onthefly %}
     {% include 'js/draw_mol.js' %}
     {% endif %}
 
-    // trigger update to activate tooltips, draw images, setup callbacks...
+    // Trigger update to activate tooltips, draw images, setup callbacks...
     listObj.update();
-    // resize iframe to fit content
+    
+    // Set iframe height to fit content.
     if (window.frameElement) {
         fit_height(window.frameElement);
+
+        // Fit iframe height whenever the iframe size changes.
+        $(window.frameElement.contentWindow).on('resize', function() {
+            fit_height(window.frameElement);
+        })
     }
 });
