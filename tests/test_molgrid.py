@@ -194,7 +194,7 @@ def test_from_sdf_kwargs(sdf_path, param, attr, value):
 
 
 def test_template(grid_prerendered):
-    grid_prerendered.template = "pages"
+    grid_prerendered.template = "interactive"
     assert grid_prerendered._template is grid_prerendered.template
 
 
@@ -244,12 +244,12 @@ def test_save(grid):
         assert Path(f.name).is_file()
 
 
-def test_render_pages(grid):
-    grid.render(template="pages")
+def test_render_interactive(grid):
+    grid.render(template="interactive")
 
 
-def test_render_table(grid_prerendered):
-    grid_prerendered.render(template="table")
+def test_render_static(grid_prerendered):
+    grid_prerendered.render(template="static")
 
 
 def test_render_wrong_template(grid):
@@ -268,12 +268,12 @@ def test_render_wrong_template(grid):
         dict(transform={"ID": lambda x: f"Id. #{x}"}),
     ],
 )
-def test_integration_table(grid_prerendered, kwargs):
-    grid_prerendered.to_table(**kwargs)
+def test_integration_static(grid_prerendered, kwargs):
+    grid_prerendered.to_static(**kwargs)
 
 
 def test_python_callback(grid):
-    html = grid.to_pages(subset=["img"], callback=lambda data: None)
+    html = grid.to_interactive(subset=["img"], callback=lambda data: None)
     assert "// trigger custom python callback" in html
     assert "// no kernel detected for callback" in html
 
@@ -325,7 +325,7 @@ def test_use_coords_onthefly_error(small_df):
 
 def test_sort_by_not_in_subset_or_tooltip(grid):
     with pytest.raises(ValueError, match="'_Name' is not an available field"):
-        grid.to_pages(subset=["ID", "img"], sort_by="_Name")
+        grid.to_interactive(subset=["ID", "img"], sort_by="_Name")
 
 
 def test_subset_without_img_error(grid):
@@ -335,11 +335,11 @@ def test_subset_without_img_error(grid):
         grid.display(subset=["_Name"])
 
 
-def test_table_no_prerender_error(grid):
+def test_static_no_prerender_error(grid):
     with pytest.raises(
-        ValueError, match="Please set `prerender=True` when using the 'table' template"
+        ValueError, match="Please set `prerender=True` when using the 'static' template"
     ):
-        grid.display(template="table")
+        grid.display(template="static")
 
 
 def test_replace_non_serializable_from_default_output(small_df):

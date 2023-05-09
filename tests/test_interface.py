@@ -711,13 +711,13 @@ def test_custom_header(driver: FirefoxDriver, grid):
     assert val == "2021.09.2"
 
 
-def test_table_template(driver: FirefoxDriver, sdf_path):
+def test_static_template(driver: FirefoxDriver, sdf_path):
     df = mols2grid.sdf_to_dataframe(sdf_path)[:15]
     grid = mols2grid.MolGrid(df, mol_col="mol", prerender=True)
     doc = get_doc(
         grid,
         dict(
-            template="table",
+            template="static",
             subset=["mols2grid-id", "img"],
             tooltip=["_Name"],
             sort_by="_Name",

@@ -9,9 +9,9 @@ from .molgrid import MolGrid
 _SIGNATURE = {
     method: dict(inspect.signature(
         getattr(MolGrid, method)).parameters.items())
-    for method in ["render", "to_pages", "to_table", "display"]
+    for method in ["render", "to_interactive", "to_static", "display"]
 }
-for method in ["render", "to_pages", "to_table", "display"]:
+for method in ["render", "to_interactive", "to_static", "display"]:
     _SIGNATURE[method].pop("self")
     if method in ["render", "display"]:
         _SIGNATURE[method].pop("kwargs")
@@ -73,8 +73,8 @@ def display(arg, **kwargs):
     name : str, default="default"
         Name of the grid. Used when retrieving selections from multiple grids
         at the same time
-    template : str, default="pages"
-        Either ``"pages"`` or ``"table"``
+    template : str, default="interactive"
+        Either ``"interactive"`` or ``"static"``
     width : str, default="100%
         Width of the frame displayed in the notebook
     height : int or None, default=None
@@ -98,7 +98,7 @@ def display(arg, **kwargs):
     n_cols : int, default=5
         Number of columns per page
     n_rows` : int, default=3
-        Only available for the "pages" template. Number of rows per page
+        Only available for the "interactive" template. Number of rows per page
     border : str, default="1px solid #cccccc"
         Styling of the border around each cell (CSS)
     gap : int, default=0
@@ -127,7 +127,7 @@ def display(arg, **kwargs):
             style={"__all__": lambda x: "color: red" if x["Solubility"] < -5 else ""}
 
     selection : bool, default=True
-        Only available for the "pages" template. Enables the selection of
+        Only available for the "interactive" template. Enables the selection of
         molecules and displays a checkbox at the top of each cell. To access
         your selection (index and SMILES), use :func:`mols2grid.get_selection()`
         or the export options in the bottom checkbox dropdown menu.
@@ -145,12 +145,12 @@ def display(arg, **kwargs):
         These transformations only affect columns in ``subset`` and
         ``tooltip``, and do not interfere with ``style``.
     custom_css : str or None, default=None
-        Only available for the "pages" template. Custom CSS properties applied
+        Only available for the "interactive" template. Custom CSS properties applied
         to the content of the HTML document.
     custom_header : str or None, default=None
         Custom libraries to be loaded in the header of the document
     callback : str or None, default=None
-        Only available for the "pages" template. JavaScript or Python
+        Only available for the "interactive" template. JavaScript or Python
         callback to be executed when clicking on an image. A dictionnary
         containing the data for the full cell is directly available as
         ``data`` in JS. For Python, the callback function must have

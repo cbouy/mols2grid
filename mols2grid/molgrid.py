@@ -242,16 +242,16 @@ class MolGrid:
     def template(self):
         """Kind of grid displayed, one of:
 
-        * pages
-        * table
+        * interactive
+        * static
         """
         return self._template
 
     @template.setter
     def template(self, value):
-        if value not in ["pages", "table"]:
+        if value not in ["interactive", "static"]:
             raise ValueError(
-                f"template={value!r} not supported. " "Use one of 'pages' or 'table'"
+                f"template={value!r} not supported. " "Use one of 'interactive' or 'static'"
             )
         self._template = value
 
@@ -309,9 +309,9 @@ class MolGrid:
             dataframe[self.smiles_col] = dataframe[self.mol_col].apply(
                 mol_to_smiles)
 
-    def render(self, template="pages", **kwargs):
-        """Returns the HTML document corresponding to the "pages" or "table"
-        template. See :meth:`to_pages` and :meth:`to_table` for the full list
+    def render(self, template="interactive", **kwargs):
+        """Returns the HTML document corresponding to the "interactive" or "static"
+        template. See :meth:`to_interactive` and :meth:`to_static` for the full list
         of arguments
 
         Parameters
@@ -319,20 +319,20 @@ class MolGrid:
         template : str
             Kind of grid to draw:
 
-            * table
+            * interactive
+                A more interactive version that layouts the original set of
+                molecules on several pages, allows for selecting molecules and
+                filtering them using text or substructure queries.
+            * static
                 A very simple table where all molecules are displayed on the
                 document, similarly to RDKit's :func:`~rdkit.Chem.Draw.rdMolDraw2D.MolsToGridImage`.
                 This template is mainly used for printing on paper or in a PDF
                 file. Most of the interactive actions aren't available.
-            * pages
-                A more interactive version that layouts the original set of
-                molecules on several pages, allows for selecting molecules and
-                filtering them using text or substructure queries.
         """
         self.template = template
         return getattr(self, f"to_{self.template}")(**kwargs)
 
-    def to_pages(
+    def to_interactive(
         self,
 
         # Content
@@ -366,7 +366,7 @@ class MolGrid:
         substruct_highlight=None,
         single_highlight=False,
     ):
-        """Returns the HTML document for the "pages" template
+        """Returns the HTML document for the "interactive" template
 
         Parameters
         ----------
@@ -456,7 +456,7 @@ class MolGrid:
         custom_header : str or None
             Custom libraries to be loaded in the header of the document
         callback : str or callable
-            Only available for the "pages" template. JavaScript or Python
+            Only available for the "interactive" template. JavaScript or Python
             callback to be executed when clicking on an image. A dictionnary
             containing the data for the full cell is directly available as
             ``data`` in JS. For Python, the callback function must have
@@ -714,7 +714,7 @@ class MolGrid:
         smiles = slugify(smiles)
         df = df[final_columns].rename(columns=column_map).sort_values(sort_by)
 
-        template = env.get_template("pages.html")
+        template = env.get_template("interactive.html")
         template_kwargs = dict(
             tooltip=tooltip,
             tooltip_trigger=repr(tooltip_trigger),
@@ -805,7 +805,7 @@ class MolGrid:
         mask = self.dataframe.index.isin(indices)
         return self.filter(mask)
 
-    def to_table(
+    def to_static(
         self,
 
         # Content
@@ -833,7 +833,7 @@ class MolGrid:
         custom_css=None,
         custom_header=None,
     ):
-        """Returns the HTML document for the "table" template
+        """Returns the HTML document for the "static" template
 
         Parameters
         ----------
@@ -941,7 +941,7 @@ class MolGrid:
         """
         if not self.prerender:
             raise ValueError(
-                "Please set `prerender=True` when using the 'table' template"
+                "Please set `prerender=True` when using the 'static' template"
             )
         tr = []
         data = []
@@ -1025,7 +1025,7 @@ class MolGrid:
                 data.append("\n".join(cell))
                 tr = []
 
-        template = env.get_template("table.html")
+        template = env.get_template("static.html")
         template_kwargs = dict(
             iframe_padding=18,
             border=border,

@@ -1,20 +1,17 @@
 - Rename pages/table to interactive/static
+- Turn tooltip off by default for static template?
 - Make tooltip copy-able
 - Send back selected molecules as panda dataframe back to Python (fallback: copy to clipboard?)
     --> callback with selected ids, which then are used to filter the dataframe
 - Check if all python css options still work
 - When saving SMILES/CSV without anything being selected, download ALL
-- Figure out tooltip_trigger for tables
+- Figure out tooltip_trigger for static template
 - Test if sort_by used to work with original module
 x - Centralize python variables
-√ - Merge tooltip doc strings for to_pages
+√ - Merge tooltip doc strings for to_interactive
 √ - Check how width & cell_width work and update doc
 √ - Remove variable literals in CSS towards bottom
 √ - Implements up/down tooltip
 √ - Fix functions responsivity
 √ - Make sure img subset is always first in list
 √ - Set tabindex -1 on checkboxes and 0 on cells
-
-- If we agree on removing tooltip from table view, then this needs to be upated here:
-    › to_table --> f'<div class="data data-img mols2grid-tooltip" '
-    › table.html
