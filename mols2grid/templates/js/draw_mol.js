@@ -1,4 +1,4 @@
-// generate images for the currently displayed molecules
+// Generate images for the currently displayed molecules.
 RDKit.prefer_coordgen({{ prefer_coordGen | tojson }});
 function draw_mol(smiles, index, template_mol) {
     var mol = RDKit.get_mol(smiles, '{"removeHs": {{ removeHs | tojson }} }');
@@ -21,7 +21,7 @@ function draw_mol(smiles, index, template_mol) {
     return svg;
 }
 
-// Update images when the list is updated
+// Update images when the list is updated.
 listObj.on("updated", function (list) {
     var query = $('#mols2grid .m2g-searchbar').val();
     var template_mol;

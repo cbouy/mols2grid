@@ -1,14 +1,14 @@
-- Check how width & cell_width work and update doc
-- Merge tooltip doc strings for to_pages
 - Rename pages/table to interactive/static
 - Make tooltip copy-able
 - Send back selected molecules as panda dataframe back to Python (fallback: copy to clipboard?)
     --> callback with selected ids, which then are used to filter the dataframe
 - Check if all python css options still work
-- Centralize python variables
 - When saving SMILES/CSV without anything being selected, download ALL
 - Figure out tooltip_trigger for tables
 - Test if sort_by used to work with original module
+x - Centralize python variables
+√ - Merge tooltip doc strings for to_pages
+√ - Check how width & cell_width work and update doc
 √ - Remove variable literals in CSS towards bottom
 √ - Implements up/down tooltip
 √ - Fix functions responsivity

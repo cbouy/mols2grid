@@ -7,7 +7,8 @@ from pandas import DataFrame, Series
 from .molgrid import MolGrid
 
 _SIGNATURE = {
-    method: dict(inspect.signature(getattr(MolGrid, method)).parameters.items())
+    method: dict(inspect.signature(
+        getattr(MolGrid, method)).parameters.items())
     for method in ["render", "to_pages", "to_table", "display"]
 }
 for method in ["render", "to_pages", "to_table", "display"]:

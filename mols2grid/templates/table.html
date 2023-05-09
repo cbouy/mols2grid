@@ -1,41 +1,36 @@
 <style>
     {% include 'css/shared.css' %}
     {% include 'css/table.css' %}
-    
+
     /* custom CSS */
     {{ custom_css }}
 </style>
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script
+    src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+    integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+    crossorigin="anonymous"
+></script>
 {% include 'html/common_header.html' %}
 <!-- custom header -->
 {{ custom_header }}
 
 <table id="mols2grid">
-  <tbody>
-    {{ data }}
-  </tbody>
+    <tbody>
+        {{ data }}
+    </tbody>
 </table>
 
 <script>
-  {% if tooltip %}
-  /*
-  // Tooltips
-  $.fn.tooltip.Constructor.Default.whiteList.span = ['style']
-  $('.mols2grid-tooltip[data-toggle="popover"]').popover({
-    placement: {{ tooltip_placement }},
-    trigger: {{ tooltip_trigger }},
-    html: true,
-  })
-  */
-  {% endif %}
-  
-  // Set iframe height to fit content.
-  if (window.frameElement) {
-      fit_height(window.frameElement);
+    {% if tooltip %}
+    // Tooltips
+    $.fn.tooltip.Constructor.Default.whiteList.span = ['style']
+    $('.mols2grid-tooltip[data-toggle="popover"]').popover({
+      placement: {{ tooltip_placement }},
+      trigger: {{ tooltip_trigger }},
+      html: true,
+    })
+    {% endif %}
 
-      // Fit iframe height whenever the iframe size changes.
-      $(window.frameElement.contentWindow).on('resize', function() {
-          fit_height(window.frameElement);
-      })
-  }
+    // Set iframe height to fit content.
+    fitIframe(window.frameElement);
 </script>

@@ -110,12 +110,5 @@ window
     listObj.update();
     
     // Set iframe height to fit content.
-    if (window.frameElement) {
-        fit_height(window.frameElement);
-
-        // Fit iframe height whenever the iframe size changes.
-        $(window.frameElement.contentWindow).on('resize', function() {
-            fit_height(window.frameElement);
-        })
-    }
+    fitIframe(window.frameElement);
 });

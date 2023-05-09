@@ -38,3 +38,7 @@ Bug fixes:
 - pad in table template didn't work
 - I no longer resize the iframe if a custom height is set by the display function (Previous behavior: parameter was overwritten by the style tag, hence useless)
 - Removed cell_width parameter as it was being overwritten and not documented
+
+
+Questions:
+- We make a copy of the molsgrid-id that's displayed (See: # Make a copy of id shown explicitely) but we don't need to copy it, but I didn't manage to display it without copying it.
