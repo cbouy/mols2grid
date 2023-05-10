@@ -1,3 +1,6 @@
+// Check if selection UI is supported.
+var supportSelection = eval('{{selection}}'.toLowerCase());
+
 listObj.on("updated", initInteraction);
 
 // (Re)initialiuze all grid interaction every time the grid changes.
@@ -5,7 +8,7 @@ function initInteraction(list) {
     initCellClick()
     initToolTip()
     initKeyboard()
-    initCheckbox()
+    if (supportSelection) initCheckbox()
 
     // Hide navigation if there is only one page.
     if (listObj.matchingItems.length <= listObj.page) {
@@ -37,10 +40,12 @@ function initCellClick() {
                 $(e.target).removeClass('m2g-copy-blink')
             }, 450)
         } else if (!$(e.target).is(':checkbox')) {
-            // When clicking anywhere outside the checkbox, toggle the checkbox.
-            var chkbox = $(this).find('input:checkbox')[0]
-            chkbox.checked = !chkbox.checked
-            $(chkbox).trigger('change')
+            if (supportSelection) {
+                // When clicking anywhere outside the checkbox, toggle the checkbox.
+                var chkbox = $(this).find('input:checkbox')[0]
+                chkbox.checked = !chkbox.checked
+                $(chkbox).trigger('change')
+            }
         }
     })
 }
@@ -71,19 +76,21 @@ function initKeyboard() {
         } else if (e.which == 39) {
             // RIGHT
             $(this).next().focus()
-        } else if (e.which == 38) {
-            // UP
-            var columns = Math.round($(this).parent().width() / $(this).width())
-            var index = $(this).index() 
-            var indexAbove = Math.max(index - columns, 0)
-            $(this).parent().children().eq(indexAbove).focus()
-        } else if (e.which == 40) {
-            // DOWN
-            var columns = Math.round($(this).parent().width() / $(this).width())
+        } else if (e.which == 38 || e.which == 40) {
+            var containerWidth = $(this).parent().outerWidth()
+            var cellWidth = $(this).outerWidth() + parseInt($(this).css('marginLeft')) * 2
+            var columns = Math.round(containerWidth / cellWidth)
             var index = $(this).index()
-            var total = $(this).parent().children().length
-            var indexBelow = Math.min(index + columns, total)
-            $(this).parent().children().eq(indexBelow).focus()
+            if (e.which == 38) {
+                // UP
+                var indexAbove = Math.max(index - columns, 0)
+                $(this).parent().children().eq(indexAbove).focus()
+            } else if (e.which == 40) {
+                // DOWN    
+                var total = $(this).parent().children().length
+                var indexBelow = Math.min(index + columns, total)
+                $(this).parent().children().eq(indexBelow).focus()
+            }
         }
     })
 }
@@ -116,7 +123,7 @@ function initCheckbox() {
     $("input:checkbox").off('change').change(function() {
         var _id = parseInt($(this).closest(".m2g-cell").attr("data-mols2grid-id"));
         if (this.checked) {
-            var _smiles = $($(this).siblings(".data-{{ smiles_col }}")[0]).text();
+            var _smiles = $($(this).closest(".m2g-cell").children(".data-{{ smiles_col }}")[0]).text();
             add_selection({{ grid_id | tojson }}, [_id], [_smiles]);
         } else {
             del_selection({{ grid_id | tojson }}, [_id]);
@@ -245,11 +252,20 @@ function copy(e) {
 
 // Export smiles.
 function saveSmiles(e) {
-    SELECTION.download_smi("selection.smi");
+    var fileName = "selection.smi"
+    if (SELECTION.size) {
+        // Download selected smiles
+        SELECTION.download_smi(fileName);
+    } else {
+        // Download all smiles
+        SELECTION.download_smi(fileName, listObj.items);
+    }
 };
 
 // Export CSV.
 function saveCSV(e) {
+    console.log(SELECTION)
+    return
     var sep = "\t"
     // Same order as subset + tooltip
     var columns = Array.from(listObj.items[0].elm.querySelectorAll("div.data"))
@@ -263,7 +279,7 @@ function saveCSV(e) {
     listObj.items.forEach(function (item) {
         let data = item.values();
         let index = data["mols2grid-id"];
-        if (SELECTION.has(index)) {
+        if (SELECTION.has(index) || SELECTION.size === 0) {
             content += index;
             columns.forEach((key) => {
                 content += sep + data[key];

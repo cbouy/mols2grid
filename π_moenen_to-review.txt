@@ -1,44 +1,91 @@
-Notes:
-- - - -
-- I replaced #searchbar with #mols2grid .searchbar to be consistent. Didn't test:
-    --> test_interface.py: driver.find_by_css_selector("#mols2grid .searchbar") instead of driver.find_by_id("#searchbar")
-    --> webdriver_utils.py: same with self instead of driver
-- Removed the iframe's default height=200, which is overwritten anyways by fit_height
+Refactored improvements
+- - -
+- The pages/table templates and corresponsing function have been renamed to interactive/static for clarity.
+- Interactive navigation components (pagination, sort, search, select menu)
+    --> Removed bootstrap CSS & rebuilt components as native elements with minimal, name-spaced CSS.
+    --> Improved and more intuitive way of sorting.
+    --> Changes the text/smarts dropdown to a visual toggle.
+    --> Replaced the "checkbox" menu icon to a more standard triple dot menu.
+    --> All components are now fully responsive up until around ~415px wide (smaller usage is probably unlikely).
+- Iframe usage
+    --> The grid is now rendered without an iframe by default, unless the code is run inside Jupyter.
+    --> A new parameter 'use_iframe' has been added to override the default behavior.
+- Responsiove interactive grid
+    --> Instead of specifying how many columns, you just specify a desired image size. The width is used to set a mininum cell width
+    --> The responsive CSS assumes results to be a multiple of 12, and will elegantly snap to 1/2/3/4/6/12 columns
+    --> By default, 24 results are returned. The documentation suggests sticking to multiples of 12.
+    --> The variable 'n_items_per_page' is now added as a parameter, replacing 'n_cols' for the interactive template
+    --> When 'n_items_per_page' is set to a different number, the grid will just display a gap at the end of the page
+- Static grid changes
+    --> Instead of specifying a grid width, the user can now just specify the cell width ('width[0]') + 'n_cols'.
+    --> This way there's optimal overlap with how the interactive grid works.
+- The tooltip has been made less intrusive:
+    Interactive template:
+        --> Tooltip hover zone is now limited to a small (i) icon in the corner, so it is not interfering with regular browsing
+        --> Clicking the (i) icon also toggles the tooltip and indicates if it's on or off (easier to find where a sticky tooltip is coming from)
+        --> Tooltip is now controlled by js (See initToolTip in grid_interaction.js)
+        --> Parameter 'tooltip_trigger' has been removed
+    Static template:
+        --> Parameter 'tooltip_trigger' default value has been set to 'focus'
+        --> Table cells are now focusable, so you can either click inside/outside a cell to activate/deactivate, or use TAB key to cycle through the grid
+- The interactive grid got some UI/UX upgrades:
+    --> The mols2grid-id is now always displayed right next to the checkbox in the corner
+    --> The entire cell is now clickable (making it a lot easier to select cells)
+    --> Implemented basic intuitive keyboard navigation: ENTER/ESC for selecting/unselecting, arrows for navigation
+    --> Added new parameter 'pad' for controlling the padding of each cell
+    --> When parameter 'gap' is set to 0, a negative margin ensures you don't get double borders in between cells (looks a lot cleaner)
+    Data parameter changes:
+        --> Displayed data paremeters can now be copied by clicking them
+        --> Data paremeters are now by default broken into multiple lines in the static grid, and only truncated in the interactive grid
+        --> A new parameter 'truncate' lets the user override the default truncating behavior
+        --> When truncate is set to false, longer values will distort the grid, causing a less structured layout but still with all data visible
 
 
 
-Proposed improvements:
-- - - -
-- Instead of throwing an error when useSVG is set to False when prerender is left on default False, I'd suggest to automatically prerender when useSVG is turned off? Or if that's not acceptable, at least we can add this requirement to the docstring. I didn't realize prerender was an option when I got the error, so I assumed it was a bug.
-- I would suggest instead of interactive/static, which is confusing and requires you to go dig in docs to understand what they do, we would use "interactive" vs "static" --> also disable tooltips for static page
-
-Things to verify:
-- 
-
-
-Implemented improvements:
-- - - -
-- Removed bootstrap CSS
-- Rebuilt navigation components (pagination, sort, search, select menu) as native components with minimal, name-spaced CSS
-- Detect if code is running inside a notebook and only return iframe in notebook
-- Added a 'use_iframe' parameter which can be used to override iframe default
-- Made interactive grid fully responsive. Instead of specifying how many columns
-- Default to a smaller font size (12px)
-- Made mols SVG images transparent (nicer hover state)
-- Limited tooltip to small (i) icon in the corner, so it is not interfering with regular browsing
-- Clicking the (i) icon toggles tooltip and indicated if it's on or off
-- Made entire cell clickable
-- Implemented basic intuitive keyboard navigation: ENTER/ESC for selecting/unselecting, arrows for navigation
+Small improvements
+- - -
 - We're now automaticlaly adding 'img' to the subset without throwing an error (Previous behavior: throw error and tell user to add it)
-- Added a 'pad' parameter that controls cell padding
-- Added a 'truncate' parameter which defaults to False for static and True for interactive. When set to False, cells will scale up to fit all text instead of truncating it, causing a less organized grid
+- Also the mols2grid-id is now always displayed no matter what
+- When you download CSV or SMILES without any cells selected, it now will download data for all cells instead of an empty document
+- We now default to a smaller font size (12px) so the experience out of the box is a bit more practical
+- The mols SVG images are now transparent, resulting in a nicer hover state
+- Parameters 'width' and 'height' have been renamed to 'iframe_width' and 'iframe_height' to more clear
+- Added default values to all docstring parameters
+- Organized the parameters into categories, and removed some description inconsistencies
 
 
-Bug fixes:
-- pad in static template didn't work
-- I no longer resize the iframe if a custom height is set by the display function (Previous behavior: parameter was overwritten by the style tag, hence useless)
-- Removed cell_width parameter as it was being overwritten and not documented
+
+Bug fixes
+- - -
+- Parameter 'gap' in static template didn't work
+- I no longer resize the iframe if a custom height is set by the display function
+    --> Previous behavior: parameter was overwritten by the style tag, hence useless
+    --> I also removed the default height="200" because it didn't serve any purpose
+- Removed the 'cell_width' parameter as it was being overwritten and not documented
+- Removed from the custom_css parameter instructions 'Only available for the "interactive" template' becauase it's not.
 
 
-Questions:
-- We make a copy of the molsgrid-id that's displayed (See: # Make a copy of id shown explicitely) but we don't need to copy it, but I didn't manage to display it without copying it.
+
+Notes
+- - -
+- I replaced #searchbar with #mols2grid .searchbar to be consistent. Didn't test:
+    --> tests/test_interface.py: driver.find_by_css_selector("#mols2grid .searchbar") instead of driver.find_by_id("#searchbar")
+    --> tests/webdriver_utils.py: similar
+- After removing tooltip_trigger for interactive template, test_tooltip_trigger may need to be reworked
+- Inconsistent parameter descriptions:
+    - "Rename the properties/fields stored in the molecule" --> Rename the properties in the final document
+- I think useSVG should be reversed and renamed to use_png, but I waited with this until I know how to run the tests
+- You'll need to add the version changes to the docstring
+
+
+Questions
+- - -
+- How can I move the tooltip to the parent element?
+- The use_iframe parameter is used by display, but I also need it as a parameter in the to_interactive/to_static render functions (I need it inside the HTML template).
+    But when I add it as a keyword parameter to to_interactive/to_static, it gets overwritten by the default value by _prepare_kwargs --> render_kwargs.update.
+    I solved this by using use_iframe=kwargs['use_iframe'] instead of specificallt defining it as a keyword parameter, but it's a little obscure. Any better way of doing this?
+- I didn't manage to display the id without copying it (how it was initially) (See: # Make a copy of id shown explicitely) – do we have to do it like this?
+- When downloading the smiles file, it lists the smiles, then id --> wouldn't it be better the other way around?
+- Clipboard copies data as JSON, should we also provide a JSOn download?
+- Why is the default font family 'DejaVu', sans-serif? Is this font widely used in the scientific community?
+- How can I run the tests?

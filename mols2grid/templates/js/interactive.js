@@ -12,6 +12,9 @@ var listObj = new List('mols2grid', {
     },
 });
 listObj.remove("mols2grid-id", "0");
+// console.log(55, {{ value_names }}) // %%
+// console.log(66, {{ item_repr }})
+// console.log(77, {{data}})
 listObj.add({{ data }});
 
 
@@ -66,7 +69,7 @@ listObj.on("updated", function (list) {
         // create new popover
         $('.mols2grid-tooltip[data-toggle="popover"]').popover({
             placement: {{ tooltip_placement }},
-            trigger: {{ tooltip_trigger }},
+            trigger: 'manual',
             html: true,
             sanitize: false,
         });
@@ -74,10 +77,8 @@ listObj.on("updated", function (list) {
 });
 {% endif %}
 
-{% if selection %}
-// selection modifyers and export options
-{% include 'js/selection_actions.js' %}
-{% endif %}
+// grid interactions (select, click, tooltip, key events)
+{% include 'js/grid_interaction.js' %}
 
 {% if callback %}
 // callback

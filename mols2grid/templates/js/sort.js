@@ -47,9 +47,9 @@ function mols2gridSortFunction(itemA, itemB, options) {
 }
 function checkboxSort(itemA, itemB, options) {
     if (itemA.elm !== undefined) {
-        var checkedA = itemA.elm.firstChild.checked
+        var checkedA = itemA.elm.querySelector('input[type=checkbox]').checked
         if (itemB.elm !== undefined) {
-            var checkedB = itemB.elm.firstChild.checked
+            var checkedB = itemB.elm.querySelector('input[type=checkbox]').checked
             if (checkedA && !checkedB) {
                 return -1
             } else if (!checkedA && checkedB) {

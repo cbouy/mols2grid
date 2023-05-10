@@ -1,12 +1,26 @@
-- Rename pages/table to interactive/static
-- Turn tooltip off by default for static template?
+NEED HELP: 
+- Attach tooltip to the cell. When we succeed, we should move tabindex="0" to the cell instead of the image in the static template
+
+
+- With tooltip ON, would be nice if it follows the element focus (only in static now)
 - Make tooltip copy-able
+- Update main function docstring
+
 - Send back selected molecules as panda dataframe back to Python (fallback: copy to clipboard?)
     --> callback with selected ids, which then are used to filter the dataframe
-- Check if all python css options still work
-- When saving SMILES/CSV without anything being selected, download ALL
-- Figure out tooltip_trigger for static template
-- Test if sort_by used to work with original module
+
+- Would be nice to have SVGs rendered transparent, with an option
+
+
+√ - Figure out tooltip_trigger for static template
+√ - Turn tooltip off by default for static template
+√ - When saving SMILES/CSV without anything being selected, download ALL
+√ - Check if all python css options still work
+√ - info button active state broken when there's custom border set
+√ - Test if sort_by used to work with original module
+√ - Check if truncation defaults are set correctly for static/interactive
+√ - Fix up/down arrows in grid
+√ - Rename pages/table to interactive/static
 x - Centralize python variables
 √ - Merge tooltip doc strings for to_interactive
 √ - Check how width & cell_width work and update doc

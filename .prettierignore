@@ -1,1 +1,3 @@
-mols2grid/template/interactive.html
+mols2grid/templates/interactive.html
+mols2grid/templates/static.html
+mols2grid/templates/html/interactive_header.html
