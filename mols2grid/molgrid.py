@@ -1,4 +1,3 @@
-import random
 import json
 import warnings
 from base64 import b64encode
@@ -1068,11 +1067,9 @@ class MolGrid:
         -------
         view : IPython.core.display.HTML
         """
-        print(444, use_iframe)
         use_iframe = is_jupyter or use_iframe
         doc = self.render(**kwargs, use_iframe=use_iframe)
         if use_iframe:
-            print(random.randint(0, 100))
             # Render HTML in iframe.
             iframe = env.get_template("html/iframe.html").render(
                 width=iframe_width,
