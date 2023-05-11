@@ -7,10 +7,22 @@ Refactored improvements
     --> Changes the text/smarts dropdown to a visual toggle.
     --> Replaced the "checkbox" menu icon to a more standard triple dot menu.
     --> All components are now fully responsive up until around ~415px wide (smaller usage is probably unlikely).
+- The interactive grid got some UI/UX upgrades:
+    --> The mols2grid-id is now always displayed right next to the checkbox in the corner
+    --> The entire cell is now clickable (making it a lot easier to select cells)
+    --> Implemented basic intuitive keyboard navigation: ENTER/ESC for selecting/unselecting, arrows for navigation
+    --> Added new parameter 'pad' for controlling the padding of each cell
+    --> When parameter 'gap' is set to 0, a negative margin ensures you don't get double borders in between cells (looks a lot cleaner)
+    Data parameter changes:
+        --> Displayed data paremeters can now be copied by clicking them
+        --> Data paremeters are now by default broken into multiple lines in the static grid, and only truncated in the interactive grid
+        --> A new parameter 'truncate' lets the user override the default truncating behavior
+        --> When truncate is set to false, longer values will distort the grid, causing a less structured layout but still with all data visible
 - Iframe usage
     --> The grid is now rendered without an iframe by default, unless the code is run inside Jupyter.
     --> A new parameter 'use_iframe' has been added to override the default behavior.
-- Responsiove interactive grid
+    --> Parameters 'width' and 'height' have been renamed to 'iframe_width' and 'iframe_height' to more clear
+- Responsive interactive grid
     --> Instead of specifying how many columns, you just specify a desired image size. The width is used to set a mininum cell width
     --> The responsive CSS assumes results to be a multiple of 12, and will elegantly snap to 1/2/3/4/6/12 columns
     --> By default, 24 results are returned. The documentation suggests sticking to multiples of 12.
@@ -28,17 +40,6 @@ Refactored improvements
     Static template:
         --> Parameter 'tooltip_trigger' default value has been set to 'focus'
         --> Table cells are now focusable, so you can either click inside/outside a cell to activate/deactivate, or use TAB key to cycle through the grid
-- The interactive grid got some UI/UX upgrades:
-    --> The mols2grid-id is now always displayed right next to the checkbox in the corner
-    --> The entire cell is now clickable (making it a lot easier to select cells)
-    --> Implemented basic intuitive keyboard navigation: ENTER/ESC for selecting/unselecting, arrows for navigation
-    --> Added new parameter 'pad' for controlling the padding of each cell
-    --> When parameter 'gap' is set to 0, a negative margin ensures you don't get double borders in between cells (looks a lot cleaner)
-    Data parameter changes:
-        --> Displayed data paremeters can now be copied by clicking them
-        --> Data paremeters are now by default broken into multiple lines in the static grid, and only truncated in the interactive grid
-        --> A new parameter 'truncate' lets the user override the default truncating behavior
-        --> When truncate is set to false, longer values will distort the grid, causing a less structured layout but still with all data visible
 
 
 
@@ -49,7 +50,6 @@ Small improvements
 - When you download CSV or SMILES without any cells selected, it now will download data for all cells instead of an empty document
 - We now default to a smaller font size (12px) so the experience out of the box is a bit more practical
 - The mols SVG images are now transparent, resulting in a nicer hover state
-- Parameters 'width' and 'height' have been renamed to 'iframe_width' and 'iframe_height' to more clear
 - Added default values to all docstring parameters
 - Organized the parameters into categories, and removed some description inconsistencies
 
@@ -58,11 +58,11 @@ Small improvements
 Bug fixes
 - - -
 - Parameter 'gap' in static template didn't work
-- I no longer resize the iframe if a custom height is set by the display function
+- I no longer resize the iframe if a custom iframe_height is set by the display function
     --> Previous behavior: parameter was overwritten by the style tag, hence useless
     --> I also removed the default height="200" because it didn't serve any purpose
 - Removed the 'cell_width' parameter as it was being overwritten and not documented
-- Removed from the custom_css parameter instructions 'Only available for the "interactive" template' becauase it's not.
+- Removed from the custom_css parameter instructions 'Only available for the "interactive" template' because it's not.
 
 
 
@@ -72,8 +72,8 @@ Notes
     --> tests/test_interface.py: driver.find_by_css_selector("#mols2grid .searchbar") instead of driver.find_by_id("#searchbar")
     --> tests/webdriver_utils.py: similar
 - After removing tooltip_trigger for interactive template, test_tooltip_trigger may need to be reworked
-- Inconsistent parameter descriptions:
-    - "Rename the properties/fields stored in the molecule" --> Rename the properties in the final document
+- Inconsistent parameter descriptions for 'rename':
+    - "Rename the properties/fields stored in the molecule" --> "Rename the properties in the final document"
 - I think useSVG should be reversed and renamed to use_png, but I waited with this until I know how to run the tests
 - You'll need to add the version changes to the docstring
 

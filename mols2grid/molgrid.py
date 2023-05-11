@@ -122,16 +122,16 @@ class MolGrid:
         df,
         smiles_col="SMILES",
         mol_col=None,
+        rename=None,
+        size=(160, 120),
+        useSVG=True,
+        prerender=False,
+        cache_selection=False,
         removeHs=False,
         use_coords=False,
         coordGen=True,
-        useSVG=True,
-        size=(160, 120),
         MolDrawOptions=None,
-        rename=None,
         name="default",
-        prerender=False,
-        cache_selection=False,
         **kwargs,
     ):
         if not (smiles_col or mol_col):
@@ -344,17 +344,22 @@ class MolGrid:
     def to_interactive(
         self,
 
-        # Content
+        # Display
         subset=None,
         tooltip=None,
         tooltip_fmt="<strong>{key}</strong>: {value}",
         tooltip_placement="auto",
+        transform=None,
+        sort_by=None,
+        truncate=True,
         n_items_per_page=24,
         selection=True,
-        truncate=True,
-        sort_by=None,
 
-        # CSS Styling
+        # Mols
+        substruct_highlight=None,
+        single_highlight=False,
+
+        # CSS
         border="1px solid #cccccc",
         gap=0,
         pad=10,
@@ -362,17 +367,13 @@ class MolGrid:
         fontfamily="'DejaVu', sans-serif",
         textalign="center",
         hover_color="#e7e7e7",
+        custom_css=None,
         style=None,
 
         # Customization
-        transform=None,
-        custom_css=None,
         custom_header=None,
         callback=None,
 
-        # Mols styling
-        substruct_highlight=None,
-        single_highlight=False,
         **kwargs,
     ):
         """Returns the HTML document for the "interactive" template
@@ -817,15 +818,16 @@ class MolGrid:
     def to_static(
         self,
 
-        # Content
+        # Display
         subset=None,
         tooltip=None,
         tooltip_fmt="<strong>{key}</strong>: {value}",
         tooltip_trigger="focus",
         tooltip_placement="auto",
-        n_cols=5,
-        truncate=False,
+        transform=None,
         sort_by=None,
+        truncate=False,
+        n_cols=5,
 
         # CSS Styling
         border="1px solid #cccccc",
@@ -834,12 +836,12 @@ class MolGrid:
         fontsize="12px",
         fontfamily="'DejaVu', sans-serif",
         textalign="center",
+        custom_css=None,
         style=None,
 
         # Customization
-        transform=None,
-        custom_css=None,
         custom_header=None,
+
         **kwargs
     ):
         """Returns the HTML document for the "static" template
