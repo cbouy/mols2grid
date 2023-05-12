@@ -80,11 +80,6 @@ listObj.on("updated", function (list) {
 // grid interactions (select, click, tooltip, key events)
 {% include 'js/grid_interaction.js' %}
 
-{% if callback %}
-// callback
-{% include 'js/callback.js' %}
-{% endif %}
-
 {% if onthefly %}
 // generate images for the currently displayed molecules
 var draw_opts = {{ json_draw_opts }};

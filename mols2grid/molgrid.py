@@ -142,11 +142,9 @@ class MolGrid:
             )
         if not prerender:
             if not useSVG:
-                raise ValueError(
-                    "On-the-fly rendering of PNG images not supported")
+                raise ValueError("On-the-fly rendering of PNG images not supported")
             if use_coords and mol_col:
-                raise ValueError(
-                    "Cannot use coordinates with on-the-fly rendering")
+                raise ValueError("Cannot use coordinates with on-the-fly rendering")
         self.prefer_coordGen = coordGen
         self.removeHs = removeHs
         self.useSVG = useSVG
@@ -185,8 +183,7 @@ class MolGrid:
                     ):
                         opts[key] = value
             opts.update(kwargs)
-            opts.update(
-                {"width": self.img_size[0], "height": self.img_size[1]})
+            opts.update({"width": self.img_size[0], "height": self.img_size[1]})
             self.json_draw_opts = json.dumps(opts)
         # prepare smiles and images
         self._prepare_dataframe(dataframe)
@@ -205,8 +202,7 @@ class MolGrid:
             self._cached_selection = {}
             register._init_grid(name)
         # create widget
-        widget = MolGridWidget(
-            grid_id=name, selection=str(self._cached_selection))
+        widget = MolGridWidget(grid_id=name, selection=str(self._cached_selection))
         selection_handler = partial(register.selection_updated, name)
         widget.observe(selection_handler, names=["selection"])
         self.widget = widget
@@ -224,8 +220,7 @@ class MolGrid:
             Other arguments passed on initialization
         """
         mol_col = kwargs.pop("mol_col", "mol")
-        df = pd.DataFrame([mol_to_record(mol, mol_col=mol_col)
-                          for mol in mols])
+        df = pd.DataFrame([mol_to_record(mol, mol_col=mol_col) for mol in mols])
         return cls(df, mol_col=mol_col, **kwargs)
 
     @classmethod
@@ -292,19 +287,14 @@ class MolGrid:
                 # make temporary mol column if not present
                 self.mol_col = "mol"
                 keep_mols = False
-                dataframe[self.mol_col] = dataframe[self.smiles_col].apply(
-                    Chem.MolFromSmiles
-                )
+                dataframe[self.mol_col] = dataframe[self.smiles_col].apply(Chem.MolFromSmiles)
             # drop empty mols
             dataframe.dropna(axis=0, subset=[self.mol_col], inplace=True)
             # modify mol according to user pref
             if not self.use_coords:
-                dataframe[self.mol_col] = dataframe[self.mol_col].apply(
-                    remove_coordinates
-                )
+                dataframe[self.mol_col] = dataframe[self.mol_col].apply(remove_coordinates)
             if self.removeHs:
-                dataframe[self.mol_col] = dataframe[self.mol_col].apply(
-                    Chem.RemoveHs)
+                dataframe[self.mol_col] = dataframe[self.mol_col].apply(Chem.RemoveHs)
             # render
             dataframe["img"] = dataframe[self.mol_col].apply(self.mol_to_img)
             # cleanup
@@ -623,8 +613,7 @@ class MolGrid:
                 name = f"style-{slugify(col)}"
                 df[name] = df[col].apply(func)
             final_columns.append(name)
-            value_names = value_names[:-1] + \
-                f", {{ attr: 'style', name: {name!r} }}]"
+            value_names = value_names[:-1] + f", {{ attr: 'style', name: {name!r} }}]"
 
         # Create tooltip.
         if tooltip:
@@ -661,8 +650,7 @@ class MolGrid:
                 ] = True
                 final_columns += ["cached_checkbox"]
                 value_names = (
-                    value_names[:-1] +
-                    ", {attr: 'checked', name: 'cached_checkbox'}]"
+                    value_names[:-1] +", {attr: 'checked', name: 'cached_checkbox'}]"
                 )
             checkbox_html = (
                 '<input type="checkbox" tabindex="-1" '
@@ -670,19 +658,26 @@ class MolGrid:
             )
         else:
             checkbox_html = ""
+        
+        # Add callback button
+        if callback:
+            callback_html = '<button class="m2g-callback">callback</button>'
+        else:
+            callback_html = ''
+            
 
         # Generate cell HTML.
         if whole_cell_style:
             # Custom cells styling.
             item = (
                 '<div class="m2g-cell{tooltip_class}" data-mols2grid-id="0" tabindex="0" data-cellstyle="0"{tooltip_parameters}>'
-                '<div class="m2g-cb">{checkbox_html}{id_display_html}</div>{info_btn_html}{content}'
+                '<div class="m2g-cb">{checkbox_html}{id_display_html}</div>{info_btn_html}{content}{callback_html}'
                 '</div>'
             )
         else:
             item = (
                 '<div class="m2g-cell{tooltip_class}" data-mols2grid-id="0" tabindex="0"{tooltip_parameters}>'
-                '<div class="m2g-cb">{checkbox_html}{id_display_html}</div>{info_btn_html}{content}'
+                '<div class="m2g-cb">{checkbox_html}{id_display_html}</div>{info_btn_html}{content}{callback_html}'
                 '</div>'
             )
         item = item.format(checkbox_html=checkbox_html,
@@ -690,7 +685,8 @@ class MolGrid:
                            info_btn_html=info_btn_html,
                            tooltip_parameters=tooltip_parameters,  # %%
                            tooltip_class=tooltip_class,
-                           content="".join(content))
+                           content="".join(content),
+                           callback_html=callback_html)
 
         # Callback
         if isinstance(callback, _JSCallback):
@@ -711,9 +707,7 @@ class MolGrid:
             if sort_by in (subset + tooltip):
                 sort_by = f"data-{slugify(sort_by)}"
             else:
-                raise ValueError(
-                    f"{sort_by!r} is not an available field in " "`subset` or `tooltip`"
-                )
+                raise ValueError(f"{sort_by!r} is not an available field in " "`subset` or `tooltip`")
         else:
             sort_by = "mols2grid-id"
 
@@ -968,13 +962,9 @@ class MolGrid:
         # Always make surer the image comes first.
         subset = [subset.pop(subset.index("img"))] + subset
 
-        # make a copy of id shown explicitely
-        # id_display = ""
-        # if "mols2grid-id" in subset: # Not needed - trash
+        # Make a copy of id shown explicitely.
         id_name = "mols2grid-id-display"
         df[id_name] = df["mols2grid-id"]
-        # value_names.append(f"data-{id_name}")
-        # final_columns.append(id_name)
         subset = [id_name if x == "mols2grid-id" else x for x in subset]
         id_display = f'<div class="data-{id_name}"></div>'
 

@@ -10,6 +10,7 @@ function initInteraction(list) {
     initKeyboard()
     if (supportSelection) initCheckbox()
 
+
     // Hide navigation if there is only one page.
     if (listObj.matchingItems.length <= listObj.page) {
         $('#mols2grid .m2g-pagination').hide()
@@ -27,10 +28,10 @@ function initInteraction(list) {
 // Cell click handler.
 function initCellClick() {
     $('#mols2grid .m2g-cell').off('click').click(function(e) {
-        if ($(e.target).hasClass('m2g-info')) {
-            var isVisible = $('div.popover[role=tooltip]').length
+        if ($(e.target).hasClass('m2g-info') || $(e.target).is(':checkbox')) {
+            // Info button / Checkbox --> do nothing.
         } else if ($(e.target).is('div') && $(e.target).hasClass('data')) {
-            // Copy text when clicking a data string.
+            // Data string --> copy text.
             var text = $(e.target).text()
             navigator.clipboard.writeText(text)
 
@@ -39,9 +40,12 @@ function initCellClick() {
             setTimeout(function() {
                 $(e.target).removeClass('m2g-copy-blink')
             }, 450)
-        } else if (!$(e.target).is(':checkbox')) {
+        } else if ($(e.target).hasClass('m2g-callback')) {
+            // Callback button.
+            onCallbackButtonClick(e.target)
+        } else {
+            // Outside checkbox --> toggle the checkbox.
             if (supportSelection) {
-                // When clicking anywhere outside the checkbox, toggle the checkbox.
                 var chkbox = $(this).find('input:checkbox')[0]
                 chkbox.checked = !chkbox.checked
                 $(chkbox).trigger('change')
@@ -129,6 +133,34 @@ function initCheckbox() {
             del_selection({{ grid_id | tojson }}, [_id]);
         }
     });
+}
+
+// Callback button
+function onCallbackButtonClick(target) {
+    var data = {}
+    data["mols2grid-id"] = parseInt($(target).closest(".m2g-cell")
+                                            .attr("data-mols2grid-id"));
+    data["img"] = $(target).siblings(".data-img").eq(0).get(0).innerHTML;
+    $(target).siblings(".data").not(".data-img").each(function() {
+        let name = this.className.split(" ")
+                                    .filter(cls => cls.startsWith("data-"))[0]
+                                    .substring(5);
+        data[name] = this.innerHTML;
+    });
+
+    {% if callback_type == "python" %}
+    // Trigger custom python callback.
+    let model = window.parent["_MOLS2GRID_" + {{ grid_id | tojson }}];
+    if (model) {
+        model.set("callback_kwargs", JSON.stringify(data));
+        model.save_changes();
+    } else {
+        // No kernel detected for callback.
+    }
+    {% else %}
+    // Call custom js callback.
+    {{ callback }}
+    {% endif %}
 }
 
 

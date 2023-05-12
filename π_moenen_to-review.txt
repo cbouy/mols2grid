@@ -89,3 +89,4 @@ Questions
 - Clipboard copies data as JSON, should we also provide a JSOn download?
 - Why is the default font family 'DejaVu', sans-serif? Is this font widely used in the scientific community?
 - How can I run the tests?
+- mols2grid.get_selection() doesn't return anything?

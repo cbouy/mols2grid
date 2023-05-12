@@ -1,28 +1,11 @@
-NEED HELP: 
-- Attach tooltip to the cell. When we succeed, we should move tabindex="0" to the cell instead of the image in the static template
-- mols2grid.get_selection() doesn't return anything?
+Got stuck:
+- Interactive template: The tooltip should be attached to the cell instead of the image.
+    Tooltip on the image overlays the content and sometimes also the info button, causing a flicker.
+    Implementation commented out - look for %%% inside molgrid.py
+- I don't understand why for mols2grid-id-display to show up it needs to be a copy of mols2grid-id. We should just be able to use mols2grid-id
+    See mols2grid-id-display inside molgrid.py
 
 Later:
 - Make tooltip copy-able
 - Render PNGs transparent as well, with option to make them opaque
 - When the tooltip is activated, it should follow the cell in focus (the same way as how the static works)
-
-
-√ - Update main function docstring
-√ - Figure out tooltip_trigger for static template
-√ - Turn tooltip off by default for static template
-√ - When saving SMILES/CSV without anything being selected, download ALL
-√ - Check if all python css options still work
-√ - info button active state broken when there's custom border set
-√ - Test if sort_by used to work with original module
-√ - Check if truncation defaults are set correctly for static/interactive
-√ - Fix up/down arrows in grid
-√ - Rename pages/table to interactive/static
-x - Centralize python variables
-√ - Merge tooltip doc strings for to_interactive
-√ - Check how width & cell_width work and update doc
-√ - Remove variable literals in CSS towards bottom
-√ - Implements up/down tooltip
-√ - Fix functions responsivity
-√ - Make sure img subset is always first in list
-√ - Set tabindex -1 on checkboxes and 0 on cells
