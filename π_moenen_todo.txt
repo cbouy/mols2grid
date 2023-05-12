@@ -1,17 +1,14 @@
 NEED HELP: 
 - Attach tooltip to the cell. When we succeed, we should move tabindex="0" to the cell instead of the image in the static template
+- mols2grid.get_selection() doesn't return anything?
 
-
-- With tooltip ON, would be nice if it follows the element focus (only in static now)
+Later:
 - Make tooltip copy-able
-- Update main function docstring
-
-- Send back selected molecules as panda dataframe back to Python (fallback: copy to clipboard?)
-    --> callback with selected ids, which then are used to filter the dataframe
-
-- Would be nice to have SVGs rendered transparent, with an option
+- Render PNGs transparent as well, with option to make them opaque
+- When the tooltip is activated, it should follow the cell in focus (the same way as how the static works)
 
 
+√ - Update main function docstring
 √ - Figure out tooltip_trigger for static template
 √ - Turn tooltip off by default for static template
 √ - When saving SMILES/CSV without anything being selected, download ALL

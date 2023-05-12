@@ -1,22 +1,28 @@
 <style>
-    /* This undoes an unfortunate max-width parameter
-    in the Jupyter notebook CSS which causes the output
-    area to be too narrow on smaller screens. */
+    /* Some CSS to integrate with Jupyter more cleanly */
     div.output_subarea {
+        /* Undo an unfortunate max-width parameter
+        that causes the output area to be too narrow
+        on smaller screens. */
         max-width: none;
+
+        /* Align the table with the content */
+        padding: 0;
+
+        /* Let it breathe */
+        margin-top: 20px;
     }
 </style>
 
-<!-- prettier-ignore -->
 <iframe class="mols2grid-iframe" frameborder="0" width="{{ width }}"
-{% if height %}
-height="{{ height }}"
-{% endif %}
-{% if allow %}
-allow="{{ allow }}"
-{% endif %}
-{% if sandbox %}
-sandbox="{{ sandbox }}"
-{% endif %}
-srcdoc="{{ doc }}">
+    {% if height %}
+    height="{{ height }}"
+    {% endif %}
+    {% if allow %}
+    allow="{{ allow }}"
+    {% endif %}
+    {% if sandbox %}
+    sandbox="{{ sandbox }}"
+    {% endif %}
+    srcdoc="{{ doc }}">
 </iframe>

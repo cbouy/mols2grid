@@ -582,7 +582,7 @@ class MolGrid:
                 s = ''  # Avoid an empty div to be created for the display id.
             elif col == "img" and tooltip:
                 s = (
-                    f'<a class="data data-{col} mols2grid-tooltip" '
+                    f'<a class="data data-{col} mols2grid-tooltip" '  # %%%
                     'data-toggle="popover" data-content="."></a>'
                     # f'<a class="data data-{col}"></a>'  # %%
                 )
@@ -637,7 +637,7 @@ class MolGrid:
                 + ", {attr: 'data-content', name: 'mols2grid-tooltip'}]"
             )
             info_btn_html = '<div class="m2g-info">i</div>'
-            # # This doesn't work :( %%
+            # This doesn't work :( %%%
             # tooltip_parameters = ' data-toggle="popover" data-content="."'
             # tooltip_class = ' mols2grid-tooltip'
             tooltip_parameters = ''
@@ -745,6 +745,8 @@ class MolGrid:
             #
             iframe_padding=18,
             cell_width=self.img_size[0],
+            image_width=self.img_size[0],
+            image_height=self.img_size[1],
             #
             item=item,
             item_repr=repr(item),

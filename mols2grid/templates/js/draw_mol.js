@@ -16,7 +16,7 @@ function draw_mol(smiles, index, template_mol) {
     }
     mol.delete();
     if (svg == "") {
-        return '<svg width="{{ cell_width }}" height="{{ height }}" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 {{ cell_width }} {{ height }}"></svg>';
+        return '<svg width="{{ image_width }}" height="{{ image_height }}" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 {{ image_width }} {{ image_height }}"></svg>';
     }
     return svg;
 }

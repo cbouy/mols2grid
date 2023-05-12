@@ -47,8 +47,8 @@
 
 
 #mols2grid td div img {
-    max-width: {{ cell_width }}px;
-    width: {{ cell_width }}px;
+    max-width: {{ image_width }}px;
+    width: {{ image_width }}px;
     height: auto;
     padding: 0;
 }
