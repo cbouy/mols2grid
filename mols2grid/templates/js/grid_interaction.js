@@ -64,7 +64,6 @@ function initKeyboard() {
     })
 
     $('#mols2grid .m2g-cell').off('keyup').keyup(function(e) {
-        // console.log(e.which)
         var chkbox = $(this).find('input:checkbox')[0]
         if (e.which == 13) {
             // ENTER: toggle
@@ -296,8 +295,6 @@ function saveSmiles(e) {
 
 // Export CSV.
 function saveCSV(e) {
-    console.log(SELECTION)
-    return
     var sep = "\t"
     // Same order as subset + tooltip
     var columns = Array.from(listObj.items[0].elm.querySelectorAll("div.data"))

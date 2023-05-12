@@ -12,9 +12,6 @@ var listObj = new List('mols2grid', {
     },
 });
 listObj.remove("mols2grid-id", "0");
-// console.log(55, {{ value_names }}) // %%
-// console.log(66, {{ item_repr }})
-// console.log(77, {{data}})
 listObj.add({{ data }});
 
 
