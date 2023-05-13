@@ -50,7 +50,6 @@ build = [
 ]
 tests = [
     "cairosvg==2.5.2",
-    "codecov==2.1.12",
     "flaky==3.7.0",
     "geckodriver-autoinstaller==0.1.0",
     "imagehash~=4.3",
