@@ -26,21 +26,19 @@ from .utils import (
 from .widget import MolGridWidget
 
 try:
-    from IPython.display import HTML, Javascript
+    from IPython.display import HTML, Javascript, display
 except ModuleNotFoundError:
     pass
 else:
-    warnings.filterwarnings(
-        "ignore", "Consider using IPython.display.IFrame instead")
+    warnings.filterwarnings("ignore", "Consider using IPython.display.IFrame instead")
 
 
 # Detect if mols2grid is running inside a Jupyter Notebook/Lab.
 # If it is, we wrap the HTML in an iframe.
 try:
-    # from IPython.display import display, HTML
     get_ipython()  # This is callable only in Jupyter Notebook.
     is_jupyter = True
-except:
+except NameError:
     is_jupyter = False
 
 
@@ -205,6 +203,8 @@ class MolGrid:
         widget = MolGridWidget(grid_id=name, selection=str(self._cached_selection))
         selection_handler = partial(register.selection_updated, name)
         widget.observe(selection_handler, names=["selection"])
+        # register widget JS-side
+        display(widget)
         self.widget = widget
 
     @classmethod
@@ -255,7 +255,8 @@ class MolGrid:
     def template(self, value):
         if value not in ["interactive", "static"]:
             raise ValueError(
-                f"template={value!r} not supported. " "Use one of 'interactive' or 'static'"
+                f"template={value!r} not supported. "
+                "Use one of 'interactive' or 'static'"
             )
         self._template = value
 
@@ -287,12 +288,16 @@ class MolGrid:
                 # make temporary mol column if not present
                 self.mol_col = "mol"
                 keep_mols = False
-                dataframe[self.mol_col] = dataframe[self.smiles_col].apply(Chem.MolFromSmiles)
+                dataframe[self.mol_col] = dataframe[self.smiles_col].apply(
+                    Chem.MolFromSmiles
+                )
             # drop empty mols
             dataframe.dropna(axis=0, subset=[self.mol_col], inplace=True)
             # modify mol according to user pref
             if not self.use_coords:
-                dataframe[self.mol_col] = dataframe[self.mol_col].apply(remove_coordinates)
+                dataframe[self.mol_col] = dataframe[self.mol_col].apply(
+                    remove_coordinates
+                )
             if self.removeHs:
                 dataframe[self.mol_col] = dataframe[self.mol_col].apply(Chem.RemoveHs)
             # render
@@ -305,8 +310,7 @@ class MolGrid:
             dataframe["img"] = None
         # generate smiles col if not present or needs to be updated
         if self.mol_col and self.smiles_col not in dataframe.columns:
-            dataframe[self.smiles_col] = dataframe[self.mol_col].apply(
-                mol_to_smiles)
+            dataframe[self.smiles_col] = dataframe[self.mol_col].apply(mol_to_smiles)
 
     def render(self, template="interactive", **kwargs):
         """Returns the HTML document corresponding to the "interactive" or "static"
@@ -333,7 +337,6 @@ class MolGrid:
 
     def to_interactive(
         self,
-
         # Display
         subset=None,
         tooltip=None,
@@ -344,11 +347,9 @@ class MolGrid:
         truncate=True,
         n_items_per_page=24,
         selection=True,
-
         # Mols
         substruct_highlight=None,
         single_highlight=False,
-
         # CSS
         border="1px solid #cccccc",
         gap=0,
@@ -359,11 +360,9 @@ class MolGrid:
         hover_color="#e7e7e7",
         custom_css=None,
         style=None,
-
         # Customization
         custom_header=None,
         callback=None,
-
         **kwargs,
     ):
         """Returns the HTML document for the "interactive" template
@@ -569,7 +568,7 @@ class MolGrid:
         temp = []
         for col in subset:
             if col == "mols2grid-id-display":
-                s = ''  # Avoid an empty div to be created for the display id.
+                s = ""  # Avoid an empty div to be created for the display id.
             elif col == "img" and tooltip:
                 s = (
                     f'<a class="data data-{col} mols2grid-tooltip" '  # %%%
@@ -629,12 +628,12 @@ class MolGrid:
             # This doesn't work :( %%%
             # tooltip_parameters = ' data-toggle="popover" data-content="."'
             # tooltip_class = ' mols2grid-tooltip'
-            tooltip_parameters = ''
-            tooltip_class = ''
+            tooltip_parameters = ""
+            tooltip_class = ""
         else:
-            info_btn_html = ''
-            tooltip_parameters = ''
-            tooltip_class = ''
+            info_btn_html = ""
+            tooltip_parameters = ""
+            tooltip_class = ""
 
         # Apply custom user function.
         for col, func in transform.items():
@@ -650,7 +649,7 @@ class MolGrid:
                 ] = True
                 final_columns += ["cached_checkbox"]
                 value_names = (
-                    value_names[:-1] +", {attr: 'checked', name: 'cached_checkbox'}]"
+                    value_names[:-1] + ", {attr: 'checked', name: 'cached_checkbox'}]"
                 )
             checkbox_html = (
                 '<input type="checkbox" tabindex="-1" '
@@ -658,13 +657,12 @@ class MolGrid:
             )
         else:
             checkbox_html = ""
-        
+
         # Add callback button
         if callback:
             callback_html = '<button class="m2g-callback">callback</button>'
         else:
-            callback_html = ''
-            
+            callback_html = ""
 
         # Generate cell HTML.
         if whole_cell_style:
@@ -672,21 +670,23 @@ class MolGrid:
             item = (
                 '<div class="m2g-cell{tooltip_class}" data-mols2grid-id="0" tabindex="0" data-cellstyle="0"{tooltip_parameters}>'
                 '<div class="m2g-cb">{checkbox_html}{id_display_html}</div>{info_btn_html}{content}{callback_html}'
-                '</div>'
+                "</div>"
             )
         else:
             item = (
                 '<div class="m2g-cell{tooltip_class}" data-mols2grid-id="0" tabindex="0"{tooltip_parameters}>'
                 '<div class="m2g-cb">{checkbox_html}{id_display_html}</div>{info_btn_html}{content}{callback_html}'
-                '</div>'
+                "</div>"
             )
-        item = item.format(checkbox_html=checkbox_html,
-                           id_display_html=id_display_html,
-                           info_btn_html=info_btn_html,
-                           tooltip_parameters=tooltip_parameters,  # %%
-                           tooltip_class=tooltip_class,
-                           content="".join(content),
-                           callback_html=callback_html)
+        item = item.format(
+            checkbox_html=checkbox_html,
+            id_display_html=id_display_html,
+            info_btn_html=info_btn_html,
+            tooltip_parameters=tooltip_parameters,  # %%
+            tooltip_class=tooltip_class,
+            content="".join(content),
+            callback_html=callback_html,
+        )
 
         # Callback
         if isinstance(callback, _JSCallback):
@@ -707,7 +707,9 @@ class MolGrid:
             if sort_by in (subset + tooltip):
                 sort_by = f"data-{slugify(sort_by)}"
             else:
-                raise ValueError(f"{sort_by!r} is not an available field in " "`subset` or `tooltip`")
+                raise ValueError(
+                    f"{sort_by!r} is not an available field in " "`subset` or `tooltip`"
+                )
         else:
             sort_by = "mols2grid-id"
 
@@ -726,11 +728,11 @@ class MolGrid:
             selection=selection,
             truncate=truncate,
             sort_by=sort_by,
-            use_iframe=kwargs['use_iframe'],
+            use_iframe=kwargs["use_iframe"],
             #
             border=border,
             gap=gap,
-            gap_px='-1px -1px 0 0' if gap == 0 else f'{gap}px',
+            gap_px="-1px -1px 0 0" if gap == 0 else f"{gap}px",
             pad=pad,
             fontsize=fontsize,
             fontfamily=fontfamily,
@@ -813,7 +815,6 @@ class MolGrid:
 
     def to_static(
         self,
-
         # Display
         subset=None,
         tooltip=None,
@@ -824,7 +825,6 @@ class MolGrid:
         sort_by=None,
         truncate=False,
         n_cols=5,
-
         # CSS Styling
         border="1px solid #cccccc",
         gap=0,
@@ -834,11 +834,9 @@ class MolGrid:
         textalign="center",
         custom_css=None,
         style=None,
-
         # Customization
         custom_header=None,
-
-        **kwargs
+        **kwargs,
     ):
         """Returns the HTML document for the "static" template
 
@@ -978,11 +976,10 @@ class MolGrid:
         for i, row in df.iterrows():
             ncell = i + 1
             nrow, ncol = divmod(i, n_cols)
-            popover = tooltip_formatter(
-                row, tooltip, tooltip_fmt, style, transform
-            )
+            popover = tooltip_formatter(row, tooltip, tooltip_fmt, style, transform)
             td = [
-                f'<td class="col-{ncol} mols2grid-tooltip" tabindex="0" data-toggle="popover" data-content="{escape(popover)}">']
+                f'<td class="col-{ncol} mols2grid-tooltip" tabindex="0" data-toggle="popover" data-content="{escape(popover)}">'
+            ]
             if "__all__" in style.keys():
                 s = style["__all__"](row)
                 div = [f'<div class="m2g-cell-{i}" style="{s}">']  # %%
@@ -992,11 +989,7 @@ class MolGrid:
             for col in subset:
                 v = row[col]
                 if col == "img" and tooltip:
-
-                    item = (
-                        f'<div class="data data-img">'
-                        f"{v}</div>"
-                    )
+                    item = f'<div class="data data-img">' f"{v}</div>"
                 else:
                     func = style.get(col)
                     slug_col = slugify(col)
@@ -1026,7 +1019,7 @@ class MolGrid:
             tooltip_trigger=repr(tooltip_trigger),
             tooltip_placement=repr(tooltip_placement),
             truncate=truncate,
-            use_iframe=kwargs['use_iframe'],
+            use_iframe=kwargs["use_iframe"],
             #
             border=border,
             gap=gap,
