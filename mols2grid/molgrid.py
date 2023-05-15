@@ -661,9 +661,9 @@ class MolGrid:
         
         # Add callback button
         if callback:
-            callback_html = '<button class="m2g-callback">callback</button>'
+            callback_btn = '<button class="m2g-callback">&#9654;</button>'
         else:
-            callback_html = ''
+            callback_btn = ''
             
 
         # Generate cell HTML.
@@ -671,13 +671,13 @@ class MolGrid:
             # Custom cells styling.
             item = (
                 '<div class="m2g-cell{tooltip_class}" data-mols2grid-id="0" tabindex="0" data-cellstyle="0"{tooltip_parameters}>'
-                '<div class="m2g-cb">{checkbox_html}{id_display_html}</div>{info_btn_html}{content}{callback_html}'
+                '<div class="m2g-cb">{checkbox_html}{id_display_html}</div>{callback_btn}{info_btn_html}{content}'
                 '</div>'
             )
         else:
             item = (
                 '<div class="m2g-cell{tooltip_class}" data-mols2grid-id="0" tabindex="0"{tooltip_parameters}>'
-                '<div class="m2g-cb">{checkbox_html}{id_display_html}</div>{info_btn_html}{content}{callback_html}'
+                '<div class="m2g-cb">{checkbox_html}{id_display_html}</div>{callback_btn}{info_btn_html}{content}'
                 '</div>'
             )
         item = item.format(checkbox_html=checkbox_html,
@@ -686,7 +686,7 @@ class MolGrid:
                            tooltip_parameters=tooltip_parameters,  # %%
                            tooltip_class=tooltip_class,
                            content="".join(content),
-                           callback_html=callback_html)
+                           callback_btn=callback_btn)
 
         # Callback
         if isinstance(callback, _JSCallback):

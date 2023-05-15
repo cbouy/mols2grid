@@ -501,20 +501,23 @@
 
 /* Callback button */
 #mols2grid button.m2g-callback {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    font-size: 10px;
     color: var(--black);
     background: rgba(0,0,0,.15);
     border: none;
     border: solid 1px rgba(0,0,0,.15);
     background: white;
     border-radius: var(--br);
-    margin-top: 5px;
     cursor: pointer;
-    width: 100%;
-    height: 24px;
-    line-height: 22px;
-    text-transform: uppercase;
-    font-size: 0.7rem;
-    letter-spacing: 0.5px;
+}
+#mols2grid button.m2g-callback + .m2g-info {
+    right: 22px;
 }
 
 
