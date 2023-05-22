@@ -6,6 +6,7 @@ Got stuck:
     See mols2grid-id-display inside molgrid.py
 
 Later:
+- When clicking on svg line, we're triggering the copy action and the image blinks, this shouldn't be the case
 - Make tooltip copy-able
 - Render PNGs transparent as well, with option to make them opaque
 - When the tooltip is activated, it should follow the cell in focus (the same way as how the static works)

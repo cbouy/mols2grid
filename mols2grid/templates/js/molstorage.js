@@ -18,6 +18,13 @@ class MolStorage extends Map {
         content += '}'
         return content
     }
+    to_keys() {
+        var content = []
+        for (let [key] of this) {
+            content.push(key)
+        }
+        return content
+    }
     download_smi(fileName, allItems) {
         var content = ''
 
