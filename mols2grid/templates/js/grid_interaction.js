@@ -102,21 +102,21 @@ function initKeyboard() {
 function initToolTip() {
     $('#mols2grid .m2g-info').off('mouseover').off('mouseleave').off('click').mouseenter(function() {
         // Show on enter
-        $(this).parent().find('.mols2grid-tooltip[data-toggle="popover"]').popover('show')
+        $(this).closest('.m2g-cell').find('.mols2grid-tooltip[data-toggle="popover"]').popover('show')
     }).mouseleave(function() {
         // Hide on leave, unless sticky.
-        if (!$(this).parent().hasClass('m2g-keep-tooltip')) {
-            $(this).parent().find('.mols2grid-tooltip[data-toggle="popover"]').popover('hide')
+        if (!$(this).closest('.m2g-cell').hasClass('m2g-keep-tooltip')) {
+            $(this).closest('.m2g-cell').find('.mols2grid-tooltip[data-toggle="popover"]').popover('hide')
         }
     }).click(function() {
         // Toggle sticky on click.
-        $(this).parent().toggleClass('m2g-keep-tooltip')
+        $(this).closest('.m2g-cell').toggleClass('m2g-keep-tooltip')
 
         // Hide tooltip when sticky was turned off.
-        if ($(this).parent().hasClass('m2g-keep-tooltip')) {
-            $(this).parent().find('.mols2grid-tooltip[data-toggle="popover"]').popover('show')
-        } else if (!$(this).parent().hasClass('m2g-keep-tooltip')) {
-            $(this).parent().find('.mols2grid-tooltip[data-toggle="popover"]').popover('hide')
+        if ($(this).closest('.m2g-cell').hasClass('m2g-keep-tooltip')) {
+            $(this).closest('.m2g-cell').find('.mols2grid-tooltip[data-toggle="popover"]').popover('show')
+        } else if (!$(this).closest('.m2g-cell').hasClass('m2g-keep-tooltip')) {
+            $(this).closest('.m2g-cell').find('.mols2grid-tooltip[data-toggle="popover"]').popover('hide')
         }
     })
 }
@@ -139,11 +139,11 @@ function onCallbackButtonClick(target) {
     var data = {}
     data["mols2grid-id"] = parseInt($(target).closest(".m2g-cell")
                                             .attr("data-mols2grid-id"));
-    data["img"] = $(target).siblings(".data-img").eq(0).get(0).innerHTML;
+    data["img"] = $(target).parent().siblings(".data-img").eq(0).get(0).innerHTML;
     $(target).siblings(".data").not(".data-img").each(function() {
         let name = this.className.split(" ")
-                                    .filter(cls => cls.startsWith("data-"))[0]
-                                    .substring(5);
+            .filter(cls => cls.startsWith("data-"))[0]
+            .substring(5);
         data[name] = this.innerHTML;
     });
 

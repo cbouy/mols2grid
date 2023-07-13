@@ -1,3 +1,6 @@
+- save as CSV is not working properly
+- Go over %% comments
+
 Got stuck:
 - Interactive template: The tooltip should be attached to the cell instead of the image.
     Tooltip on the image overlays the content and sometimes also the info button, causing a flicker.

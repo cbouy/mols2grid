@@ -59,11 +59,11 @@ listObj.on("updated", function (list) {
 $.fn.tooltip.Constructor.Default.whiteList.span = ['style']
 listObj.on("updated", function (list) {
     $(function () {
-        // hide previous popovers
+        // Hide previous popovers.
         $('#mols2grid a.page-link').click(function(e) {
             $('.mols2grid-tooltip[data-toggle="popover"]').popover('hide')
         });
-        // create new popover
+        // Create new popover.
         $('.mols2grid-tooltip[data-toggle="popover"]').popover({
             placement: {{ tooltip_placement }},
             trigger: 'manual',
