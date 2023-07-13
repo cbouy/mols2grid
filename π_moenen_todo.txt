@@ -1,5 +1,7 @@
 - save as CSV is not working properly
+- Search for modal and fix tests
 - Go over %% comments
+
 
 Got stuck:
 - Interactive template: The tooltip should be attached to the cell instead of the image.
@@ -13,3 +15,6 @@ Later:
 - Make tooltip copy-able
 - Render PNGs transparent as well, with option to make them opaque
 - When the tooltip is activated, it should follow the cell in focus (the same way as how the static works)
+
+Update docs:
+- make_popup_callback has extra img parameter - needed?

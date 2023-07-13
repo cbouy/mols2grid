@@ -140,7 +140,7 @@ function onCallbackButtonClick(target) {
     data["mols2grid-id"] = parseInt($(target).closest(".m2g-cell")
                                             .attr("data-mols2grid-id"));
     data["img"] = $(target).parent().siblings(".data-img").eq(0).get(0).innerHTML;
-    $(target).siblings(".data").not(".data-img").each(function() {
+    $(target).parent().siblings(".data").not(".data-img").each(function() {
         let name = this.className.split(" ")
             .filter(cls => cls.startsWith("data-"))[0]
             .substring(5);

@@ -13,7 +13,7 @@ class _JSCallback(NamedTuple):
     library_src: Optional[str] = None
 
 
-def make_popup_callback(title, html, js="", style=""):
+def make_popup_callback(title, html, svg=None, js="", style=""):
     """Creates a JavaScript callback that displays a popup window
 
     Parameters
@@ -36,7 +36,7 @@ def make_popup_callback(title, html, js="", style=""):
         JavaScript code that allows to display a popup window
     """
     return env.get_template("js/popup.js").render(
-        js=js, html=html, title=title, style=style
+        title=title, html=html, svg=svg, js=js, style=style
     )
 
 

@@ -13,7 +13,7 @@
 
 /*******/
 
-#mols2grid {
+body {
     /* Colors */
     --black: rgba(0,0,0,.75);
     --black-soft: rgba(0,0,0,.35);
@@ -35,9 +35,14 @@
     --fs: 14px; /* UI font-size */
     --fs-cell: {{ fontsize }}; /* Cell font-size */
 
+    /* Transition speeds */
+    --trans: 150ms;
+
     /* Layout */
     --h: 40px; /* Height */
+}
 
+#mols2grid {
     /*
      * Styling */
     font-family: 'DejaVu', sans-serif;
@@ -316,7 +321,6 @@
 
 
 
-
 /*
  * Search bar
  */
@@ -545,6 +549,76 @@
     100% {
         opacity: 0;
     }
+}
+
+
+
+/**
+ * Modal popup
+ * - - -
+ * Triggered by make_popup_callback()
+ * See https://mols2grid.readthedocs.io/en/latest/notebooks/callbacks.html#Display-a-popup-containing-descriptors
+ */
+
+/* Container */
+#m2g-modal-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    
+    /* Transition */
+    opacity: 0;
+    transition: opacity var(--trans) linear;
+}
+
+/* Modal */
+#m2g-modal {
+    background: #fff;
+    border-radius: var(--br);
+    box-shadow: 0 0 30px rgba(0,0,0,.1);
+    padding: 20px;
+    position: relative;
+    max-width: calc(100% - 80px);
+
+    /* Transition */
+    opacity: 0;
+    transform: translate(0, 5px);
+    transition: transform var(--trans) ease-in-out, opacity var(--trans) linear;
+}
+
+/* Transition */
+#m2g-modal-container.show {
+    opacity: 1;
+}
+#m2g-modal-container.show #m2g-modal {
+    opacity: 1;
+    transform: translate(0, 0);
+}
+
+
+#m2g-modal .svg-wrap svg {
+    max-width: 100%;
+}
+#m2g-modal h2 {
+    line-height: 26px;
+    padding-right: 40px;
+    text-transform: capitalize;
+}
+#m2g-modal button.close {
+    background: transparent;
+    padding: 0;
+    color: var(--black);
+    font-size: 1.5rem;
+    width: var(--h);
+    position: absolute;
+    top: 13px;
+    right: 13px;
 }
 
 
