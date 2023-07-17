@@ -13,7 +13,7 @@ class _JSCallback(NamedTuple):
     library_src: Optional[str] = None
 
 
-def make_popup_callback(title, html, svg=None, js="", style=""):
+def make_popup_callback(title=None, subtitle=None, svg=None, html="", js="", style=""):
     """Creates a JavaScript callback that displays a popup window
 
     Parameters
@@ -21,6 +21,10 @@ def make_popup_callback(title, html, svg=None, js="", style=""):
     title : str
         Title of the popup. Use ``title='${data["Name"]}'`` to use the value
         of the column "Name" as a title
+    subtitle : str
+        Secondary title which works the same as title.
+    svg : str
+        SVG depiction of the molecule
     html : str
         Content of the popup window
     js : str
@@ -36,7 +40,7 @@ def make_popup_callback(title, html, svg=None, js="", style=""):
         JavaScript code that allows to display a popup window
     """
     return env.get_template("js/popup.js").render(
-        title=title, html=html, svg=svg, js=js, style=style
+        title=title, subtitle=subtitle, html=html, svg=svg, js=js, style=style
     )
 
 
@@ -44,7 +48,7 @@ def _get_title_field(title):
     return "${data['" + title + "']}" if title else None
 
 
-def info(title="SMILES", img_size=(400, 300), style="max-width: 80%;") -> _JSCallback:
+def info(title="NAME", subtitle="SMILES", img_size=(400, 300), style="") -> _JSCallback:
     """Displays a bigger image of the molecule, alongside some useful descriptors:
     molecular weight, number of Hydrogen bond donors and acceptors, TPSA, Crippen ClogP
     and InChIKey.
@@ -61,6 +65,17 @@ def info(title="SMILES", img_size=(400, 300), style="max-width: 80%;") -> _JSCal
     """
     code = make_popup_callback(
         title=_get_title_field(title),
+        subtitle=_get_title_field(subtitle),
+        svg="${svg}",
+        html="""
+            <b>Molecular weight</b>: ${desc.exactmw}<br/>
+            <b>HBond Acceptors</b>: ${desc.NumHBA}<br/>
+            <b>HBond Donors</b>: ${desc.NumHBD}<br/>
+            <b>TPSA</b>: ${desc.tpsa}<br/>
+            <b>ClogP</b>: ${desc.CrippenClogP}<br/>
+            <hr>
+            <b>InChIKey</b>: ${inchikey}
+            """,
         js=f"""
             let mol = RDKit.get_mol(data["SMILES"]);
             let svg = mol.get_svg({img_size[0]}, {img_size[1]});
@@ -68,26 +83,13 @@ def info(title="SMILES", img_size=(400, 300), style="max-width: 80%;") -> _JSCal
             let inchikey = RDKit.get_inchikey_for_inchi(mol.get_inchi());
             mol.delete();
         """,
-        html="""
-            <div class="row">
-            <div class="col">${svg}</div>
-            <div class="col">
-                <b>Molecular weight</b>: ${desc.exactmw}<br/>
-                <b>HBond Acceptors</b>: ${desc.NumHBA}<br/>
-                <b>HBond Donors</b>: ${desc.NumHBD}<br/>
-                <b>TPSA</b>: ${desc.tpsa}<br/>
-                <b>ClogP</b>: ${desc.CrippenClogP}<br/>
-                <br/>
-                <b>InChIKey</b>: ${inchikey}
-            </div>
-            </div>""",
         style=style,
     )
     return _JSCallback(code=code)
 
 
 def show_3d(
-    title="SMILES", query=["pubchem", "cactus"], height="350px", style="max-width: 80%"
+    title="NAME", subtitle="SMILES", query=["pubchem", "cactus"], height="100%", style="width:100%;height:100%"
 ) -> _JSCallback:
     """Queries the API(s) listed in ``query`` using the SMILES of the structure, to
     fetch the 3D structure and display it with ``3Dmol.js``
@@ -119,8 +121,9 @@ def show_3d(
     js_script = env.get_template("js/callbacks/show_3d.js").render(query=query)
     code = make_popup_callback(
         title=_get_title_field(title),
-        js=js_script,
+        subtitle=_get_title_field(subtitle),
         html=f'<div id="molviewer" style="width: 100%; height: {height};"></div>',
+        js=js_script,
         style=style,
     )
     library = """<script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/1.8.0/3Dmol-nojquery-min.js" integrity="sha512-9iiTgstim185ZZPL/nZ+t+MLMmIbZEMfoZ1swSBUhxt4AukOPY34yyO2217X1dN5ziVMKi+YLmp/JBj+KyEaUQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>"""

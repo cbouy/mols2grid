@@ -1,3 +1,10 @@
+{# <h1>Header 1</h1>
+<h2>Header 2</h2>
+<h3>Header 3</h3>
+<h4>Header 2</h4>
+<h2>Header 2</h2>
+<h4>Header 2</h4> #}
+
 {# Iframe HTML wrapper #}
 {% if use_iframe %}
 <html lang="en">
@@ -47,7 +54,7 @@
                                 {% set col_name = name.replace("data-", "", 1) %}
                                 {% set selected = " selected" if default_sort == col_name else "" %}
                                 {% if loop.first %}
-                            <option value="mols2grid-id"{{ selected }}>index</option>
+                            <option value="mols2grid-id"{{ selected }}>Index</option>
                                 {% else %}
                             <option value="{{ name }}"{{ selected }}>{{ col_name }}</option>
                                 {% endif %}

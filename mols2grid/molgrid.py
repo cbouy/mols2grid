@@ -368,7 +368,7 @@ class MolGrid:
         fontsize="12px",
         fontfamily="'DejaVu', sans-serif",
         textalign="center",
-        hover_color="#e7e7e7",
+        hover_color="rgba(0,0,0,0.15)",
         custom_css=None,
         style=None,
         # Customization
@@ -534,8 +534,11 @@ class MolGrid:
         if "img" not in subset:
             subset.insert(0, "img")
 
+        # Removed at Cedric's request, so you can choose to
+        # have certain properties displayed above the image:
+        #
         # Always make sure the image comes first.
-        subset = [subset.pop(subset.index("img"))] + subset
+        # subset = [subset.pop(subset.index("img"))] + subset
 
         # Define fields that are searchable and sortable.
         search_cols = [f"data-{col}" for col in subset if col != "img"]
@@ -682,17 +685,19 @@ class MolGrid:
             # Custom cells styling. %% This can be simplified without repetition
             item = (
                 '<div class="m2g-cell{tooltip_class}" data-mols2grid-id="0" tabindex="0" data-cellstyle="0"{tooltip_parameters}>'
-                '<div class="m2g-cb">{checkbox_html}{id_display_html}</div>'
+                '<div class="m2g-cb-wrap">{checkbox_html}<div class="m2g-cb"></div>{id_display_html}</div>'
                 '<div class="m2g-cell-actions">{info_btn_html}{callback_btn}</div>'
                 '{content}'
+                '<div class="m2g-cell-selection-highlight"></div>'
                 "</div>"
             )
         else:
             item = (
                 '<div class="m2g-cell{tooltip_class}" data-mols2grid-id="0" tabindex="0"{tooltip_parameters}>'
-                '<div class="m2g-cb">{checkbox_html}{id_display_html}</div>'
+                '<div class="m2g-cb-wrap">{checkbox_html}<div class="m2g-cb"></div>{id_display_html}</div>'
                 '<div class="m2g-cell-actions">{info_btn_html}{callback_btn}</div>'
                 '{content}'
+                '<div class="m2g-cell-selection-highlight"></div>'
                 "</div>"
             )
         item = item.format(
@@ -1000,9 +1005,9 @@ class MolGrid:
             ]
             if "__all__" in style.keys():
                 s = style["__all__"](row)
-                div = [f'<div class="m2g-cell-{i}" style="{s}">']  # %%
+                div = [f'<div class="m2g-cell-{i}" style="{s}">']
             else:
-                div = [f'<div class="m2g-cell-{i}">']  # %%
+                div = [f'<div class="m2g-cell-{i}">']
             div.append(id_display)
             for col in subset:
                 v = row[col]

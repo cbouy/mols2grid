@@ -830,15 +830,14 @@ def test_callbacks_info(driver: FirefoxDriver, grid):
     doc = get_doc(grid, {"callback": mols2grid.callbacks.info()})
     driver.get(doc)
     driver.trigger_callback()
-    modal = driver.find_by_css_selector("div.modal-content")
+    modal = driver.find_by_css_selector("#m2g-modal")
     assert (
-        modal.find_element_by_css_selector(".modal-header .modal-title").get_attribute(
-            "innerHTML"
-        )
-        == "CCC(C)CC"
+        modal.find_element_by_css_selector(
+            ".m2g-modal-header h2"
+        ).get_attribute("innerHTML") == "CCC(C)CC"
     )
     content = modal.find_element_by_css_selector(
-        ".modal-body .row .col:nth-child(2)"
+        ".m2g-modal-body"
     ).get_attribute("innerHTML")
     assert "PFEOZHBOMNWTJB-UHFFFAOYSA-N" in content
 
@@ -847,17 +846,17 @@ def test_callbacks_3D(driver: FirefoxDriver, grid):
     doc = get_doc(grid, {"callback": mols2grid.callbacks.show_3d()})
     driver.get(doc)
     driver.trigger_callback()
-    modal = driver.find_by_css_selector("div.modal-content")
+    modal = driver.find_by_css_selector("#m2g-modal")
     assert (
-        modal.find_element_by_css_selector(".modal-header .modal-title").get_attribute(
-            "innerHTML"
-        )
-        == "CCC(C)CC"
+        modal.find_element_by_css_selector(
+            ".m2g-modal-header h2"
+        ).get_attribute("innerHTML") == "CCC(C)CC"
     )
-    content = modal.find_element_by_css_selector(".modal-body").get_attribute(
-        "innerHTML"
-    )
+    content = modal.find_element_by_css_selector(
+        ".m2g-modal-body"
+    ).get_attribute("innerHTML")
     assert '<div id="molviewer' in content
+    assert '<canvas' in content
     # cannot test for actual rendering as there's no GL available
     assert driver.execute_script("return typeof($3Dmol)") != "undefined"
 

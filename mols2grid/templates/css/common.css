@@ -1,8 +1,39 @@
+/**
+ * General styling
+ */
+h1,h2,h3,h4 {
+    margin: 0 0 10px 0;
+}
+h1 {
+    font-size: 26px;
+}
+h2 {
+    font-size: 20px;
+    font-weight: 400;
+}
+h3 {
+	font-size: 16px;
+}
+{# h4 {
+    font-size: 15px;
+    font-weight: 400;
+    opacity: .7;
+}
+h2 + h4 {
+    margin-top: -10px;
+} #}
+
+
 /* Remove body margin inside iframe */
 body.m2g-inside-iframe {
     margin: 0;
 }
 
+/* In-cell text */
+#mols2grid .data:not(.data-img) {
+    height: 16px;
+    line-height: 16px;
+}
 /* Text truncation */
 #mols2grid .data {
     /* Break text into multiple lines (default for static)... */
@@ -12,7 +43,6 @@ body.m2g-inside-iframe {
     overflow: {{ 'hidden' if truncate else 'visible' }};
     white-space: {{ 'nowrap' if truncate else 'normal' }};
     text-overflow: {{ 'ellipsis' if truncate else 'clip' }};
-
 }
 
 

@@ -4,22 +4,19 @@
 
 // HTML template for the popup.
 var html = `
-<div class="modal fade" id="m2g-modal" tabindex="-1">
-    <div class="modal-dialog" style="{{ style }}">
-        <div class="modal-content">
+<div id="m2g-modal" tabindex="-1" style="{{ style }}">
 
-            <div class="m2g-modal-header">
-                <h2>{{ title }}</h2>
-                <button class="close">&times;</button>
-            </div>
-
-            <div class="m2g-modal-body">
-                {% if svg %}<div class="svg-wrap">{{ svg }}</div>{% endif %}
-                <div>{{ html }}</div>
-            </div>
-
+    <div class="m2g-modal-header">
+        {% if subtitle %}<h2>{{ title }}</h2>{% endif %}
+        {% if subtitle %}<p>{{ subtitle }}</p>{% endif %}
+        <button class="close">&times;</button>
     </div>
-  </div>
+
+    <div class="m2g-modal-body">
+        {% if svg %}<div class="svg-wrap">{{ svg }}</div>{% endif %}
+        {{ html }}
+    </div>
+
 </div>
 `
 // Create container element where the popup will be inserted.

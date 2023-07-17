@@ -1,5 +1,5 @@
-var sort_field = '{{ sort_by }}'
-var sort_order = 'asc'
+var sortField = '{{ sort_by }}'
+var sortOrder = 'asc'
 
 // Sort dropdown
 $('#mols2grid .m2g-sort select').change(sort)
@@ -8,25 +8,28 @@ $('#mols2grid .m2g-sort select').change(sort)
 $('#mols2grid .m2g-order').click(flipSort)
 
 function sort(e) {
-    if (e) sort_field = e.target.value
+    if (e) {
+        sortField = e.target.value
+        var selectedOption = e.target.options[e.target.selectedIndex]
+        var sortFieldDisplay = selectedOption.text
+    }
 
     // Sort
-    if (sort_field == 'checkbox') {
-        listObj.sort('mols2grid-id', { order: sort_order, sortFunction: checkboxSort })
+    if (sortField == 'checkbox') {
+        listObj.sort('mols2grid-id', {order: sortOrder, sortFunction: checkboxSort})
     } else {
-        listObj.sort(sort_field, { order: sort_order, sortFunction: mols2gridSortFunction })
+        listObj.sort(sortField, {order: sortOrder, sortFunction: mols2gridSortFunction})
     }
 
     // Update UI.
-    // prettier-ignore
-    $(this).parent().find('.m2g-display').text(sort_field.replace(/^data-/, ''))
+    $(this).parent().find('.m2g-display').text(sortFieldDisplay)
 }
 
 // prettier-ignore
 function flipSort() {
-    $(this).parent().removeClass('m2d-arrow-' + sort_order)
-    sort_order = sort_order === 'desc' ? 'asc' : 'desc'
-    $(this).parent().addClass('m2d-arrow-' + sort_order)
+    $(this).parent().removeClass('m2d-arrow-' + sortOrder)
+    sortOrder = sortOrder === 'desc' ? 'asc' : 'desc'
+    $(this).parent().addClass('m2d-arrow-' + sortOrder)
     sort()
 }
 

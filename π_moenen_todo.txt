@@ -1,6 +1,6 @@
-- save as CSV is not working properly
-- Search for modal and fix tests
-- Go over %% comments
+x - save as CSV is not working properly
+√ - Search for modal and fix tests
+√ - Go over %% comments
 
 
 Got stuck:
@@ -18,3 +18,4 @@ Later:
 
 Update docs:
 - make_popup_callback has extra img parameter - needed?
+- We should include <hr> in the popup docs example

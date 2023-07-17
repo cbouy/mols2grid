@@ -52,6 +52,8 @@ Small improvements
 - The mols SVG images are now transparent, resulting in a nicer hover state
 - Added default values to all docstring parameters
 - Organized the parameters into categories, and removed some description inconsistencies
+- - -
+- Detached popup functionality from Bootstrap, simplified the HTML, "max-width: 80%" no longer needed as default styling
 
 
 
@@ -90,3 +92,14 @@ Questions
 - Why is the default font family 'DejaVu', sans-serif? Is this font widely used in the scientific community?
 - How can I run the tests?
 - mols2grid.get_selection() doesn't return anything?
+- - -
+- What's the purpose of the height parameter for show_3d?
+- Is adding the data-cellstyle="0" necessary? Works fine without and should do so anywhere I think? See {% if whole_cell_style %}
+
+
+
+
+
+Notes
+- - -
+The popup example in the docs uses desc.amw, while the info callback uses desc.exactmw. It's a detail but maybe worth to be consistent?
