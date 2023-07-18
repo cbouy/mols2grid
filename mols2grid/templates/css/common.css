@@ -1,6 +1,9 @@
 /**
  * General styling
  */
+body {
+    font-family: {{ fontfamily }};
+}
 h1,h2,h3,h4 {
     margin: 0 0 10px 0;
 }
@@ -14,14 +17,9 @@ h2 {
 h3 {
 	font-size: 16px;
 }
-{# h4 {
-    font-size: 15px;
-    font-weight: 400;
-    opacity: .7;
+p {
+    margin: 0 0 10px 0;
 }
-h2 + h4 {
-    margin-top: -10px;
-} #}
 
 
 /* Remove body margin inside iframe */
@@ -61,6 +59,7 @@ body.m2g-inside-iframe {
     padding: 10px;
     border-radius: 5px;
     box-shadow: 0 0 20px rgba(0,0,0,.15);
+    user-select: none;
 }
 .popover[x-placement] h3 {
     margin: 0;

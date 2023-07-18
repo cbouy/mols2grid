@@ -61,10 +61,10 @@ listObj.on("updated", function (list) {
     $(function () {
         // Hide previous popovers.
         $('#mols2grid a.page-link').click(function(e) {
-            $('.mols2grid-tooltip[data-toggle="popover"]').popover('hide')
+            $('.m2g-tooltip[data-toggle="popover"]').popover('hide')
         });
         // Create new popover.
-        $('.mols2grid-tooltip[data-toggle="popover"]').popover({
+        $('.m2g-tooltip[data-toggle="popover"]').popover({
             placement: {{ tooltip_placement }},
             trigger: 'manual',
             html: true,

@@ -355,7 +355,7 @@ class MolGrid:
         tooltip_placement="auto",
         transform=None,
         sort_by=None,
-        use_iframe=False,
+        # use_iframe=False,
         truncate=True,
         n_items_per_page=24,
         selection=True,
@@ -369,7 +369,7 @@ class MolGrid:
         fontsize="12px",
         fontfamily="'DejaVu', sans-serif",
         textalign="center",
-        hover_color="rgba(0,0,0,0.15)",
+        hover_color="rgba(0,0,0,0.1)",
         custom_css=None,
         style=None,
         # Customization
@@ -450,7 +450,7 @@ class MolGrid:
             Font used for the text in each cell.
         textalign : str, default="center"
             Alignment of the text in each cell.
-        hover_color : str, default="rgba(0,0,0,0.15)"
+        hover_color : str, default="rgba(0,0,0,0.1)"
             Background color when hovering a cell.
         custom_css : str or None, default=None
             Custom CSS properties applied to the generated HTML. Please note that
@@ -594,25 +594,23 @@ class MolGrid:
                 s = ""  # Avoid an empty div to be created for the display id.
             elif col == "img" and tooltip:
                 s = (
-                    f'<a class="data data-{col} mols2grid-tooltip" '  # %%%
-                    'data-toggle="popover" data-content="."></a>'
-                    # f'<a class="data data-{col}"></a>'  # %%
+                    f'<a class="data data-{col}"></a>'
                 )
             else:
                 if style.get(col):
                     s = (
-                        f'<div class="data data-{slugify(col)} style-{slugify(col)}" '
+                        f'<div class="data copy-me data-{slugify(col)} style-{slugify(col)}" '
                         'style=""></div>'
                     )
                 else:
-                    s = f'<div class="data data-{slugify(col)}"></div>'
+                    s = f'<div class="data copy-me data-{slugify(col)}"></div>'
             temp.append(s)
             column_map[col] = f"data-{col}"
         content = temp + content
 
         # Add but hide SMILES div if not present.
         if smiles not in (subset + tooltip):
-            s = f'<div class="data data-{slugify(smiles)}" style="display: none;"></div>'
+            s = f'<div class="data copy-me data-{slugify(smiles)}" style="display: none;"></div>'
             content.append(s)
             column_map[smiles] = f"data-{smiles}"
 
@@ -640,24 +638,17 @@ class MolGrid:
 
         # Create tooltip.
         if tooltip:
-            df["mols2grid-tooltip"] = df.apply(
+            df["m2g-tooltip"] = df.apply(
                 tooltip_formatter, axis=1, args=(tooltip, tooltip_fmt, style, transform)
             )
-            final_columns += ["mols2grid-tooltip"]
+            final_columns += ["m2g-tooltip"]
             value_names = (
                 value_names[:-1]
-                + ", {attr: 'data-content', name: 'mols2grid-tooltip'}]"
+                + ", {attr: 'data-content', name: 'm2g-tooltip'}]"
             )
             info_btn_html = '<div class="m2g-info">i</div>'
-            # This doesn't work :( %%%
-            # tooltip_parameters = ' data-toggle="popover" data-content="."'
-            # tooltip_class = ' mols2grid-tooltip'
-            tooltip_parameters = ""
-            tooltip_class = ""
         else:
             info_btn_html = ""
-            tooltip_parameters = ""
-            tooltip_class = ""
 
         # Apply custom user function.
         for col, func in transform.items():
@@ -691,11 +682,11 @@ class MolGrid:
 
         # Generate cell HTML.
         item = (
-            '<div class="m2g-cell{tooltip_class}" data-mols2grid-id="0" tabindex="0"{tooltip_parameters}>'
+            '<div class="m2g-cell" data-mols2grid-id="0" tabindex="0">'
             '<div class="m2g-cb-wrap">{checkbox_html}<div class="m2g-cb"></div>{id_display_html}</div>'
             '<div class="m2g-cell-actions">{info_btn_html}{callback_btn}</div>'
             '{content}'
-            '<div class="m2g-cell-selection-highlight"></div>'
+            '{maybe_tooltip}'
             "</div>"
         )
         #
@@ -703,7 +694,7 @@ class MolGrid:
         #
         #
         # if whole_cell_style:
-        #     # Custom cells styling. %% This can be simplified without repetition
+        #     # Custom cells styling. This can be simplified without repetition
         #     item = (
         #         '<div class="m2g-cell{tooltip_class}" data-mols2grid-id="0" tabindex="0" data-cellstyle="0"{tooltip_parameters}>'
         #         '<div class="m2g-cb-wrap">{checkbox_html}<div class="m2g-cb"></div>{id_display_html}</div>'
@@ -726,10 +717,9 @@ class MolGrid:
             checkbox_html=checkbox_html,
             id_display_html=id_display_html,
             info_btn_html=info_btn_html,
-            tooltip_parameters=tooltip_parameters,  # %%
-            tooltip_class=tooltip_class,
-            content="".join(content),
             callback_btn=callback_btn,
+            content=''.join(content),
+            maybe_tooltip='<div class="m2g-tooltip" data-toggle="popover" data-content="."></div>' if tooltip else '',
         )
 
         # Callback
@@ -772,7 +762,8 @@ class MolGrid:
             selection=selection,
             truncate=truncate,
             sort_by=sort_by,
-            use_iframe=use_iframe,
+            # use_iframe=use_iframe,
+            use_iframe=kwargs['use_iframe'],
             #
             border=border,
             gap=gap,
@@ -868,7 +859,7 @@ class MolGrid:
         tooltip_placement="auto",
         transform=None,
         sort_by=None,
-        use_iframe=False,
+        # use_iframe=False,
         truncate=False,
         n_cols=5,
         # CSS Styling
@@ -1033,7 +1024,7 @@ class MolGrid:
             popover = tooltip_formatter(
                 row, tooltip, tooltip_fmt, style, transform)
             td = [
-                f'<td class="col-{ncol} mols2grid-tooltip" tabindex="0" data-toggle="popover" data-content="{escape(popover)}">'
+                f'<td class="col-{ncol} m2g-tooltip" tabindex="0" data-toggle="popover" data-content="{escape(popover)}">'
             ]
             if "__all__" in style.keys():
                 s = style["__all__"](row)
@@ -1049,9 +1040,9 @@ class MolGrid:
                     func = style.get(col)
                     slug_col = slugify(col)
                     if func:
-                        item = f'<div class="data data-{slug_col}" style="{func(v)}">'
+                        item = f'<div class="data copy-me data-{slug_col}" style="{func(v)}">'
                     else:
-                        item = f'<div class="data data-{slug_col}">'
+                        item = f'<div class="data copy-me data-{slug_col}">'
                     func = transform.get(col)
                     v = func(v) if func else v
                     item += f"{v}</div>"
@@ -1073,7 +1064,8 @@ class MolGrid:
             tooltip=tooltip,
             tooltip_trigger=repr(tooltip_trigger),
             tooltip_placement=repr(tooltip_placement),
-            use_iframe=use_iframe,
+            # use_iframe=use_iframe,
+            use_iframe=kwargs['use_iframe'],
             truncate=truncate,
             #
             border=border,

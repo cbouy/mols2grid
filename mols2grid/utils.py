@@ -50,12 +50,12 @@ def tooltip_formatter(s, subset, fmt, style, transform):
     for k, v in s[subset].to_dict().items():
         displayed = transform[k](v) if transform.get(k) else v
         v = (
-            f'<span style="{style[k](v)}">{displayed}</span>'
+            f'<span class="copy-me" style="{style[k](v)}">{displayed}</span>'
             if style.get(k)
-            else displayed
+            else f'<span class="copy-me">{displayed}</span>'
         )
         items.append(fmt.format(key=k, value=v))
-    return "<br>".join(items)
+    return '<br>'.join(items)
 
 
 def mol_to_smiles(mol):

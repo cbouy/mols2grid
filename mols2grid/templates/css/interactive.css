@@ -1,18 +1,3 @@
-/* TEMP FOR TESTING */
-
-.mols2grid-tooltip {
-    display: inline-block;
-    /* border: dashed 1px rgba(255,0,0,.2); */
-}
-.mols2grid-tooltip svg {
-    pointer-events: none;
-}
-.m2g-info {
-    right: 23px !important;
-}
-
-/*******/
-
 body {
     /* Colors */
     --m2g-black: rgba(0,0,0,.75);
@@ -23,6 +8,7 @@ body {
     --m2g-hl: #555; /* Highlight color */
     --m2g-hl-shadow: inset 0 0 0 1px var(--m2g-hl); /* Inset 1px shadow to make border thicker */
     --m2g-blue: #0f62fe;
+    --m2g-blue-soft: rgba(15,98,254,.2);
 
     /* Icons */
     --m2g-icn-triangle: url('data:image/svg+xml;utf8,<svg width="20" fill="rgba(0,0,0,.75)" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M9.5713 13.285L6.2543 7.757C6.0543 7.424 6.2953 7 6.6823 7L13.3173 7C13.7053 7 13.9463 7.424 13.7453 7.757L10.4283 13.285C10.2343 13.609 9.7653 13.609 9.5713 13.285Z"/></svg>');
@@ -45,10 +31,9 @@ body {
     --m2g-h: 40px; /* Form element height */
 }
 
+/* Styling */
 #mols2grid {
-    /*
-     * Styling */
-    font-family: 'DejaVu', sans-serif;
+    font-family: {{ fontfamily }};
     font-size: var(--m2g-fs);
 }
 
@@ -425,12 +410,6 @@ body {
     border-color: var(--m2g-hl);
     box-shadow: var(--m2g-hl-shadow);
 }
-#mols2grid .m2g-cell:focus .m2g-cb-wrap:has(:checked) ~ .m2g-cell-selection-highlight {
-    left: 1px;
-    top: 1px;
-    width: calc(100% - 2px);
-    height: calc(100% - 2px);
-}
 
 /* Phantom cells to maintain grid structure with less results */
 #mols2grid .m2g-cell.m2g-phantom {
@@ -469,7 +448,10 @@ body {
     background-color: var(--m2g-blue);
     background-image: var(--m2g-icn-cb-white);
 }
-#mols2grid .m2g-cb-wrap:has(:checked) ~ .m2g-cell-selection-highlight {
+#mols2grid .m2g-tooltip {
+    /* This is a div spanning full cell size where the
+    tooltip is rendered around, because you can't attach
+    it to the parent due to list.js limitation. */
     width: 100%;
     height: 100%;
     position: absolute;
@@ -477,7 +459,10 @@ body {
     top: 0;
     z-index: -1;
     pointer-events: none;
-    background: #ffd;
+    opacity: 0;
+}
+#mols2grid .m2g-cell:has(:checked) {
+    background: #ffd !important; /* Overrides user-set background color */
 }
 #mols2grid .data-mols2grid-id-display {
     font-size: var(--m2g-fs-cell);
@@ -565,7 +550,7 @@ body {
 }
 
 /* Text below image */
-#mols2grid .m2g-copy-blink {
+.m2g-copy-blink {
     animation: m2g-blink var(--m2g-trans) 3;
 }
 @keyframes m2g-blink {
@@ -581,6 +566,12 @@ body {
     100% {
         opacity: 0;
     }
+}
+
+/* Copyable text */
+.copy-me {
+    position: relative;
+    cursor: pointer;
 }
 
 
@@ -666,10 +657,12 @@ body {
     padding: 0;
     color: var(--m2g-black);
     font-size: 1.5rem;
-    width: var(--m2g-h);
+    width: 40px;
+    height: 40px;
     position: absolute;
     top: 13px;
     right: 13px;
+    border: none;
 }
 
 /* Image */
@@ -726,20 +719,30 @@ hr {
     }
 
     /* Grid */
-    #mols2grid .m2g-cell:hover {
+    /* Note: this is in an ::after speudo element, so the transparent
+    hover color plays nice with the cell background color. */
+    #mols2grid .m2g-cell:hover::after {
+        content: '';
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
         background-color: {{ hover_color }};
+        pointer-events: none;
     }
-    #mols2grid div.data:not(.data-img):hover::before {
-        content: '[ '
-    }
-    #mols2grid div.data:not(.data-img):hover::after {
-        content: ' ]'
-    }
+    
     /* Callback button */
     #mols2grid .m2g-callback:hover::after {
         background-color: var(--m2g-black);
         background-image: var(--m2g-icn-triangle-white);
         border-color: transparent;
+    }
+
+    /* Copyable text */
+    .copy-me:hover {
+        text-decoration: underline;
+        text-decoration-color: var(--m2g-blue);
     }
 }
 

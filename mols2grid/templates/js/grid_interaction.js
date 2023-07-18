@@ -11,7 +11,7 @@ function initInteraction(list) {
     if (supportSelection) initCheckbox()
 
 
-    // Hide navigation if there is only one page.
+    // Hide pagination if there is only one page.
     if (listObj.matchingItems.length <= listObj.page) {
         $('#mols2grid .m2g-pagination').hide()
     } else {
@@ -32,14 +32,7 @@ function initCellClick() {
             // Info button / Checkbox --> do nothing.
         } else if ($(e.target).is('div') && $(e.target).hasClass('data')) {
             // Data string --> copy text.
-            var text = $(e.target).text()
-            navigator.clipboard.writeText(text)
-
-            // Blink the cell to indicate that the text was copied.
-            $(e.target).addClass('m2g-copy-blink')
-            setTimeout(function() {
-                $(e.target).removeClass('m2g-copy-blink')
-            }, 450)
+            copyOnClick(e.target)
         } else if ($(e.target).hasClass('m2g-callback')) {
             // Callback button.
             onCallbackButtonClick(e.target)
@@ -52,6 +45,18 @@ function initCellClick() {
             }
         }
     })
+}
+
+// Store an element's text content in the clipboard.
+function copyOnClick(target) {
+    var text = $(target).text()
+    navigator.clipboard.writeText(text)
+
+    // Blink the cell to indicate that the text was copied.
+    $(target).addClass('m2g-copy-blink')
+    setTimeout(function() {
+        $(target).removeClass('m2g-copy-blink')
+    }, 450)
 }
 
 // Keyboard actions.
@@ -100,13 +105,20 @@ function initKeyboard() {
 
 // Show tooltip when hovering the info icon.
 function initToolTip() {
-    $('#mols2grid .m2g-info').off('mouseover').off('mouseleave').off('click').mouseenter(function() {
+    $('#mols2grid .m2g-info').off('mouseenter').off('mouseleave').off('click').mouseenter(function() {
         // Show on enter
-        $(this).closest('.m2g-cell').find('.mols2grid-tooltip[data-toggle="popover"]').popover('show')
+        $(this).closest('.m2g-cell').find('.m2g-tooltip[data-toggle="popover"]').popover('show')
+        $('body > .popover').click(function(e) {
+            if ($(e.target).hasClass('copy-me')) {
+                copyOnClick(e.target)
+            } else if ($(e.target).is('button')) {
+                
+            }
+        })
     }).mouseleave(function() {
         // Hide on leave, unless sticky.
         if (!$(this).closest('.m2g-cell').hasClass('m2g-keep-tooltip')) {
-            $(this).closest('.m2g-cell').find('.mols2grid-tooltip[data-toggle="popover"]').popover('hide')
+            $(this).closest('.m2g-cell').find('.m2g-tooltip[data-toggle="popover"]').popover('hide')
         }
     }).click(function() {
         // Toggle sticky on click.
@@ -114,9 +126,9 @@ function initToolTip() {
 
         // Hide tooltip when sticky was turned off.
         if ($(this).closest('.m2g-cell').hasClass('m2g-keep-tooltip')) {
-            $(this).closest('.m2g-cell').find('.mols2grid-tooltip[data-toggle="popover"]').popover('show')
+            $(this).closest('.m2g-cell').find('.m2g-tooltip[data-toggle="popover"]').popover('show')
         } else if (!$(this).closest('.m2g-cell').hasClass('m2g-keep-tooltip')) {
-            $(this).closest('.m2g-cell').find('.mols2grid-tooltip[data-toggle="popover"]').popover('hide')
+            $(this).closest('.m2g-cell').find('.m2g-tooltip[data-toggle="popover"]').popover('hide')
         }
     })
 }
