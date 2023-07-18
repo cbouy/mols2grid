@@ -31,7 +31,7 @@ except ModuleNotFoundError:
     pass
 else:
     warnings.filterwarnings(
-        "ignore", "Consider using IPython.display.IFrame instead")
+        "ignore", "Consider using IPython.display.IFrame instead.")
 
 
 # Detect if mols2grid is running inside a Jupyter Notebook/Lab.
@@ -45,20 +45,18 @@ except NameError:
 
 class MolGrid:
     """Class that handles drawing molecules, rendering the HTML document and
-    saving or displaying it in a notebook
+    saving or displaying it in a notebook.
 
     Parameters: Data
     ----------------
     df : pandas.DataFrame, dict or list, required
         Dataframe containing a SMILES or mol column, or dictionary containing a
-        list of SMILES, or list of dictionnaries containing a SMILES field
+        list of SMILES, or list of dictionnaries containing a SMILES field.
     smiles_col : str or None, default="SMILES"
-        Name of the SMILES column in the dataframe, if available
+        Name of the SMILES column in the dataframe, if available.
     mol_col : str or None, default=None
         Name of an RDKit molecule column. If available, coordinates and
-        atom/bonds annotations from this will be used for depiction
-    rename : dict or None, default=None
-        Rename the properties in the final document
+        atom/bonds annotations from this will be used for depiction.
 
     Parameters: Display
     -------------------
@@ -67,35 +65,37 @@ class MolGrid:
         width of the image, so if the cell padding is increased, the image will
         be displayed smaller.
     useSVG : bool, default=True
-        Use SVG images instead of PNG
+        Use SVG images instead of PNG.
     prerender : bool, default=False
         Prerender images for the entire dataset, or generate them on-the-fly.
         Prerendering is slow and memory-hungry, but required when ``template="static"``
         or ``useSVG=False``.
     cache_selection : bool, default=False
-        Restores the selection from a previous grid with the same name
+        Restores the selection from a previous grid with the same name.
 
     Parameters: Mols
     ----------------
     removeHs : bool, default=False
-        Remove hydrogen atoms from the drawings
+        Remove hydrogen atoms from the drawings.
     use_coords : bool, default=False
         Use the coordinates of the molecules (only relevant when an SDF file, a
-        list of molecules or a DataFrame of RDKit molecules were used as input)
-    coordGen : bool
+        list of molecules or a DataFrame of RDKit molecules were used as input.)
+    coordGen : bool, default=True
         Use the CoordGen library instead of the RDKit one to depict the
-        molecules in 2D
+        molecules in 2D.
     MolDrawOptions : rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions or None, default=None
-        Drawing options. Useful for making highly customized drawings
+        Drawing options. Useful for making highly customized drawings.
 
     Parameters: Customization
     -------------------------
     name : str, default="default"
         Name of the grid. Used when retrieving selections from multiple grids
-        at the same time
+        at the same time.
+    rename : dict or None, default=None
+        Rename the properties in the final document.
     kwargs : object
         :class:`~rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions` attributes, and
-        the additional ``atomColourPalette``
+        the additional ``atomColourPalette``.
 
     Notes
     -----
@@ -106,14 +106,14 @@ class MolGrid:
         MolGrid(df, atomColourPalette={1: (.8, 0, 1)})
 
     .. versionchanged:: 0.1.0
-        Added ``rename`` parameter to replace ``mapping``
+        Added ``rename`` parameter to replace ``mapping``.
 
     .. versionadded:: 0.2.0
-        Added ``prerender`` and ``cache_selection`` parameters
+        Added ``prerender`` and ``cache_selection`` parameters.
 
     .. versionchanged:: 0.2.0
         Images are now generated on-the-fly. ``use_coords`` is now ``False`` by
-        default to avoid a systematic error when using ``MolGrid.from_sdf``
+        default to avoid a systematic error when using ``MolGrid.from_sdf``.
     """
 
     def __init__(
@@ -121,16 +121,19 @@ class MolGrid:
         df,
         smiles_col="SMILES",
         mol_col=None,
-        rename=None,
+        #
         size=(160, 120),
         useSVG=True,
         prerender=False,
         cache_selection=False,
+        #
         removeHs=False,
         use_coords=False,
         coordGen=True,
         MolDrawOptions=None,
+        #
         name="default",
+        rename=None,
         **kwargs,
     ):
         if not (smiles_col or mol_col):
@@ -157,14 +160,14 @@ class MolGrid:
         if isinstance(df, pd.DataFrame):
             dataframe = df.copy()
         else:
-            # list of dicts or other input formats for dataframes
+            # List of dicts or other input formats for dataframes.
             dataframe = pd.DataFrame(df)
         if rename:
             dataframe.rename(columns=rename, inplace=True)
         self._extra_columns = ["img", "mols2grid-id"]
-        # add index
+        # Add index.
         dataframe["mols2grid-id"] = list(range(len(dataframe)))
-        # generate drawing options
+        # Generate drawing options.
         if prerender:
             Draw.rdDepictor.SetPreferCoordGen(coordGen)
             opts = MolDrawOptions or Draw.MolDrawOptions()
@@ -187,10 +190,10 @@ class MolGrid:
             opts.update(
                 {"width": self.img_size[0], "height": self.img_size[1]})
             self.json_draw_opts = json.dumps(opts)
-        # prepare smiles and images
+        # Prepare smiles and images.
         self._prepare_dataframe(dataframe)
         self.dataframe = dataframe
-        # register instance
+        # Register instance.
         self._grid_id = name
         if cache_selection:
             try:
@@ -203,22 +206,19 @@ class MolGrid:
         else:
             self._cached_selection = {}
             register._init_grid(name)
-        # create widget
+        # Create widget.
         widget = MolGridWidget(
             grid_id=name, selection=str(self._cached_selection))
         selection_handler = partial(register.selection_updated, name)
         widget.observe(selection_handler, names=["selection"])
-        # register widget JS-side
-        try:  # This try/except is probably not necessary, to be tested.
-            display(widget)
-        except:
-            pass
+        # Register widget JS-side.
+        display(widget)
         self.widget = widget
 
     @classmethod
     def from_mols(cls, mols, **kwargs):
         """Set up the dataframe used by mols2grid directly from a list of RDKit
-        molecules
+        molecules.
 
         Parameters
         ----------
@@ -234,7 +234,7 @@ class MolGrid:
 
     @classmethod
     def from_sdf(cls, sdf_file, **kwargs):
-        """Set up the dataframe used by mols2grid directly from an SDFile
+        """Set up the dataframe used by mols2grid directly from an SDFile.
 
         Parameters
         ----------
@@ -265,12 +265,12 @@ class MolGrid:
         if value not in ["interactive", "static"]:
             raise ValueError(
                 f"template={value!r} not supported. "
-                "Use one of 'interactive' or 'static'"
+                "Use either 'interactive' or 'static'."
             )
         self._template = value
 
     def draw_mol(self, mol):
-        """Draw a molecule"""
+        """Draw a molecule."""
         d2d = self._MolDraw2D(*self.img_size)
         d2d.SetDrawOptions(self.MolDrawOptions)
         hl_atoms = getattr(mol, "__sssAtoms", [])
@@ -279,8 +279,8 @@ class MolGrid:
         return d2d.GetDrawingText()
 
     def mol_to_img(self, mol):
-        """Convert an RDKit mol to an HTML image containing a drawing of the
-        molecule"""
+        """Convert an RDKit mol to an inline PNG image containing a drawing of the
+        molecule."""
         img = self.draw_mol(mol)
         if self.useSVG:
             return img
@@ -294,15 +294,15 @@ class MolGrid:
             if self.mol_col:
                 keep_mols = True
             else:
-                # make temporary mol column if not present
+                # Make temporary mol column if not present.
                 self.mol_col = "mol"
                 keep_mols = False
                 dataframe[self.mol_col] = dataframe[self.smiles_col].apply(
                     Chem.MolFromSmiles
                 )
-            # drop empty mols
+            # Drop empty mols.
             dataframe.dropna(axis=0, subset=[self.mol_col], inplace=True)
-            # modify mol according to user pref
+            # Modify mol according to user pref.
             if not self.use_coords:
                 dataframe[self.mol_col] = dataframe[self.mol_col].apply(
                     remove_coordinates
@@ -310,15 +310,15 @@ class MolGrid:
             if self.removeHs:
                 dataframe[self.mol_col] = dataframe[self.mol_col].apply(
                     Chem.RemoveHs)
-            # render
+            # Render.
             dataframe["img"] = dataframe[self.mol_col].apply(self.mol_to_img)
-            # cleanup
+            # Cleanup.
             if not keep_mols:
                 dataframe.drop(columns=self.mol_col, inplace=True)
                 self.mol_col = None
         else:
             dataframe["img"] = None
-        # generate smiles col if not present or needs to be updated
+        # Generate smiles col if not present or needs to be updated.
         if self.mol_col and self.smiles_col not in dataframe.columns:
             dataframe[self.smiles_col] = dataframe[self.mol_col].apply(
                 mol_to_smiles)
@@ -326,7 +326,7 @@ class MolGrid:
     def render(self, template="interactive", **kwargs):
         """Returns the HTML document corresponding to the "interactive" or "static"
         template. See :meth:`to_interactive` and :meth:`to_static` for the full list
-        of arguments
+        of arguments.
 
         Parameters
         ----------
@@ -376,49 +376,53 @@ class MolGrid:
         callback=None,
         **kwargs,
     ):
-        """Returns the HTML document for the "interactive" template
+        """Returns the HTML document for the "interactive" template.
 
         Parameters: Display
         -------------------
         subset: list or None, default=None
-            Columns to be displayed in each cell of the grid. Each column's value
-            will be displayed from top to bottom in the same order given here.
-            Use ``"img"`` for the image of the molecule, and ``"mols2grid-id"`` for
-            The ``"img"`` and ``"mols2grid-id"`` are always displayed by default.
+            Columns to be displayed in each cell of the grid. Each column's
+            value will be displayed from top to bottom in the order provided.
+            The ``"img"`` and ``"mols2grid-id"`` columns are displayed by default,
+            however you can still add the ``"img"`` column if you wish to change
+            the display order.
         tooltip : list, None or False, default=None
             Columns to be displayed inside the tooltip. When no subset is set,
             all columns will be listed in the tooltip by default. Use ``False``
             to hide the tooltip.
         tooltip_fmt : str, default="<strong>{key}</strong>: {value}"
-            Format string of each key/value pair in the tooltip
+            Format string of each key/value pair in the tooltip.
         tooltip_placement : str, default="auto"
             Position of the tooltip: ``auto``, ``top``, ``bottom``, ``left`` or
-            ``right``
+            ``right``.
         transform : dict or None, default=None
             Functions applied to specific items in all cells. The dict must follow
             a ``key: function`` structure where the key must correspond to one of
             the columns in ``subset`` or ``tooltip``. The function takes the item's
             value as input and transforms it, for example::
 
-                transform={"Solubility": lambda x: f"{x:.2f}",
-                           "Melting point": lambda x: f"MP: {5/9*(x-32):.1f}°C"}
+                transform={
+                    "Solubility": lambda x: f"{x:.2f}",
+                    "Melting point": lambda x: f"MP: {5/9*(x-32):.1f}°C"
+                }
 
             These transformations only affect columns in ``subset`` and
             ``tooltip``, and do not interfere with ``style``.
         sort_by : str or None, default=None
             Sort the grid according to the following field (which must be
             present in ``subset`` or ``tooltip``).
-        truncate: bool, default=True
+        truncate: bool, default=True/False
             Whether to truncate the text in each cell if it's too long.
+            Defaults to ``True`` for interactive grids, ``False`` for static grid.
         n_items_per_page, default=24
-            Number of items to display per page.
-            It is recommended to keep this number a multiple of 12 for optimal display.
+            Number of items to display per page. A multiple of 12 is recommended
+            for optimal display.
         selection : bool, default=True
             Enables the selection of molecules and displays a checkbox at the
             top of each cell. In the context of a Jupyter notebook, this gives
-            you access to your selection (index and SMILES) through :func:`mols2grid.get_selection()`
-            or :meth:`MolGrid.get_selection()`. In all cases, you can export your
-            selection by clicking on the triple-dot menu.
+            you access to your selection (index and SMILES) through
+            :func:`mols2grid.get_selection()` or :meth:`MolGrid.get_selection()`.
+            In all cases, you can export your selection by clicking on the triple-dot menu.
 
         Parameters: Mols
         ----------------
@@ -426,27 +430,28 @@ class MolGrid:
             Highlight substructure when using the SMARTS search. Active by default
             when ``prerender=False``.
         single_highlight : bool, default=False
-            Highlight only the first match of the substructure query
+            Highlight only the first match of the substructure query.
 
         Parameters: CSS
         ---------------
         border : str, default="1px solid #cccccc"
-            Styling of the border around each cell
+            Styling of the border around each cell.
         gap : int, default=0
-            Size in pixels of the gap between cells
+            Size in pixels of the gap between cells.
         pad : int, default=10
-            Size in pixels of the cell padding
-        fontsize : str, default="12pt"
-            Font size of the text displayed in each cell
+            Size in pixels of the cell padding.
+        fontsize : str, default="12px"
+            Font size of the text displayed in each cell.
         fontfamily : str, default="'DejaVu', sans-serif"
-            Font used for the text in each cell
+            Font used for the text in each cell.
         textalign : str, default="center"
-            Alignment of the text in each cell
-        hover_color : str, default="#e7e7e7"
-            Background color when hovering a cell
+            Alignment of the text in each cell.
+        hover_color : str, default="rgba(0,0,0,0.15)"
+            Background color when hovering a cell.
         custom_css : str or None, default=None
             Custom CSS properties applied to the generated HTML. Please note that
-            the CSS will apply to the entire page if no iframe is used.
+            the CSS will apply to the entire page if no iframe is used (see
+            ``use_iframe`` for more details).
         style : dict or None, default=None
             CSS styling applied to each item in a cell. The dict must follow a
             ``key: function`` structure where the key must correspond to one of the
@@ -462,18 +467,18 @@ class MolGrid:
 
                 style={"__all__": lambda x: "color: red" if x["Solubility"] < -5 else ""}
 
-        Parameters: Customization
-        -------------------------
-        custom_header : str or None, default=None
-            Custom libraries to be loaded in the header of the document
-        callback : str or callable, default=None
-            JavaScript or Python callback to be executed when clicking on an image.
-            A dictionnary containing the data for the full cell is directly available
-            as ``data`` in JS. For Python, the callback function must have ``data``
-            as the first argument to the function. All the values in the ``data`` dict
-            are parsed as strings, except "mols2grid-id" which is always an integer.
-            Note that fields containing spaces in their name will be replaced by
-            hyphens, i.e. "mol weight" becomes available as ``data["mol-weight"]``.
+            Parameters: Customization
+            -------------------------
+            custom_header : str or None, default=None
+                Custom libraries to be loaded in the header of the document.
+            callback : str, callable or None, default=None
+                JavaScript or Python callback to be executed when clicking on an image.
+                A dictionnary containing the data for the full cell is directly available
+                as ``data`` in JS. For Python, the callback function must have ``data``
+                as the first argument to the function. All the values in the ``data`` dict
+                are parsed as strings, except "mols2grid-id" which is always an integer.
+                Note that fields containing spaces in their name will be replaced by
+                hyphens, i.e. "mol weight" becomes available as ``data["mol-weight"]``.
 
         Returns
         -------
@@ -494,7 +499,7 @@ class MolGrid:
             ``style={"__all__": <function>}``.
 
         .. versionadded:: 0.2.0
-            Added ``substruct_highlight`` argument
+            Added ``substruct_highlight`` argument.
 
         .. versionchanged:: 0.2.2
             If both ``subset`` and ``tooltip`` are ``None``, the index and
@@ -534,11 +539,11 @@ class MolGrid:
         if "img" not in subset:
             subset.insert(0, "img")
 
-        # Removed at Cedric's request, so you can choose to
-        # have certain properties displayed above the image:
-        #
         # Always make sure the image comes first.
         # subset = [subset.pop(subset.index("img"))] + subset
+        #
+        # This was removed at Cedric's request, so you can choose
+        # to have certain properties displayed above the image.
 
         # Define fields that are searchable and sortable.
         search_cols = [f"data-{col}" for col in subset if col != "img"]
@@ -570,7 +575,7 @@ class MolGrid:
             final_columns.extend(tooltip)
         final_columns = list(set(final_columns))
 
-        # Make a copy of id shown explicitely.
+        # Make a copy of id shown explicitly.
         id_name = "mols2grid-id-display"
         df[id_name] = df["mols2grid-id"]
         value_names.append(f"data-{id_name}")
@@ -674,32 +679,45 @@ class MolGrid:
         else:
             checkbox_html = ""
 
-        # Add callback button
+        # Add callback button.
         if callback:
             callback_btn = '<div class="m2g-callback"></div>'
         else:
             callback_btn = ""
 
         # Generate cell HTML.
-        if whole_cell_style:
-            # Custom cells styling. %% This can be simplified without repetition
-            item = (
-                '<div class="m2g-cell{tooltip_class}" data-mols2grid-id="0" tabindex="0" data-cellstyle="0"{tooltip_parameters}>'
-                '<div class="m2g-cb-wrap">{checkbox_html}<div class="m2g-cb"></div>{id_display_html}</div>'
-                '<div class="m2g-cell-actions">{info_btn_html}{callback_btn}</div>'
-                '{content}'
-                '<div class="m2g-cell-selection-highlight"></div>'
-                "</div>"
-            )
-        else:
-            item = (
-                '<div class="m2g-cell{tooltip_class}" data-mols2grid-id="0" tabindex="0"{tooltip_parameters}>'
-                '<div class="m2g-cb-wrap">{checkbox_html}<div class="m2g-cb"></div>{id_display_html}</div>'
-                '<div class="m2g-cell-actions">{info_btn_html}{callback_btn}</div>'
-                '{content}'
-                '<div class="m2g-cell-selection-highlight"></div>'
-                "</div>"
-            )
+        item = (
+            '<div class="m2g-cell{tooltip_class}" data-mols2grid-id="0" tabindex="0"{tooltip_parameters}>'
+            '<div class="m2g-cb-wrap">{checkbox_html}<div class="m2g-cb"></div>{id_display_html}</div>'
+            '<div class="m2g-cell-actions">{info_btn_html}{callback_btn}</div>'
+            '{content}'
+            '<div class="m2g-cell-selection-highlight"></div>'
+            "</div>"
+        )
+        #
+        # The code below is not necessary, it's only adding data-cellstyle="0" which is not needed.
+        #
+        #
+        # if whole_cell_style:
+        #     # Custom cells styling. %% This can be simplified without repetition
+        #     item = (
+        #         '<div class="m2g-cell{tooltip_class}" data-mols2grid-id="0" tabindex="0" data-cellstyle="0"{tooltip_parameters}>'
+        #         '<div class="m2g-cb-wrap">{checkbox_html}<div class="m2g-cb"></div>{id_display_html}</div>'
+        #         '<div class="m2g-cell-actions">{info_btn_html}{callback_btn}</div>'
+        #         '{content}'
+        #         '<div class="m2g-cell-selection-highlight"></div>'
+        #         "</div>"
+        #     )
+        # else:
+        #     item = (
+        #         '<div class="m2g-cell{tooltip_class}" data-mols2grid-id="0" tabindex="0"{tooltip_parameters}>'
+        #         '<div class="m2g-cb-wrap">{checkbox_html}<div class="m2g-cb"></div>{id_display_html}</div>'
+        #         '<div class="m2g-cell-actions">{info_btn_html}{callback_btn}</div>'
+        #         '{content}'
+        #         '<div class="m2g-cell-selection-highlight"></div>'
+        #         "</div>"
+        #     )
+
         item = item.format(
             checkbox_html=checkbox_html,
             id_display_html=id_display_html,
@@ -799,7 +817,7 @@ class MolGrid:
         return template.render(**template_kwargs)
 
     def get_selection(self):
-        """Retrieve the dataframe subset corresponding to your selection
+        """Retrieve the dataframe subset corresponding to your selection.
 
         Returns
         -------
@@ -811,7 +829,7 @@ class MolGrid:
         )
 
     def filter(self, mask):
-        """Filters the grid using a mask (boolean array)
+        """Filters the grid using a mask (boolean array).
 
         Parameters
         ----------
@@ -830,7 +848,8 @@ class MolGrid:
             self.widget.filter_mask = mask
 
     def filter_by_index(self, indices):
-        """Filters the grid using the dataframe's index"""
+        """Filters the grid using the dataframe's index."""
+
         # convert index to mask
         mask = self.dataframe.index.isin(indices)
         return self.filter(mask)
@@ -865,56 +884,61 @@ class MolGrid:
         Parameters: Display
         -------------------
         subset: list or None, default=None
-            Columns to be displayed in each cell of the grid. Each column's value
-            will be displayed from top to bottom in the same order given here.
-            The ``"img"`` and ``"mols2grid-id"`` are always displayed by default.
+            Columns to be displayed in each cell of the grid. Each column's
+            value will be displayed from top to bottom in the order provided.
+            The ``"img"`` and ``"mols2grid-id"`` columns are displayed by default,
+            however you can still add the ``"img"`` column if you wish to change
+            the display order.
         tooltip : list, None or False, default=None
             Columns to be displayed inside the tooltip. When no subset is set,
             all columns will be listed in the tooltip by default. Use ``False``
             to hide the tooltip.
         tooltip_fmt : str, default="<strong>{key}</strong>: {value}"
-            Format string of each key/value pair in the tooltip
+            Format string of each key/value pair in the tooltip.
         tooltip_trigger : str, default="focus"
             Sequence of triggers for the tooltip: ``click``, ``hover`` or ``focus``
         tooltip_placement : str, default="auto"
             Position of the tooltip: ``auto``, ``top``, ``bottom``, ``left`` or
-            ``right``
+            ``right``.
         transform : dict or None, default=None
             Functions applied to specific items in all cells. The dict must follow
             a ``key: function`` structure where the key must correspond to one of
             the columns in ``subset`` or ``tooltip``. The function takes the item's
             value as input and transforms it, for example::
 
-                transform={"Solubility": lambda x: f"{x:.2f}",
-                           "Melting point": lambda x: f"MP: {5/9*(x-32):.1f}°C"}
+                transform={
+                    "Solubility": lambda x: f"{x:.2f}",
+                    "Melting point": lambda x: f"MP: {5/9*(x-32):.1f}°C"
+                }
 
             These transformations only affect columns in ``subset`` and
             ``tooltip``, and do not interfere with ``style``.
         sort_by : str or None, default=None
-            Sort the grid according to the following field (which must be present
-            in ``subset`` or ``tooltip``).
+            Sort the grid according to the following field (which must be
+            present in ``subset`` or ``tooltip``).
         truncate: bool, default=False
             Whether to truncate the text in each cell if it's too long.
         n_cols : int, default=5
-            Number of columns in the table
+            Number of columns in the table.
 
         Parameters: CSS
         --------------
         border : str, default="1px solid #cccccc"
-            Styling of the border around each cell
+            Styling of the border around each cell.
         gap : int, default=0
-            Size in pixels of the gap between cells
+            Size in pixels of the gap between cells.
         pad: int, default=10
-            Size in pixels of the cell padding
+            Size in pixels of the cell padding.
         fontsize : str, default="12pt"
-            Font size of the text displayed in each cell
+            Font size of the text displayed in each cell.
         fontfamily : str, default="'DejaVu', sans-serif"
-            Font used for the text in each cell
+            Font used for the text in each cell.
         textalign : str, default="center"
-            Alignment of the text in each cell
+            Alignment of the text in each cell.
         custom_css : str or None, default=None
             Custom CSS properties applied to the generated HTML. Please note that
-            the CSS will apply to the entire page if no iframe is used.
+            the CSS will apply to the entire page if no iframe is used (see
+            ``use_iframe`` for more details).
         style : dict or None, default=None
             CSS styling applied to each item in a cell. The dict must follow a
             ``key: function`` structure where the key must correspond to one of the
@@ -1070,8 +1094,7 @@ class MolGrid:
         iframe_sandbox="allow-scripts allow-same-origin allow-downloads allow-popups allow-modals",
         **kwargs,
     ):
-        """Render and display the grid
-         in a Jupyter notebook
+        """Render and display the grid in a Jupyter notebook.
 
         Returns
         -------
@@ -1094,6 +1117,6 @@ class MolGrid:
             return HTML(doc)
 
     def save(self, output, **kwargs):
-        """Render and save the grid in an HTML document"""
+        """Render and save the grid in an HTML document."""
         with open(output, "w", encoding="utf-8") as f:
             f.write(self.render(**kwargs))

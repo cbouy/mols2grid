@@ -1,6 +1,7 @@
 x - save as CSV is not working properly
 √ - Search for modal and fix tests
 √ - Go over %% comments
+- Add use_iframe parameter to to_interactive
 
 
 Got stuck:

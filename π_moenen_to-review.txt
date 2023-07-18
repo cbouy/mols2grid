@@ -29,7 +29,7 @@ Refactored improvements
     - The variable 'n_items_per_page' is now added as a parameter, replacing 'n_cols' for the interactive template
     - When 'n_items_per_page' is set to a different number, the grid will just display a gap at the end of the page
 - Static grid changes
-    - Instead of specifying a grid width, the user can now just specify the cell width ('width[0]') + 'n_cols'.
+    - Instead of specifying a grid width, the user can now just specify the cell width ('size[0]') + 'n_cols'.
     - This way there's optimal overlap with how the interactive grid works.
 - The tooltip has been made less intrusive:
     Interactive template:
