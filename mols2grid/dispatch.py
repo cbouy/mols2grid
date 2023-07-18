@@ -110,7 +110,7 @@ def display(arg, **kwargs):
     selection : bool, default=True
         Only available for the "interactive" template.
         Enables the selection of molecules and displays a checkbox at the
-        top of each cell. In the context of a Jupyter notebook, this gives
+        top of each cell. In the context of a Jupyter Notebook, this gives
         you access to your selection (index and SMILES) through
         :func:`mols2grid.get_selection()` or :meth:`MolGrid.get_selection()`.
         In all cases, you can export your selection by clicking on the triple-dot menu.
@@ -119,7 +119,7 @@ def display(arg, **kwargs):
         Restores the selection from a previous grid with the same name.
     use_iframe : bool, default=False
         Whether to use an iframe to display the grid. When the grid is displayed
-        inside a Jupyter notebook or Jupyterlabs, this will default to ``True``.
+        inside a Jupyter Notebook or JupyterLab, this will default to ``True``.
     iframe_width : str, default="100%
         Width of the iframe
     iframe_height : int or None, default=None

@@ -67,6 +67,13 @@ def info(title="NAME", subtitle="SMILES", img_size=(400, 300), style="") -> _JSC
         title=_get_title_field(title),
         subtitle=_get_title_field(subtitle),
         svg="${svg}",
+        js=f"""
+            let mol = RDKit.get_mol(data["SMILES"]);
+            let svg = mol.get_svg({img_size[0]}, {img_size[1]});
+            let desc = JSON.parse(mol.get_descriptors());
+            let inchikey = RDKit.get_inchikey_for_inchi(mol.get_inchi());
+            mol.delete();
+        """,
         html="""
             <b>Molecular weight</b>: ${desc.exactmw}<br/>
             <b>HBond Acceptors</b>: ${desc.NumHBA}<br/>
@@ -76,13 +83,6 @@ def info(title="NAME", subtitle="SMILES", img_size=(400, 300), style="") -> _JSC
             <hr>
             <b>InChIKey</b>: ${inchikey}
             """,
-        js=f"""
-            let mol = RDKit.get_mol(data["SMILES"]);
-            let svg = mol.get_svg({img_size[0]}, {img_size[1]});
-            let desc = JSON.parse(mol.get_descriptors());
-            let inchikey = RDKit.get_inchikey_for_inchi(mol.get_inchi());
-            mol.delete();
-        """,
         style=style,
     )
     return _JSCallback(code=code)

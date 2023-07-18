@@ -102,4 +102,4 @@ Questions
 
 Notes
 - - -
-The popup example in the docs uses desc.amw, while the info callback uses desc.exactmw. It's a detail but maybe worth to be consistent?
+The popup example in the docs used desc.amw, while the info callback uses desc.exactmw. I updated it to be in sync.

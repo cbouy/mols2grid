@@ -45,7 +45,7 @@ except NameError:
 
 class MolGrid:
     """Class that handles drawing molecules, rendering the HTML document and
-    saving or displaying it in a notebook.
+    saving or displaying it in a Jupyter Notebook.
 
     Parameters: Data
     ----------------
@@ -355,6 +355,7 @@ class MolGrid:
         tooltip_placement="auto",
         transform=None,
         sort_by=None,
+        use_iframe=False,
         truncate=True,
         n_items_per_page=24,
         selection=True,
@@ -411,6 +412,9 @@ class MolGrid:
         sort_by : str or None, default=None
             Sort the grid according to the following field (which must be
             present in ``subset`` or ``tooltip``).
+        use_iframe : bool, default=False
+            Whether to use an iframe to display the grid. When the grid is displayed
+            inside a Jupyter Notebook or JupyterLab, this will default to ``True``.
         truncate: bool, default=True/False
             Whether to truncate the text in each cell if it's too long.
             Defaults to ``True`` for interactive grids, ``False`` for static grid.
@@ -419,7 +423,7 @@ class MolGrid:
             for optimal display.
         selection : bool, default=True
             Enables the selection of molecules and displays a checkbox at the
-            top of each cell. In the context of a Jupyter notebook, this gives
+            top of each cell. In the context of a Jupyter Notebook, this gives
             you access to your selection (index and SMILES) through
             :func:`mols2grid.get_selection()` or :meth:`MolGrid.get_selection()`.
             In all cases, you can export your selection by clicking on the triple-dot menu.
@@ -768,7 +772,7 @@ class MolGrid:
             selection=selection,
             truncate=truncate,
             sort_by=sort_by,
-            use_iframe=kwargs["use_iframe"],
+            use_iframe=use_iframe,
             #
             border=border,
             gap=gap,
@@ -864,6 +868,7 @@ class MolGrid:
         tooltip_placement="auto",
         transform=None,
         sort_by=None,
+        use_iframe=False,
         truncate=False,
         n_cols=5,
         # CSS Styling
@@ -916,6 +921,9 @@ class MolGrid:
         sort_by : str or None, default=None
             Sort the grid according to the following field (which must be
             present in ``subset`` or ``tooltip``).
+        use_iframe : bool, default=False
+            Whether to use an iframe to display the grid. When the grid is displayed
+            inside a Jupyter Notebook or JupyterLab, this will default to ``True``.
         truncate: bool, default=False
             Whether to truncate the text in each cell if it's too long.
         n_cols : int, default=5
@@ -1065,8 +1073,8 @@ class MolGrid:
             tooltip=tooltip,
             tooltip_trigger=repr(tooltip_trigger),
             tooltip_placement=repr(tooltip_placement),
+            use_iframe=use_iframe,
             truncate=truncate,
-            use_iframe=kwargs["use_iframe"],
             #
             border=border,
             gap=gap,
