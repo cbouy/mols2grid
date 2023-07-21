@@ -158,7 +158,7 @@ def display(arg, **kwargs):
         Font used for the text in each cell.
     textalign : str, default="center"
         Alignment of the text in each cell.
-    hover_color : str, default="rgba(0,0,0,0.15)"
+    hover_color : str, default="rgba(0,0,0,0.05)"
         Only available for the "interactive" template.
         Background color when hovering a cell
     custom_css : str or None, default=None

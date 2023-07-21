@@ -369,7 +369,7 @@ class MolGrid:
         fontsize="12px",
         fontfamily="'DejaVu', sans-serif",
         textalign="center",
-        hover_color="rgba(0,0,0,0.1)",
+        hover_color="rgba(0,0,0,0.05)",
         custom_css=None,
         style=None,
         # Customization
@@ -450,7 +450,7 @@ class MolGrid:
             Font used for the text in each cell.
         textalign : str, default="center"
             Alignment of the text in each cell.
-        hover_color : str, default="rgba(0,0,0,0.1)"
+        hover_color : str, default="rgba(0,0,0,0.05)"
             Background color when hovering a cell.
         custom_css : str or None, default=None
             Custom CSS properties applied to the generated HTML. Please note that
@@ -676,17 +676,17 @@ class MolGrid:
 
         # Add callback button.
         if callback:
-            callback_btn = '<div class="m2g-callback"></div>'
+            callback_btn_html = '<div class="m2g-callback"></div>'
         else:
-            callback_btn = ""
+            callback_btn_html = ""
 
         # Generate cell HTML.
         item = (
             '<div class="m2g-cell" data-mols2grid-id="0" tabindex="0">'
             '<div class="m2g-cb-wrap">{checkbox_html}<div class="m2g-cb"></div>{id_display_html}</div>'
-            '<div class="m2g-cell-actions">{info_btn_html}{callback_btn}</div>'
+            '<div class="m2g-cell-actions">{info_btn_html}{callback_btn_html}</div>'
             '{content}'
-            '{maybe_tooltip}'
+            '{tooltip_html}'
             "</div>"
         )
         #
@@ -698,7 +698,7 @@ class MolGrid:
         #     item = (
         #         '<div class="m2g-cell{tooltip_class}" data-mols2grid-id="0" tabindex="0" data-cellstyle="0"{tooltip_parameters}>'
         #         '<div class="m2g-cb-wrap">{checkbox_html}<div class="m2g-cb"></div>{id_display_html}</div>'
-        #         '<div class="m2g-cell-actions">{info_btn_html}{callback_btn}</div>'
+        #         '<div class="m2g-cell-actions">{info_btn_html}{callback_btn_html}</div>'
         #         '{content}'
         #         '<div class="m2g-cell-selection-highlight"></div>'
         #         "</div>"
@@ -707,7 +707,7 @@ class MolGrid:
         #     item = (
         #         '<div class="m2g-cell{tooltip_class}" data-mols2grid-id="0" tabindex="0"{tooltip_parameters}>'
         #         '<div class="m2g-cb-wrap">{checkbox_html}<div class="m2g-cb"></div>{id_display_html}</div>'
-        #         '<div class="m2g-cell-actions">{info_btn_html}{callback_btn}</div>'
+        #         '<div class="m2g-cell-actions">{info_btn_html}{callback_btn_html}</div>'
         #         '{content}'
         #         '<div class="m2g-cell-selection-highlight"></div>'
         #         "</div>"
@@ -717,9 +717,9 @@ class MolGrid:
             checkbox_html=checkbox_html,
             id_display_html=id_display_html,
             info_btn_html=info_btn_html,
-            callback_btn=callback_btn,
+            callback_btn_html=callback_btn_html,
             content=''.join(content),
-            maybe_tooltip='<div class="m2g-tooltip" data-toggle="popover" data-content="."></div>' if tooltip else '',
+            tooltip_html='<div class="m2g-tooltip" data-toggle="popover" data-content="."></div>' if tooltip else '',
         )
 
         # Callback

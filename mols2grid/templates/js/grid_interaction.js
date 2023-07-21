@@ -290,7 +290,9 @@ function invertSelection(e) {
 
 // Copy to clipboard.
 function copy(e) {
-    navigator.clipboard.writeText(SELECTION.to_dict());
+    // navigator.clipboard.writeText(SELECTION.to_dict());
+    content = _renderCSV('\t')
+    navigator.clipboard.writeText(content)
 };
 
 // Export smiles.
@@ -307,11 +309,21 @@ function saveSmiles(e) {
 
 // Export CSV.
 function saveCSV(e) {
-    var sep = "\t"
+    content = _renderCSV(';')
+    var a = document.createElement("a");
+    var file = new Blob([content], {type: "text/csv"});
+    a.href = URL.createObjectURL(file);
+    a.download = "selection.csv";
+    a.click();
+    a.remove();
+};
+
+// Render CSV for export of clipboard.
+function _renderCSV(sep) {
     // Same order as subset + tooltip
     var columns = Array.from(listObj.items[0].elm.querySelectorAll("div.data"))
-                       .map(elm => elm.classList[1])
-                       .filter(name => name !== "data-img");
+        .map(elm => elm.classList[1])
+        .filter(name => name !== "data-img");
     // Remove 'data-' and img
     var header = columns.map(name => name.slice(5));
     // CSV content
@@ -328,10 +340,5 @@ function saveCSV(e) {
             content += "\n";
         }
     });
-    var a = document.createElement("a");
-    var file = new Blob([content], {type: "text/csv"});
-    a.href = URL.createObjectURL(file);
-    a.download = "selection.csv";
-    a.click();
-    a.remove();
-};
+    return content
+}

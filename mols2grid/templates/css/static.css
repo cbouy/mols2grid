@@ -1,9 +1,5 @@
 /* Note: #mols2grid is the table element */
 #mols2grid {
-    /* Variables */
-    --hl: #555; /* Highlight color */
-    --hl-shadow: inset 0 0 0 1px var(--hl); /* Inset 1px shadow to make border thicker */
-
     border-collapse: {{ 'collapse' if gap == 0 else 'separate' }};
     border-spacing: {{ gap }}px;
     /* Compensate for gap so table stays aligned with content above */
@@ -33,7 +29,7 @@
 /* Call focus state */
 #mols2grid td:focus-within,
 #mols2grid td:focus {
-    outline: solid 2px var(--hl);
+    outline: solid 2px #555;
     border-color: transparent;
 }
 
