@@ -48,16 +48,18 @@ def _get_title_field(title):
     return "${data['" + title + "']}" if title else None
 
 
-def info(title="NAME", subtitle="SMILES", img_size=(400, 300), style="") -> _JSCallback:
+def info(title="SMILES", subtitle=None, img_size=(400, 300), style="") -> _JSCallback:
     """Displays a bigger image of the molecule, alongside some useful descriptors:
     molecular weight, number of Hydrogen bond donors and acceptors, TPSA, Crippen ClogP
     and InChIKey.
 
     Parameters
     ----------
-    title : str or None
-        Data field used to set the title of the modal window. If ``None``, no title is
-        displayed.
+    title : str
+        Title of the popup. Use ``title='${data["Name"]}'`` to use the value
+        of the column "Name" as a title
+    subtitle : str
+        Secondary title which works the same as title.
     img_size : tuple
         Width and height of the molecule depiction.
     style : str
@@ -89,16 +91,22 @@ def info(title="NAME", subtitle="SMILES", img_size=(400, 300), style="") -> _JSC
 
 
 def show_3d(
-    title="NAME", subtitle="SMILES", query=["pubchem", "cactus"], height="100%", style="width:100%;height:100%"
+    title="SMILES",
+    subtitle=None,
+    query=["pubchem", "cactus"],
+    height="100%",
+    style="width:100%;height:100%",
 ) -> _JSCallback:
     """Queries the API(s) listed in ``query`` using the SMILES of the structure, to
     fetch the 3D structure and display it with ``3Dmol.js``
 
     Parameters
     ----------
-    title : str or None
-        Data field used to set the title of the modal window. If ``None``, no title is
-        displayed.
+    title : str
+        Title of the popup. Use ``title='${data["Name"]}'`` to use the value
+        of the column "Name" as a title
+    subtitle : str
+        Secondary title which works the same as title.
     query : list or dict
         List of APIs used to fetch the 3D structure from (by order of priority). To use
         a custom API, use a dict with the following format::
