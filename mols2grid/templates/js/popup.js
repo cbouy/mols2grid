@@ -7,7 +7,7 @@ var html = `
 <div id="m2g-modal" tabindex="-1" style="{{ style }}">
 
     <div class="m2g-modal-header">
-        {% if subtitle %}<h2>{{ title }}</h2>{% endif %}
+        {% if title %}<h2>{{ title }}</h2>{% endif %}
         {% if subtitle %}<p>{{ subtitle }}</p>{% endif %}
         <button class="close">&times;</button>
     </div>

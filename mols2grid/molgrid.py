@@ -537,6 +537,9 @@ class MolGrid:
             else:
                 # When no subset is defined, all columns are displayed.
                 subset = df.columns.tolist()
+        else:
+            # work on a copy
+            subset = subset[:]
 
         if "mols2grid-id" not in subset:
             subset.insert(0, "mols2grid-id")
@@ -762,8 +765,7 @@ class MolGrid:
             selection=selection,
             truncate=truncate,
             sort_by=sort_by,
-            # use_iframe=use_iframe,
-            use_iframe=kwargs['use_iframe'],
+            use_iframe=use_iframe,
             #
             border=border,
             gap=gap,
@@ -859,7 +861,7 @@ class MolGrid:
         tooltip_placement="auto",
         transform=None,
         sort_by=None,
-        # use_iframe=False,
+        use_iframe=False,
         truncate=False,
         n_cols=5,
         # CSS Styling
@@ -996,6 +998,9 @@ class MolGrid:
             else:
                 # When no subset is defined, all columns are displayed.
                 subset = df.columns.tolist()
+        else:
+            # work on a copy
+            subset = subset[:]
 
         if "mols2grid-id" not in subset:
             subset.insert(0, "mols2grid-id")
@@ -1004,12 +1009,6 @@ class MolGrid:
 
         # Always make surer the image comes first.
         subset = [subset.pop(subset.index("img"))] + subset
-
-        # Make a copy of id shown explicitely.
-        id_name = "mols2grid-id-display"
-        df[id_name] = df["mols2grid-id"]
-        subset = [id_name if x == "mols2grid-id" else x for x in subset]
-        id_display = f'<div class="data-{id_name}"></div>'
 
         if style is None:
             style = {}
@@ -1031,7 +1030,6 @@ class MolGrid:
                 div = [f'<div class="m2g-cell-{i}" style="{s}">']
             else:
                 div = [f'<div class="m2g-cell-{i}">']
-            div.append(id_display)
             for col in subset:
                 v = row[col]
                 if col == "img" and tooltip:
@@ -1064,8 +1062,7 @@ class MolGrid:
             tooltip=tooltip,
             tooltip_trigger=repr(tooltip_trigger),
             tooltip_placement=repr(tooltip_placement),
-            # use_iframe=use_iframe,
-            use_iframe=kwargs['use_iframe'],
+            use_iframe=use_iframe,
             truncate=truncate,
             #
             border=border,
