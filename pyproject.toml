@@ -51,12 +51,12 @@ build = [
 tests = [
     "cairosvg==2.5.2",
     "flaky==3.7.0",
-    "geckodriver-autoinstaller==0.1.0",
+    "pyautogecko==0.1.3",
     "imagehash~=4.3",
     "ipython==7.12.0",
     "pytest-cov==2.12.1",
     "pytest==6.2.5",
-    "selenium==3.141.0",
+    "selenium==4.10.0",
 ]
 dev = [
     "tbump",
