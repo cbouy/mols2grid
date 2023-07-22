@@ -1,5 +1,3 @@
-from pathlib import Path
-from tempfile import NamedTemporaryFile
 from types import SimpleNamespace
 
 import pytest
@@ -238,10 +236,10 @@ def test_get_selection(small_df):
     register._clear()
 
 
-def test_save(grid):
-    with NamedTemporaryFile("w", suffix=".html") as f:
-        grid.save(f.name)
-        assert Path(f.name).is_file()
+def test_save(grid, tmp_path):
+    output = tmp_path / "output.html"
+    grid.save(output)
+    assert output.is_file()
 
 
 def test_render_interactive(grid):
@@ -263,7 +261,7 @@ def test_render_wrong_template(grid):
         dict(),
         dict(subset=["ID"]),
         dict(tooltip=["ID"]),
-        dict(gap="5px"),
+        dict(gap=5),
         dict(style={"ID": lambda x: "color: red" if x == 1 else ""}),
         dict(transform={"ID": lambda x: f"Id. #{x}"}),
     ],
@@ -274,8 +272,8 @@ def test_integration_static(grid_prerendered, kwargs):
 
 def test_python_callback(grid):
     html = grid.to_interactive(subset=["img"], callback=lambda data: None)
-    assert "// trigger custom python callback" in html
-    assert "// no kernel detected for callback" in html
+    assert "// Trigger custom python callback" in html
+    assert "// No kernel detected for callback" in html
 
 
 def test_cache_selection(small_df):
@@ -328,11 +326,8 @@ def test_sort_by_not_in_subset_or_tooltip(grid):
         grid.to_interactive(subset=["ID", "img"], sort_by="_Name")
 
 
-def test_subset_without_img_error(grid):
-    with pytest.raises(
-        KeyError, match="Please add the 'img' field in the `subset` parameter"
-    ):
-        grid.display(subset=["_Name"])
+def test_subset_without_img_no_error(grid):
+    grid.display(subset=["_Name"])
 
 
 def test_static_no_prerender_error(grid):
