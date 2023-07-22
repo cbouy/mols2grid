@@ -7,8 +7,7 @@ from pandas import DataFrame, Series
 from .molgrid import MolGrid
 
 _SIGNATURE = {
-    method: dict(inspect.signature(
-        getattr(MolGrid, method)).parameters.items())
+    method: dict(inspect.signature(getattr(MolGrid, method)).parameters.items())
     for method in ["render", "to_interactive", "to_static", "display"]
 }
 for method in ["render", "to_interactive", "to_static", "display"]:
@@ -291,7 +290,7 @@ def _(sdf, **kwargs):
 
 @save.register(Series)
 @save.register(list)
-@display.register(tuple)
+@save.register(tuple)
 def _(mols, **kwargs):
     template, kwargs, render_kwargs = _prepare_kwargs(kwargs, "save")
     output = kwargs.pop("output")

@@ -30,8 +30,7 @@ try:
 except ModuleNotFoundError:
     pass
 else:
-    warnings.filterwarnings(
-        "ignore", "Consider using IPython.display.IFrame instead.")
+    warnings.filterwarnings("ignore", "Consider using IPython.display.IFrame instead.")
 
 
 # Detect if mols2grid is running inside a Jupyter Notebook/Lab.
@@ -144,11 +143,9 @@ class MolGrid:
             )
         if not prerender:
             if not useSVG:
-                raise ValueError(
-                    "On-the-fly rendering of PNG images not supported")
+                raise ValueError("On-the-fly rendering of PNG images not supported")
             if use_coords and mol_col:
-                raise ValueError(
-                    "Cannot use coordinates with on-the-fly rendering")
+                raise ValueError("Cannot use coordinates with on-the-fly rendering")
         self.prefer_coordGen = coordGen
         self.removeHs = removeHs
         self.useSVG = useSVG
@@ -187,8 +184,7 @@ class MolGrid:
                     ):
                         opts[key] = value
             opts.update(kwargs)
-            opts.update(
-                {"width": self.img_size[0], "height": self.img_size[1]})
+            opts.update({"width": self.img_size[0], "height": self.img_size[1]})
             self.json_draw_opts = json.dumps(opts)
         # Prepare smiles and images.
         self._prepare_dataframe(dataframe)
@@ -207,8 +203,7 @@ class MolGrid:
             self._cached_selection = {}
             register._init_grid(name)
         # Create widget.
-        widget = MolGridWidget(
-            grid_id=name, selection=str(self._cached_selection))
+        widget = MolGridWidget(grid_id=name, selection=str(self._cached_selection))
         selection_handler = partial(register.selection_updated, name)
         widget.observe(selection_handler, names=["selection"])
         # Register widget JS-side.
@@ -228,8 +223,7 @@ class MolGrid:
             Other arguments passed on initialization
         """
         mol_col = kwargs.pop("mol_col", "mol")
-        df = pd.DataFrame([mol_to_record(mol, mol_col=mol_col)
-                          for mol in mols])
+        df = pd.DataFrame([mol_to_record(mol, mol_col=mol_col) for mol in mols])
         return cls(df, mol_col=mol_col, **kwargs)
 
     @classmethod
@@ -308,8 +302,7 @@ class MolGrid:
                     remove_coordinates
                 )
             if self.removeHs:
-                dataframe[self.mol_col] = dataframe[self.mol_col].apply(
-                    Chem.RemoveHs)
+                dataframe[self.mol_col] = dataframe[self.mol_col].apply(Chem.RemoveHs)
             # Render.
             dataframe["img"] = dataframe[self.mol_col].apply(self.mol_to_img)
             # Cleanup.
@@ -320,8 +313,7 @@ class MolGrid:
             dataframe["img"] = None
         # Generate smiles col if not present or needs to be updated.
         if self.mol_col and self.smiles_col not in dataframe.columns:
-            dataframe[self.smiles_col] = dataframe[self.mol_col].apply(
-                mol_to_smiles)
+            dataframe[self.smiles_col] = dataframe[self.mol_col].apply(mol_to_smiles)
 
     def render(self, template="interactive", **kwargs):
         """Returns the HTML document corresponding to the "interactive" or "static"
@@ -355,7 +347,7 @@ class MolGrid:
         tooltip_placement="auto",
         transform=None,
         sort_by=None,
-        # use_iframe=False,
+        use_iframe=False,
         truncate=True,
         n_items_per_page=24,
         selection=True,
@@ -596,9 +588,7 @@ class MolGrid:
             if col == "mols2grid-id-display":
                 s = ""  # Avoid an empty div to be created for the display id.
             elif col == "img" and tooltip:
-                s = (
-                    f'<a class="data data-{col}"></a>'
-                )
+                s = f'<a class="data data-{col}"></a>'
             else:
                 if style.get(col):
                     s = (
@@ -636,8 +626,7 @@ class MolGrid:
                 name = f"style-{slugify(col)}"
                 df[name] = df[col].apply(func)
             final_columns.append(name)
-            value_names = value_names[:-1] + \
-                f", {{ attr: 'style', name: {name!r} }}]"
+            value_names = value_names[:-1] + f", {{ attr: 'style', name: {name!r} }}]"
 
         # Create tooltip.
         if tooltip:
@@ -646,8 +635,7 @@ class MolGrid:
             )
             final_columns += ["m2g-tooltip"]
             value_names = (
-                value_names[:-1]
-                + ", {attr: 'data-content', name: 'm2g-tooltip'}]"
+                value_names[:-1] + ", {attr: 'data-content', name: 'm2g-tooltip'}]"
             )
             info_btn_html = '<div class="m2g-info">i</div>'
         else:
@@ -667,8 +655,7 @@ class MolGrid:
                 ] = True
                 final_columns += ["cached_checkbox"]
                 value_names = (
-                    value_names[:-1] +
-                    ", {attr: 'checked', name: 'cached_checkbox'}]"
+                    value_names[:-1] + ", {attr: 'checked', name: 'cached_checkbox'}]"
                 )
             checkbox_html = (
                 '<input type="checkbox" tabindex="-1" '
@@ -688,8 +675,8 @@ class MolGrid:
             '<div class="m2g-cell" data-mols2grid-id="0" tabindex="0">'
             '<div class="m2g-cb-wrap">{checkbox_html}<div class="m2g-cb"></div>{id_display_html}</div>'
             '<div class="m2g-cell-actions">{info_btn_html}{callback_btn_html}</div>'
-            '{content}'
-            '{tooltip_html}'
+            "{content}"
+            "{tooltip_html}"
             "</div>"
         )
         #
@@ -721,8 +708,10 @@ class MolGrid:
             id_display_html=id_display_html,
             info_btn_html=info_btn_html,
             callback_btn_html=callback_btn_html,
-            content=''.join(content),
-            tooltip_html='<div class="m2g-tooltip" data-toggle="popover" data-content="."></div>' if tooltip else '',
+            content="".join(content),
+            tooltip_html='<div class="m2g-tooltip" data-toggle="popover" data-content="."></div>'
+            if tooltip
+            else "",
         )
 
         # Callback
@@ -1020,8 +1009,7 @@ class MolGrid:
         for i, row in df.iterrows():
             ncell = i + 1
             nrow, ncol = divmod(i, n_cols)
-            popover = tooltip_formatter(
-                row, tooltip, tooltip_fmt, style, transform)
+            popover = tooltip_formatter(row, tooltip, tooltip_fmt, style, transform)
             td = [
                 f'<td class="col-{ncol} m2g-tooltip" tabindex="0" data-toggle="popover" data-content="{escape(popover)}">'
             ]
