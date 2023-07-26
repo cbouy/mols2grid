@@ -18,7 +18,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     
     - name: Get prerelease version tags
       if: env.IS_PRERELEASE == 'true'
@@ -39,36 +39,17 @@ jobs:
           core.setFailed("Versions are not tagged as a prerelease")
 
     - name: Install node
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3
       with:
         node-version: '12.x'
         registry-url: 'https://registry.npmjs.org/'
+        cache: "npm"
 
     - name: Install python with pip
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: 3.7
-        architecture: x64
-
-    - name: Setup pip cache
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: pip-build-${{ hashFiles('package.json') }}-${{ hashFiles('setup.cfg') }}
-        restore-keys: |
-          pip-build-
-
-    - name: Get npm cache directory
-      id: npm-cache
-      run: |
-        echo "::set-output name=dir::$(npm config get cache)"
-
-    - uses: actions/cache@v3
-      with:
-        path: ${{ steps.npm-cache.outputs.dir }}
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
+        python-version: 3.8
+        cache: "pip"
 
     - name: Install dependencies for packaging
       run: |
@@ -88,8 +69,7 @@ jobs:
     - name: Publish the Python package
       env:
         TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ env.IS_PRERELEASE == 'true' && secrets.TEST_PYPI_TOKEN || secrets.PYPI_TOKEN }}
-        TWINE_REPOSITORY: ${{ env.IS_PRERELEASE == 'true' && 'testpypi' || 'pypi' }}
+        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
       run: twine upload dist/mols2grid*.{tar.gz,whl}
 
     - name: Publish the NPM package
