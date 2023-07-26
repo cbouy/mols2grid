@@ -296,10 +296,7 @@ def test_coordgen(driver: FirefoxDriver, mols, coordGen, prerender, expected):
     driver.get(doc)
     if not prerender:
         driver.wait_for_img_load()
-    if useSVG:
-        hash_ = driver.get_svg_hash()
-    else:
-        hash_ = driver.get_png_hash()
+    hash_ = driver.get_svg_hash() if useSVG else driver.get_png_hash()
     assert str(hash_) == expected
 
 
@@ -385,7 +382,7 @@ def test_moldrawoptions(driver: FirefoxDriver, df, kwargs, expected):
 
 
 def test_hover_color(driver: FirefoxDriver, grid):
-    doc = get_doc(grid, {"hover_color": "red"})
+    doc = get_doc(grid, {"hover_color": "rgba(255, 0, 0, 0.1)"})
     driver.get(doc)
     (
         ActionChains(driver)
@@ -396,11 +393,11 @@ def test_hover_color(driver: FirefoxDriver, grid):
     color = driver.execute_script(
         """
         return getComputedStyle(
-            document.querySelector('#mols2grid .m2g-cell')
+            document.querySelector('#mols2grid .m2g-cell'), ":after"
         ).getPropertyValue('background-color');
         """
     )
-    assert color == "rgb(255, 0, 0)"
+    assert color == "rgba(255, 0, 0, 0.1)"
 
 
 @flaky(max_runs=3, min_passes=1)

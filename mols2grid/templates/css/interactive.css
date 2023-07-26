@@ -719,7 +719,7 @@ hr {
     }
 
     /* Grid */
-    /* Note: this is in an ::after speudo element, so the transparent
+    /* Note: this is in an ::after pseudo element, so the transparent
     hover color plays nice with the cell background color. */
     #mols2grid .m2g-cell:hover::after {
         content: '';
