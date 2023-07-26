@@ -129,3 +129,7 @@ class FirefoxDriver(webdriver.Firefox):
         self.wait_for_img_load()
         el = self.find_clickable(By.CSS_SELECTOR, selector)
         (ActionChains(self).move_to_element(el).pause(pause).click().perform())
+
+    def click_checkbox(self, is_empty=False):
+        self.find_clickable(By.CSS_SELECTOR, ".m2g-cb").click()
+        return self.wait_for_selection(is_empty=is_empty)

@@ -26,7 +26,7 @@ from .webdriver_utils import FirefoxDriver
 pytestmark = pytest.mark.webdriver
 pyautogecko.install()
 GITHUB_ACTIONS = os.environ.get("GITHUB_ACTIONS")
-HEADLESS = True
+HEADLESS = False
 PAGE_LOAD_TIMEOUT = 10
 
 
@@ -156,17 +156,16 @@ def test_smarts_search(driver: FirefoxDriver, html_doc):
 def test_selection_click(driver: FirefoxDriver, html_doc):
     driver.get(html_doc)
     driver.wait_for_img_load()
-    driver.find_clickable(By.CSS_SELECTOR, "input[type='checkbox']").click()
-    sel = driver.wait_for_selection(is_empty=False)
+    sel = driver.click_checkbox()
     assert sel == {0: "CCC(C)CC"}
     register._clear()
 
 
 def test_export_csv(driver: FirefoxDriver, html_doc):
+    sep = ";"
     driver.get(html_doc)
     driver.wait_for_img_load()
-    driver.find_clickable(By.CSS_SELECTOR, "input[type='checkbox']").click()
-    driver.wait_for_selection(is_empty=False)
+    driver.click_checkbox()
     driver.sort_grid("_Name")
     now = datetime.now(tz=timezone.utc)
     driver.grid_action("save-csv")
@@ -178,7 +177,13 @@ def test_export_csv(driver: FirefoxDriver, html_doc):
     file_mtime = datetime.fromtimestamp(csv_file.stat().st_mtime, tz=timezone.utc)
     assert (file_mtime - now).seconds < 1, "Could not find recent selection file"
     content = csv_file.read_text()
-    assert content == "index\t_Name\tSMILES\n0\t3-methylpentane\tCCC(C)CC\n"
+    expected = (
+        sep.join(("index", "_Name", "SMILES"))
+        + "\n"
+        + sep.join(("0", "3-methylpentane", "CCC(C)CC"))
+        + "\n"
+    )
+    assert content == expected
     csv_file.unlink()
     register._clear()
 
@@ -193,8 +198,7 @@ def test_selection_with_cache_check_and_uncheck(driver: FirefoxDriver, df):
     driver.wait_for_img_load()
     sel = driver.wait_for_selection(is_empty=False)
     assert sel == {0: "CCC(C)CC"}
-    driver.find_clickable(By.CSS_SELECTOR, "input[type='checkbox']").click()
-    empty_sel = driver.wait_for_selection(is_empty=True)
+    empty_sel = driver.click_checkbox(is_empty=True)
     assert empty_sel is True
     register._clear()
 
