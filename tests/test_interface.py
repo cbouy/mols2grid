@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 from base64 import b64encode
 from datetime import datetime, timezone
 from pathlib import Path
@@ -23,11 +24,22 @@ from mols2grid.utils import env
 
 from .webdriver_utils import FirefoxDriver
 
+try:
+    from rdkit.Chem.rdDepictor import IsCoordGenSupportAvailable
+except ImportError:
+    COORDGEN_SUPPORT = not sys.platform.startswith("win")
+else:
+    COORDGEN_SUPPORT = IsCoordGenSupportAvailable()
+
 pytestmark = pytest.mark.webdriver
 pyautogecko.install()
 GITHUB_ACTIONS = os.environ.get("GITHUB_ACTIONS")
-HEADLESS = False
+HEADLESS = True
 PAGE_LOAD_TIMEOUT = 10
+skip_no_coordgen = pytest.mark.skipif(
+    not COORDGEN_SUPPORT,
+    reason="CoordGen library not available in this RDKit build",
+)
 
 
 def determine_scope(fixture_name, config):
@@ -123,7 +135,10 @@ def test_css_properties(driver: FirefoxDriver, grid, name, css_prop, value, expe
     doc = get_doc(grid, {name: value})
     driver.get(doc)
     computed = driver.execute_script(
-        f"return getComputedStyle(document.querySelector('#mols2grid .m2g-cell')).getPropertyValue({css_prop!r});"
+        f"""return getComputedStyle(
+            document.querySelector('#mols2grid .m2g-cell')
+        ).getPropertyValue({css_prop!r});
+        """
     )
     assert computed == expected
 
@@ -265,10 +280,11 @@ def test_image_use_coords(driver: FirefoxDriver, df):
 @pytest.mark.parametrize(
     ["coordGen", "prerender", "expected"],
     [
-        (
+        pytest.param(
             True,
             True,
             "fffffffffffffe7ffe7ffe7ffe7ffe7ffe7f3e7c8811c183e7e7ffffffffffff",
+            marks=skip_no_coordgen,
         ),
         (
             True,
@@ -303,12 +319,13 @@ def test_coordgen(driver: FirefoxDriver, mols, coordGen, prerender, expected):
 @pytest.mark.parametrize(
     ["removeHs", "prerender", "expected"],
     [
-        (
+        pytest.param(
             True,
             True,
             "fffffffffffffe7ffe7ffe7ffe7ffe7ffe7f3e7c8811c183e7e7ffffffffffff",
+            marks=skip_no_coordgen,
         ),
-        (
+        pytest.param(
             False,
             True,
             (
@@ -316,6 +333,7 @@ def test_coordgen(driver: FirefoxDriver, mols, coordGen, prerender, expected):
                 if rdkit_version == "2020.03.1"
                 else "ff7ffe1ff91ffd3ff00ff0cffcbff0bff00ffd3fe1bff887f29ff30fff6fff7f"
             ),
+            marks=skip_no_coordgen,
         ),
         (
             True,
@@ -406,7 +424,10 @@ def test_tooltip(driver: FirefoxDriver, grid):
     driver.get(doc)
     driver.wait_for_img_load()
     tooltip = driver.get_tooltip_content()
-    assert tooltip == "<strong>_Name</strong>: 3-methylpentane"
+    assert (
+        tooltip
+        == '<strong>_Name</strong>: <span class="copy-me">3-methylpentane</span>'
+    )
 
 
 @flaky(max_runs=3, min_passes=1)
@@ -415,7 +436,7 @@ def test_tooltip_fmt(driver: FirefoxDriver, grid):
     driver.get(doc)
     driver.wait_for_img_load()
     tooltip = driver.get_tooltip_content()
-    assert tooltip == "<em>3-methylpentane</em>"
+    assert tooltip == '<em><span class="copy-me">3-methylpentane</span></em>'
 
 
 def test_tooltip_not_in_subset(driver: FirefoxDriver, grid):
@@ -449,8 +470,8 @@ def test_style(driver: FirefoxDriver, grid):
     assert el.value_of_css_property("color") == "rgb(0, 0, 255)"
     tooltip = driver.get_tooltip_content()
     assert (
-        tooltip
-        == '<strong>_Name</strong>: <span style="color: blue">3-methylpentane</span>'
+        tooltip == '<strong>_Name</strong>: <span class="copy-me" '
+        'style="color: blue">3-methylpentane</span>'
     )
 
 
@@ -464,7 +485,10 @@ def test_transform(driver: FirefoxDriver, grid):
     assert name.text == "3-METHYLPENTANE"
     driver.wait_for_img_load()
     tooltip = driver.get_tooltip_content(pause=0.5)
-    assert tooltip == "<strong>_Name</strong>: 3-METHYLPENTANE"
+    assert (
+        tooltip
+        == '<strong>_Name</strong>: <span class="copy-me">3-METHYLPENTANE</span>'
+    )
 
 
 @flaky(max_runs=3, min_passes=1)
@@ -487,7 +511,10 @@ def test_transform_style_tooltip(driver: FirefoxDriver, grid):
     name = cell.find_element(By.CLASS_NAME, "data-_Name")
     assert name.text == "foo"
     tooltip = driver.get_tooltip_content(pause=0.5)
-    assert tooltip == '<strong>_Name</strong>: <span style="color: blue">foo</span>'
+    assert (
+        tooltip == '<strong>_Name</strong>: <span class="copy-me" style="color: blue">'
+        "foo</span>"
+    )
 
 
 @pytest.mark.parametrize("selection", [True, False])
@@ -663,11 +690,12 @@ def test_static_template(driver: FirefoxDriver, sdf_path):
         tooltip
         == '<strong>_Name</strong>: <span class="copy-me">1,3,5-trimethylbenzene</span>'
     )
-    hash_ = driver.get_svg_hash("#mols2grid td .data-img")
-    diff = hash_ - imagehash.hex_to_hash(
-        "fffffe7ffe7ffe7ffe7ffe7ffc3ff10ff3cff3cff3cff3cff38fe1078c319e79"
-    )
-    assert diff <= 1
+    if COORDGEN_SUPPORT:
+        hash_ = driver.get_svg_hash("#mols2grid td .data-img")
+        diff = hash_ - imagehash.hex_to_hash(
+            "fffffe7ffe7ffe7ffe7ffe7ffc3ff10ff3cff3cff3cff3cff38fe1078c319e79"
+        )
+        assert diff <= 1
 
 
 def test_default_subset_tooltip(driver: FirefoxDriver, grid):
