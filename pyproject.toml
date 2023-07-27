@@ -58,6 +58,9 @@ tests = [
     "pytest==6.2.5",
     "selenium==4.10.0",
 ]
+docs = [
+    "mistune<3.0.0",
+]
 dev = [
     "tbump",
     "mols2grid[build,tests]",
