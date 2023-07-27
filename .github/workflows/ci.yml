@@ -26,10 +26,10 @@ jobs:
           - label: CI-old
             os: ubuntu-latest
             python-version: 3.8
-            extra_dependencies: "rdkit==2020.03.1"
+            extra_dependencies: "rdkit==2020.03.1 boost-cpp=1.72.0=h359cf19_6"
           - label: CI-edge
             os: ubuntu-latest
-            python-version: "3.11"
+            python-version: "3.10"
             extra_dependencies: "rdkit"
           - label: CI-py3.8-rdkit2022
             os: ubuntu-latest
@@ -78,9 +78,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           environment-file: environment.yml
-          mamba-version: "*"
-          channels: conda-forge,defaults
           use-only-tar-bz2: true
+          miniforge-variant: Mambaforge
+          miniforge-version: latest
+          use-mamba: true
 
       - name: Check conda and pip
         run: |
@@ -107,7 +108,7 @@ jobs:
                  tests/ -m "not webdriver"
 
       - name: Run webdriver tests
-        uses: nick-invision/retry@v2
+        uses: nick-fields/retry@v2
         with:
           timeout_seconds: 340
           max_attempts: 5
@@ -115,7 +116,7 @@ jobs:
           shell: bash
           command: |
             source /usr/share/miniconda/etc/profile.d/conda.sh
-            conda activate test
+            conda activate /usr/share/miniconda3/envs/test
             pytest --color=yes --disable-pytest-warnings \
                    --cov=mols2grid --cov-report=xml --cov-append \
                    tests/ -m "webdriver"
