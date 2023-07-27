@@ -679,29 +679,6 @@ class MolGrid:
             "{tooltip_html}"
             "</div>"
         )
-        #
-        # The code below is not necessary, it's only adding data-cellstyle="0" which is not needed.
-        #
-        #
-        # if whole_cell_style:
-        #     # Custom cells styling. This can be simplified without repetition
-        #     item = (
-        #         '<div class="m2g-cell{tooltip_class}" data-mols2grid-id="0" tabindex="0" data-cellstyle="0"{tooltip_parameters}>'
-        #         '<div class="m2g-cb-wrap">{checkbox_html}<div class="m2g-cb"></div>{id_display_html}</div>'
-        #         '<div class="m2g-cell-actions">{info_btn_html}{callback_btn_html}</div>'
-        #         '{content}'
-        #         '<div class="m2g-cell-selection-highlight"></div>'
-        #         "</div>"
-        #     )
-        # else:
-        #     item = (
-        #         '<div class="m2g-cell{tooltip_class}" data-mols2grid-id="0" tabindex="0"{tooltip_parameters}>'
-        #         '<div class="m2g-cb-wrap">{checkbox_html}<div class="m2g-cb"></div>{id_display_html}</div>'
-        #         '<div class="m2g-cell-actions">{info_btn_html}{callback_btn_html}</div>'
-        #         '{content}'
-        #         '<div class="m2g-cell-selection-highlight"></div>'
-        #         "</div>"
-        #     )
 
         item = item.format(
             checkbox_html=checkbox_html,
