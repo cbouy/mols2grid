@@ -59,7 +59,7 @@ class MolGrid:
 
     Parameters: Display
     -------------------
-    size : tuple, default=(160, 120)
+    size : tuple, default=(130, 90)
         The size of the drawing canvas. The cell minimum width is set to the
         width of the image, so if the cell padding is increased, the image will
         be displayed smaller.
@@ -121,7 +121,7 @@ class MolGrid:
         smiles_col="SMILES",
         mol_col=None,
         #
-        size=(160, 120),
+        size=(130, 90),
         useSVG=True,
         prerender=False,
         cache_selection=False,

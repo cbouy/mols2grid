@@ -52,7 +52,7 @@ def display(arg, **kwargs):
     -------------------
     template : str, default="interactive"
         Either ``"interactive"`` or ``"static"``. See ``render()`` for more details.
-    size : tuple, default=(160, 120)
+    size : tuple, default=(130, 90)
         The size of the drawing canvas. The cell minimum width is set to the
         width of the image, so if the cell padding is increased, the image will
         be displayed smaller.
