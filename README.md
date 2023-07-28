@@ -13,6 +13,8 @@
 
 **mols2grid** is an interactive molecule viewer for 2D structures, based on RDKit.
 
+![Demo image](docs/_static/demo.png)
+
 ## [Documentation](https://mols2grid.readthedocs.io/en/latest/contents.html)
 
 Installation, basic usage, links to resources...*etc.*

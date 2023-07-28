@@ -84,6 +84,7 @@ Feel free to open a pull request if you'd like your snippets to be added to this
 
 # 👏 Acknowledgments
 ---
+* [@themoenen](https://github.com/themoenen) (contributor)
 * [@fredrikw](https://github.com/fredrikw) (contributor)
 * [@JustinChavez](https://github.com/JustinChavez) (contributor)
 * [@hadim](https://github.com/hadim) (conda feedstock maintainer)
