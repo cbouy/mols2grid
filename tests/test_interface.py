@@ -73,7 +73,14 @@ def driver():
 
 @pytest.fixture(scope="module")
 def html_doc(grid):
-    return get_doc(grid, dict(n_items_per_page=5, subset=["_Name", "img"]))
+    return get_doc(
+        grid,
+        dict(
+            n_items_per_page=5,
+            subset=["_Name", "img"],
+            size=(160, 120),
+        ),
+    )
 
 
 # make sure non-parametrized test is ran first
@@ -128,7 +135,7 @@ def test_page_click(driver: FirefoxDriver, grid, page):
         (
             "custom_css",
             "background-color",
-            ".m2g-cell { background-color: black; }",
+            "#mols2grid .m2g-cell { background-color: black; }",
             "rgb(0, 0, 0)",
         ),
     ],
@@ -268,7 +275,11 @@ def test_image_use_coords(driver: FirefoxDriver, df):
     mols = df["mol"][:1]
     AllChem.EmbedMolecule(mols[0], randomSeed=0xF00D)
     grid = mols2grid.MolGrid.from_mols(
-        mols, use_coords=True, prerender=True, useSVG=False
+        mols,
+        use_coords=True,
+        prerender=True,
+        useSVG=False,
+        size=(160, 120),
     )
     doc = get_doc(grid, {"substruct_highlight": False})
     driver.get(doc)
@@ -308,7 +319,12 @@ def test_image_use_coords(driver: FirefoxDriver, df):
 def test_coordgen(driver: FirefoxDriver, mols, coordGen, prerender, expected):
     useSVG = not prerender
     grid = mols2grid.MolGrid.from_mols(
-        mols, coordGen=coordGen, prerender=prerender, useSVG=useSVG, use_coords=False
+        mols,
+        coordGen=coordGen,
+        prerender=prerender,
+        useSVG=useSVG,
+        size=(160, 120),
+        use_coords=False,
     )
     doc = get_doc(grid, {"substruct_highlight": False})
     driver.get(doc)
@@ -355,7 +371,12 @@ def test_removeHs(driver: FirefoxDriver, df, removeHs, prerender, expected):
     mol.ClearProp("SMILES")
     mols = [Chem.AddHs(mol)]
     grid = mols2grid.MolGrid.from_mols(
-        mols, removeHs=removeHs, prerender=prerender, useSVG=useSVG, use_coords=False
+        mols,
+        removeHs=removeHs,
+        prerender=prerender,
+        useSVG=useSVG,
+        size=(160, 120),
+        use_coords=False,
     )
     doc = get_doc(grid, {"n_items_per_page": 5, "substruct_highlight": False})
     driver.get(doc)
@@ -393,7 +414,7 @@ def test_removeHs(driver: FirefoxDriver, df, removeHs, prerender, expected):
     ],
 )
 def test_moldrawoptions(driver: FirefoxDriver, df, kwargs, expected):
-    grid = get_grid(df, **kwargs)
+    grid = get_grid(df, size=(160, 120), **kwargs)
     doc = get_doc(grid, dict(n_items_per_page=1, subset=["img"]))
     driver.get(doc)
     driver.wait_for_img_load()
@@ -576,7 +597,14 @@ def test_substruct_highlight(
 
 
 def test_substruct_clear_removes_highlight(driver: FirefoxDriver, grid):
-    doc = get_doc(grid, {"n_items_per_page": 5, "substruct_highlight": True})
+    doc = get_doc(
+        grid,
+        {
+            "n_items_per_page": 5,
+            "substruct_highlight": True,
+            "size": (160, 120),
+        },
+    )
     driver.get(doc)
     driver.wait_for_img_load()
     driver.substructure_query("C")
@@ -590,7 +618,14 @@ def test_substruct_clear_removes_highlight(driver: FirefoxDriver, grid):
 
 
 def test_smarts_to_text_search_removes_highlight(driver: FirefoxDriver, grid):
-    doc = get_doc(grid, {"n_items_per_page": 5, "substruct_highlight": True})
+    doc = get_doc(
+        grid,
+        {
+            "n_items_per_page": 5,
+            "substruct_highlight": True,
+            "size": (160, 120),
+        },
+    )
     driver.get(doc)
     driver.wait_for_img_load()
     driver.substructure_query("I")
@@ -683,6 +718,7 @@ def test_static_template(driver: FirefoxDriver, sdf_path):
             tooltip=["_Name"],
             sort_by="_Name",
             tooltip_trigger="hover",
+            size=(160, 120),
         ),
     )
     driver.get(doc)
@@ -772,7 +808,11 @@ def test_highlight_with_hydrogens(driver: FirefoxDriver, df):
         m = Chem.AddHs(mol)
         m.ClearProp("SMILES")
         mols.append(m)
-    grid = mols2grid.MolGrid.from_mols(mols, removeHs=False)
+    grid = mols2grid.MolGrid.from_mols(
+        mols,
+        removeHs=False,
+        size=(160, 120),
+    )
     doc = get_doc(grid, dict(substruct_highlight=True, single_highlight=False))
     driver.get(doc)
     driver.wait_for_img_load()
