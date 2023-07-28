@@ -709,7 +709,7 @@ def test_custom_header(driver: FirefoxDriver, grid):
 
 def test_static_template(driver: FirefoxDriver, sdf_path):
     df = mols2grid.sdf_to_dataframe(sdf_path)[:15]
-    grid = mols2grid.MolGrid(df, mol_col="mol", prerender=True)
+    grid = mols2grid.MolGrid(df, mol_col="mol", prerender=True, size=(160, 120))
     doc = get_doc(
         grid,
         dict(
@@ -718,7 +718,6 @@ def test_static_template(driver: FirefoxDriver, sdf_path):
             tooltip=["_Name"],
             sort_by="_Name",
             tooltip_trigger="hover",
-            size=(160, 120),
         ),
     )
     driver.get(doc)
