@@ -404,6 +404,7 @@ body {
     color: var(--m2g-black);
     overflow: hidden;
     box-sizing: border-box;
+    background-color: {{ background_color }};
 }
 #mols2grid .m2g-cell:focus {
     z-index: 1;
