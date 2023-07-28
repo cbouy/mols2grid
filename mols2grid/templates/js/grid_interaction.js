@@ -322,7 +322,7 @@ function saveCSV(e) {
 function _renderCSV(sep) {
     // Same order as subset + tooltip
     var columns = Array.from(listObj.items[0].elm.querySelectorAll("div.data"))
-        .map(elm => elm.classList[2])
+        .map(elm => elm.classList[1])
         .filter(name => name !== "data-img");
     // Remove 'data-' and img
     var header = columns.map(name => name.slice(5));

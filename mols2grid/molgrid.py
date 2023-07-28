@@ -595,18 +595,18 @@ class MolGrid:
             else:
                 if style.get(col):
                     s = (
-                        f'<div class="data copy-me data-{slugify(col)} style-{slugify(col)}" '
+                        f'<div class="data data-{slugify(col)} copy-me style-{slugify(col)}" '
                         'style=""></div>'
                     )
                 else:
-                    s = f'<div class="data copy-me data-{slugify(col)}"></div>'
+                    s = f'<div class="data data-{slugify(col)} copy-me"></div>'
             temp.append(s)
             column_map[col] = f"data-{col}"
         content = temp + content
 
         # Add but hide SMILES div if not present.
         if smiles not in (subset + tooltip):
-            s = f'<div class="data copy-me data-{slugify(smiles)}" style="display: none;"></div>'
+            s = f'<div class="data data-{slugify(smiles)} copy-me" style="display: none;"></div>'
             content.append(s)
             column_map[smiles] = f"data-{smiles}"
 
