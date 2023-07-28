@@ -732,6 +732,20 @@ hr {
         background-color: {{ hover_color }};
         pointer-events: none;
     }
+
+    /* info button */
+    #mols2grid .m2g-info:hover::before {
+        content: 'i';
+        color: #fff;
+        width: 18px;
+        height: 18px;
+        line-height: 18px;
+        background: var(--m2g-hl);
+        position: absolute;
+        left: 5px;
+        top: 5px;
+        border-radius: 9px;
+    }
     
     /* Callback button */
     #mols2grid .m2g-callback:hover::after {
