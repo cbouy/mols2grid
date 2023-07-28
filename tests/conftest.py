@@ -38,7 +38,7 @@ def grid_prerendered(df):
 
 @pytest.fixture(scope="module")
 def grid(df):
-    return MolGrid(df, mol_col="mol")
+    return MolGrid(df, mol_col="mol", size=(160, 120))
 
 
 @pytest.fixture(scope="module")

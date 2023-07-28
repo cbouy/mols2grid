@@ -1,7 +1,7 @@
 function SmartsSearch(query, columns) {
     var smiles_col = columns[0];
     smarts_matches = {};
-    var query = $('#mols2grid #searchbar').val();
+    var query = $('#mols2grid .m2g-searchbar').val();
     var qmol = RDKit.get_qmol(query);
     if (qmol.is_valid()) {
         listObj.items.forEach(function (item) {
@@ -56,14 +56,16 @@ String.prototype.replace = (function(_super) {
         return _super.apply(this, arguments);
     };         
 })(String.prototype.replace);
+
 // Switch search type (Text or SMARTS)
-$('#mols2grid .search-btn').click(function() {
+$('#mols2grid .m2g-search-options .m2g-option').click(function() {
     search_type = $(this).text();
-    $('#mols2grid button.search-btn.active').removeClass("active");
-    $(this).addClass("active");
+    $('#mols2grid .m2g-search-options .m2g-option.sel').removeClass("sel");
+    $(this).addClass("sel");
 });
+
 // Searchbar update event handler
-$('#mols2grid #searchbar').on("keyup", function(e) {
+$('#mols2grid .m2g-searchbar').on("keyup", function(e) {
     var query = e.target.value;
     if (search_type === "Text") {
         smarts_matches = {};

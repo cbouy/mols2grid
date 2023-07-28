@@ -1,10 +1,11 @@
 // list.js
 var listObj = new List('mols2grid', {
+    listClass: 'm2g-list',
     valueNames: {{ value_names }},
     item: {{ item_repr }},
     page: {{ n_items_per_page }},
     pagination: {
-        name: "pagination",
+        paginationClass: "m2g-pagination",
         item: '<li class="page-item"><a class="page page-link" href="#" onclick="event.preventDefault()"></a></li>',
         innerWindow: 1,
         outerWindow: 1,
@@ -12,6 +13,8 @@ var listObj = new List('mols2grid', {
 });
 listObj.remove("mols2grid-id", "0");
 listObj.add({{ data }});
+
+
 // filter
 if (window.parent.mols2grid_lists === undefined) {
     window.parent.mols2grid_lists = {};
@@ -33,7 +36,7 @@ var SELECTION = new MolStorage();
 // restore checkbox state
 SELECTION.multi_set({{ cached_selection[0] }}, {{ cached_selection[1] }});
 listObj.on("updated", function (list) {
-    $('#mols2grid .cell input[checked="false"]').prop("checked", false);
+    $('#mols2grid .m2g-cell input[checked="false"]').prop("checked", false);
 });
 {% endif %}
 
@@ -43,7 +46,7 @@ listObj.on("updated", function (list) {
 {% if whole_cell_style %}
 // add style for whole cell
 listObj.on("updated", function (list) {
-    $('#mols2grid div.cell').each(function() {
+    $('#mols2grid div.m2g-cell').each(function() {
         var $t = $(this);
         $t.attr({style: $t.attr('data-cellstyle')})
           .removeAttr('data-cellstyle');
@@ -56,14 +59,14 @@ listObj.on("updated", function (list) {
 $.fn.tooltip.Constructor.Default.whiteList.span = ['style']
 listObj.on("updated", function (list) {
     $(function () {
-        // hide previous popovers
+        // Hide previous popovers.
         $('#mols2grid a.page-link').click(function(e) {
-            $('.mols2grid-tooltip[data-toggle="popover"]').popover('hide')
+            $('.m2g-tooltip[data-toggle="popover"]').popover('hide')
         });
-        // create new popover
-        $('.mols2grid-tooltip[data-toggle="popover"]').popover({
+        // Create new popover.
+        $('.m2g-tooltip[data-toggle="popover"]').popover({
             placement: {{ tooltip_placement }},
-            trigger: {{ tooltip_trigger }},
+            trigger: 'manual',
             html: true,
             sanitize: false,
         });
@@ -71,15 +74,8 @@ listObj.on("updated", function (list) {
 });
 {% endif %}
 
-{% if selection %}
-// selection modifyers and export options
-{% include 'js/selection_actions.js' %}
-{% endif %}
-
-{% if callback %}
-// callback
-{% include 'js/callback.js' %}
-{% endif %}
+// grid interactions (select, click, tooltip, key events)
+{% include 'js/grid_interaction.js' %}
 
 {% if onthefly %}
 // generate images for the currently displayed molecules
@@ -96,17 +92,16 @@ window
     window.RDKit = RDKit;
     window.RDKitModule = RDKit;
 
-    // search bar
+    // Searchbar
     {% include 'js/search.js' %}
 
     {% if onthefly %}
     {% include 'js/draw_mol.js' %}
     {% endif %}
 
-    // trigger update to activate tooltips, draw images, setup callbacks...
+    // Trigger update to activate tooltips, draw images, setup callbacks...
     listObj.update();
-    // resize iframe to fit content
-    if (window.frameElement) {
-        fit_height(window.frameElement);
-    }
+    
+    // Set iframe height to fit content.
+    fitIframe(window.frameElement);
 });

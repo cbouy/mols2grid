@@ -1,9 +1,28 @@
 <script>
-    function fit_height(obj) {
-        obj.style.height = 0;
-        var height = obj.contentDocument.body.scrollHeight + {{ padding }} + 'px';
-        obj.style.height = height;
+    // Set iframe height to fit content.
+    function fitIframe(iframe) {
+        // Ignore when there's no iframe
+        if (!iframe) return
+
+        // Only fit height when no specific height was given.
+        if (iframe.getAttribute('height')) return;
+
+        // Initial fit + refit whenever the window width changes.
+        _fit()
+        $(window).on('resize', function() {
+            if (window.innerWidth != window.prevInnerWidth) {
+                window.prevInnerWidth = window.innerWidth
+                _fit();
+            }
+        })
+
+        // Fit iframe height to content height.
+        function _fit() {
+            var height = iframe.contentDocument.body.scrollHeight + {{ iframe_padding }} + 'px';
+            iframe.style.height = height;
+        }
     }
 </script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+
+<!-- prettier-ignore -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>

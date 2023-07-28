@@ -375,6 +375,5 @@ $RECYCLE.BIN/
 
 mols2grid/nbextension/index.*
 mols2grid/labextension
-package-lock.json
 .vscode/
 quickstart-grid.html

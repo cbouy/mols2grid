@@ -1,4 +1,4 @@
-// generate images for the currently displayed molecules
+// Generate images for the currently displayed molecules.
 RDKit.prefer_coordgen({{ prefer_coordGen | tojson }});
 function draw_mol(smiles, index, template_mol) {
     var mol = RDKit.get_mol(smiles, '{"removeHs": {{ removeHs | tojson }} }');
@@ -16,12 +16,14 @@ function draw_mol(smiles, index, template_mol) {
     }
     mol.delete();
     if (svg == "") {
-        return '<svg width="{{ cell_width }}" height="{{ height }}" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 {{ cell_width }} {{ height }}"></svg>';
+        return '<svg width="{{ image_width }}" height="{{ image_height }}" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 {{ image_width }} {{ image_height }}"></svg>';
     }
     return svg;
 }
+
+// Update images when the list is updated.
 listObj.on("updated", function (list) {
-    var query = $('#mols2grid #searchbar').val();
+    var query = $('#mols2grid .m2g-searchbar').val();
     var template_mol;
     if (query === "") {
         smarts_matches = {};
@@ -30,7 +32,7 @@ listObj.on("updated", function (list) {
         template_mol = RDKit.get_qmol(query);
         template_mol.set_new_coords({{ prefer_coordGen | tojson }});
     }
-    $('#mols2grid .cell').each(function() {
+    $('#mols2grid .m2g-cell').each(function() {
         var $t = $(this);
         var smiles = $t.children(".data-{{ smiles_col }}").first().text();
         var index = parseInt(this.getAttribute("data-mols2grid-id"));

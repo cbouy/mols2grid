@@ -1,0 +1,56 @@
+/* Note: #mols2grid is the table element */
+#mols2grid {
+    border-collapse: {{ 'collapse' if gap == 0 else 'separate' }};
+    border-spacing: {{ gap }}px;
+    /* Compensate for gap so table stays aligned with content above */
+    margin: {{ 0 if gap == 0 else -gap }}px;
+}
+#mols2grid, tr, td {
+    border: none;
+}
+#mols2grid tr {
+    page-break-inside: avoid !important;
+}
+
+/* Cell */
+#mols2grid td {
+    border: {{ border }};
+    text-align: {{ textalign }};
+    vertical-align: top;
+    max-width: {{ cell_width }}px;
+    width: {{ cell_width }}px;
+    font-family: {{ fontfamily }};
+    font-size: {{ fontsize }};
+    margin: 0;
+    padding: {{ pad }}px;
+    position: relative;
+}
+
+/* Call focus state */
+#mols2grid td:focus-within,
+#mols2grid td:focus {
+    outline: solid 2px #555;
+    border-color: transparent;
+}
+
+/* ID */
+#mols2grid .data-mols2grid-id {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 5px;
+}
+
+/* Tooltip margin */
+/* Adjusted so it plays well with the extruded outline */
+.popover[x-placement] {
+    margin: 1px 2px 2px 1px;
+}
+
+
+#mols2grid td div img {
+    max-width: {{ image_width }}px;
+    width: {{ image_width }}px;
+    height: auto;
+    padding: 0;
+}

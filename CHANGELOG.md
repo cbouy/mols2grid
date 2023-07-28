@@ -8,6 +8,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.0.0] - ????/??/??
+
+This release is a major change on the UI contributed by @themoenen, refer to
+[PR#55](https://github.com/cbouy/mols2grid/pull/55) for the full list of changes:
+
+### Added
+- `background_color="white"` parameter added to `display` and `save` to control the background
+  color of each cell.
+- Property values displayed via subset or tooltip can now be copied by clicking them.
+
+### Changed
+- Responsiveness: the grid as well as all UI components are now fully responsive, up until around
+  ~415px wide. Smaller usage seems unlikely.
+- `n_items_per_page` replaces the `n_rows` and `n_cols` parameters. The responsive CSS assumes
+  results to be a multiple of 12, otherwise a gap is displayed at the end of the grid.
+- Hover tooltips: now displayed when hovering the *`i`* icon, and anchored by clicking this icon.
+- Save CVS: When exporting as CSV we now use a semicolon `;` as delineator instead of a tab, this
+  way CSVs are properly previewed on Mac.
+- Templates: the `pages`/`table` templates and corresponding functions have been renamed to
+  `interactive`/`static` for clarity.
+- Parameters `width` and `height` have been renamed to `iframe_width` and `iframe_height` to be more
+  descriptive.
+- Improved the sorting UI to be more intuitive.
+- You can now toggle between text/SMARTS search instead of having to click a dropdown.
+- The checkbox menu icon was replaced with a more standard triple dot menu.
+- The mols2grid-id is now permanently displayed next to the checkbox in the corner.
+- SVGs are now rendered with a transparent background.
+- The entire cell is now clickable, instead of just the tiny checkbox.
+- Implemented some basic keyboard navigation: ENTER / ESC for selecting / unselecting, arrows and
+  TAB for navigation.
+- Copy to clipboard: this will now record a tab delineated text which is ready to be pasted into a
+  spreadsheet, instead of the less useful dictionary format.
+- The `tooltip_trigger` parameter has been removed since callback and hover functionalities don't
+  overlap anymore.
+- We're now automatically adding `"img"` to the subset instead of throwing an error.
+- A smaller default font size (12px) makes the experience out of the box a bit more practical.
+
+### Fixed
+- Docstring now mention default values and some inconsistencies have been fixed.
+- All UI elements are now neatly aligned and displayed on top so they're accessible without
+  scrolling.
+- Longer property values are now only truncated in the interactive grid, and broken into multiple
+  lines by default in the static grid, as it is mostly meant for printing. A new parameter
+  `truncate` lets you override the default truncating behavior.
+- The tooltip display zone (around which the tooltip is displayed) is now the entire cell instead
+  of only the image, so it never overlaps with any of the cell's data or functionality.
+- When you download a CSV or SMILES file without any cells selected, you will now download data for
+  all cells instead of an empty document.
+- Parameter `gap` in static template didn't work.
+- We no longer resize the iframe if a custom `iframe_height` is set by the display function.
+
+---
+
 ## [1.1.1] - 2023/03/18
 
 ### Added

@@ -50,12 +50,12 @@ def tooltip_formatter(s, subset, fmt, style, transform):
     for k, v in s[subset].to_dict().items():
         displayed = transform[k](v) if transform.get(k) else v
         v = (
-            f'<span style="{style[k](v)}">{displayed}</span>'
+            f'<span class="copy-me" style="{style[k](v)}">{displayed}</span>'
             if style.get(k)
-            else displayed
+            else f'<span class="copy-me">{displayed}</span>'
         )
         items.append(fmt.format(key=k, value=v))
-    return "<br>".join(items)
+    return '<br>'.join(items)
 
 
 def mol_to_smiles(mol):
@@ -89,7 +89,8 @@ def sdf_to_dataframe(sdf_path, mol_col="mol"):
         read_file = partial(open, mode="rb")
     with read_file(sdf_path) as f:
         return pd.DataFrame(
-            [mol_to_record(mol, mol_col) for mol in Chem.ForwardSDMolSupplier(f)]
+            [mol_to_record(mol, mol_col)
+             for mol in Chem.ForwardSDMolSupplier(f)]
         )
 
 

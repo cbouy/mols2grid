@@ -27,6 +27,7 @@ Welcome to mols2grid's documentation!
 
    api/simple
    api/molgrid
+   api/callbacks
    api/utils
 
 

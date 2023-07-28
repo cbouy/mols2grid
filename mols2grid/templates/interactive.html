@@ -1,0 +1,122 @@
+{# <h1>Header 1</h1>
+<h2>Header 2</h2>
+<h3>Header 3</h3>
+<h4>Header 2</h4>
+<h2>Header 2</h2>
+<h4>Header 2</h4> #}
+
+{# Iframe HTML wrapper #}
+{% if use_iframe %}
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document!</title>
+{% endif %}
+
+
+        <style>
+            {% include 'css/common.css' %}
+            {% include 'css/interactive.css' %}
+
+            /* Custom CSS */
+            {{ custom_css }}
+        </style>
+        {% include 'html/interactive_header.html' %}
+        {% include 'html/common_header.html' %}
+        
+        <!-- Custom header -->
+        {{ custom_header }}
+
+
+{# Iframe HTML wrapper #}
+{% if use_iframe %}
+    </head>
+    <body class="m2g-inside-iframe">
+{% endif %}
+
+
+        <div id="mols2grid" class="grid-{{ grid_id }}">
+            <!-- Pagination & search -->
+            <div class="m2g-functions">
+                {# Rows are used to collapse functions into two rows on smaller screens #}
+                <div class="m2g-row">
+                    <!-- Pagination -->
+                    <ul class="m2g-pagination" class="d-flex"></ul>
+                    <div class="m2g-gap"></div>
+
+                    <!-- Sort dropdown -->
+                    <div class="m2g-dropdown m2g-sort">
+                        <select>
+                            {% set default_sort = sort_by.replace("data-", "", 1) %}
+                            {% for name in sort_cols %}
+                                {% set col_name = name.replace("data-", "", 1) %}
+                                {% set selected = " selected" if default_sort == col_name else "" %}
+                                {% if loop.first %}
+                            <option value="mols2grid-id"{{ selected }}>Index</option>
+                                {% else %}
+                            <option value="{{ name }}"{{ selected }}>{{ col_name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                            {% if selection %}
+                            <option value="checkbox"{{ selected }}>Selected</option>
+                            {% endif %}
+                        </select>
+                        <div class="m2g-order"></div>
+                        <div class="m2g-display">
+                            {{ 'Index' if default_sort == 'mols2grid-id' else default_sort }}
+                        </div>
+                    </div>
+                </div>
+                <div class="m2g-row">
+                    <!-- Search bar -->
+                    <div class="m2g-search-wrap">
+                        <input
+                            type="text"
+                            class="m2g-searchbar form-control"
+                            placeholder="Search"
+                            aria-label="Search"
+                            aria-describedby="basic-addon1"
+                        />
+                        <div class="m2g-search-options">
+                            <div class="m2g-option m2g-search-text sel">Text</div>
+                            <div class="m2g-option m2g-search-smarts">SMARTS</div>
+                        </div>
+                    </div>
+
+                    <!-- Action dropdown -->
+                    <div class="m2g-dropdown m2g-actions">
+                        <select>
+                            <option hidden>-</option>
+                            <option value="select-all">Select all</option>
+                            <option value="select-matching">Select matching</option>
+                            <option value="unselect-all">Unselect all</option>
+                            <option value="invert">Invert</option>
+                            <option value="copy">Copy to clipboard</option>
+                            <option value="save-smiles">Save SMILES</option>
+                            <option value="save-csv">Save CSV</option>
+                        </select>
+                        <div class="m2g-icon">
+                            <svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M11.5 4C11.5 4.82843 10.8284 5.5 10 5.5C9.17157 5.5 8.5 4.82843 8.5 4C8.5 3.17157 9.17157 2.5 10 2.5C10.8284 2.5 11.5 3.17157 11.5 4ZM11.5 10C11.5 10.8284 10.8284 11.5 10 11.5C9.17157 11.5 8.5 10.8284 8.5 10C8.5 9.17157 9.17157 8.5 10 8.5C10.8284 8.5 11.5 9.17157 11.5 10ZM10 17.5C10.8284 17.5 11.5 16.8284 11.5 16C11.5 15.1716 10.8284 14.5 10 14.5C9.17157 14.5 8.5 15.1716 8.5 16C8.5 16.8284 9.17157 17.5 10 17.5Z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid -->
+            {# item template is duplicated using List in interactive.js #}
+            <div class="m2g-list">{{ item }}</div>
+        </div>
+        <script>
+            {% include 'js/interactive.js' %}
+        </script>
+
+
+{# Iframe HTML wrapper #}
+{% if use_iframe %}
+    </body>
+</html>
+{% endif %}

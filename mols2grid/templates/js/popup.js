@@ -1,32 +1,52 @@
-// prerequisite JavaScript code
+// Prerequisite JavaScript code.
+// prettier-ignore
 {{ js }}
-// HTML template for the popup
+
+// HTML template for the popup.
 var html = `
-<div class="modal fade" id="m2g-modal" tabindex="-1">
-  <div class="modal-dialog" style="{{ style }}">
-    <div class="modal-content">
-      <div class="modal-header">
-      {% if title %}
-        <h5 class="modal-title">{{ title }}</h5>
-      {% endif %}
-        <button type="button" class="close" data-dismiss="modal">
-          <span>&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-      <!-- provided HTML code -->
-        {{ html }}
-      <!-- end of provided code -->
-      </div>
+<div id="m2g-modal" tabindex="-1" style="{{ style }}">
+
+    <div class="m2g-modal-header">
+        {% if title %}<h2>{{ title }}</h2>{% endif %}
+        {% if subtitle %}<p>{{ subtitle }}</p>{% endif %}
+        <button class="close">&times;</button>
     </div>
-  </div>
+
+    <div class="m2g-modal-body">
+        {% if svg %}<div class="svg-wrap">{{ svg }}</div>{% endif %}
+        {{ html }}
+    </div>
+
 </div>
 `
-// create container element where the popup will be inserted
-if ($("#modal-container").length === 0) {
-  $('<span id="modal-container"></span>').insertAfter("#mols2grid");
+// Create container element where the popup will be inserted.
+if ($('#m2g-modal-container').length === 0) {
+    $('<span id="m2g-modal-container"></span>').insertAfter('#mols2grid')
 }
-// insert the code inside the container element
-$('#modal-container').html(html);
-// trigger display of popup window
-$('#m2g-modal').modal('show'); 
+
+// Insert the code inside the container element.
+$('#m2g-modal-container').html(html)
+
+// Show modal.
+setTimeout(function () {
+    $('#m2g-modal-container').addClass('show')
+}, 0)
+
+// Hide modal on close / ESC key.
+$('#m2g-modal-container').click(function (e) {
+    if (e.target.id == 'm2g-modal-container' || e.target.className == 'close') {
+        closeModal()
+    }
+})
+$(document).keydown(function (e) {
+    if (e.key == 'Escape') {
+        closeModal()
+        e.preventDefault()
+    }
+})
+function closeModal() {
+    $('#m2g-modal-container').removeClass('show')
+    setTimeout(function () {
+        $('#m2g-modal-container').remove()
+    }, 150 + 10)
+}

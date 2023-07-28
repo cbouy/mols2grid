@@ -1,0 +1,96 @@
+/**
+ * General styling
+ */
+body {
+    font-family: {{ fontfamily }};
+}
+h1,h2,h3,h4 {
+    margin: 0 0 10px 0;
+}
+h1 {
+    font-size: 26px;
+}
+h2 {
+    font-size: 20px;
+    font-weight: 400;
+}
+h3 {
+	font-size: 16px;
+}
+p {
+    margin: 0 0 10px 0;
+}
+
+
+/* Remove body margin inside iframe */
+body.m2g-inside-iframe {
+    margin: 0;
+}
+
+/* In-cell text */
+#mols2grid .data:not(.data-img) {
+    height: 16px;
+    line-height: 16px;
+}
+/* Text truncation */
+#mols2grid .data {
+    /* Break text into multiple lines (default for static)... */
+    word-wrap: {{ 'break-word' if not truncate else 'normal' }};
+
+    /* ...or truncate it (default for interactive). */
+    overflow: {{ 'hidden' if truncate else 'visible' }};
+    white-space: {{ 'nowrap' if truncate else 'normal' }};
+    text-overflow: {{ 'ellipsis' if truncate else 'clip' }};
+}
+
+
+/**
+ * Popover
+ * - - -
+ * Note: this is a bootstrap variable which is not namespaced.
+ * To avoid any contamination, we only style it when the
+ * x-placement parameter is set.
+ */
+.popover[x-placement] {
+    font-family: {{ fontfamily }};
+    background: white;
+    border: solid 1px rgba(0,0,0,.2);
+    font-size: {{ fontsize }};
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 20px rgba(0,0,0,.15);
+    user-select: none;
+}
+.popover[x-placement] h3 {
+    margin: 0;
+}
+.popover[x-placement] .arrow {
+    width: 10px;
+    height: 10px;
+    background: #fff;
+    border: solid 1px rgba(0,0,0,.2);
+    box-sizing: border-box;
+    position: absolute;
+    transform-origin: 5px 5px;
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+.popover[x-placement='left'] .arrow {
+    transform: rotate(45deg);
+    top: 50%;
+    right: -5px;
+}
+.popover[x-placement='right'] .arrow {
+    transform: rotate(-135deg);
+    top: 50%;
+    left: -5px;
+}
+.popover[x-placement='top'] .arrow {
+    transform: rotate(135deg);
+    left: 50%;
+    bottom: -5px;
+}
+.popover[x-placement='bottom'] .arrow {
+    transform: rotate(-45deg);
+    left: 50%;
+    top: -5px;
+}

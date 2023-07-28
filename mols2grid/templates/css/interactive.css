@@ -1,0 +1,890 @@
+body {
+    /* Colors */
+    --m2g-black: rgba(0,0,0,.75);
+    --m2g-black-soft: rgba(0,0,0,.35);
+    --m2g-black-10: rgba(0,0,0,.1);
+    --m2g-bg: #f6f6f6;
+    --m2g-border: solid 1px rgba(0,0,0,0.2);
+    --m2g-hl: #555; /* Highlight color */
+    --m2g-hl-shadow: inset 0 0 0 1px var(--m2g-hl); /* Inset 1px shadow to make border thicker */
+    --m2g-blue: #0f62fe;
+    --m2g-blue-soft: rgba(15,98,254,.2);
+
+    /* Icons */
+    --m2g-icn-triangle: url('data:image/svg+xml;utf8,<svg width="20" fill="rgba(0,0,0,.75)" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M9.5713 13.285L6.2543 7.757C6.0543 7.424 6.2953 7 6.6823 7L13.3173 7C13.7053 7 13.9463 7.424 13.7453 7.757L10.4283 13.285C10.2343 13.609 9.7653 13.609 9.5713 13.285Z"/></svg>');
+    --m2g-icn-triangle-white: url('data:image/svg+xml;utf8,<svg width="20" fill="white" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M9.5713 13.285L6.2543 7.757C6.0543 7.424 6.2953 7 6.6823 7L13.3173 7C13.7053 7 13.9463 7.424 13.7453 7.757L10.4283 13.285C10.2343 13.609 9.7653 13.609 9.5713 13.285Z"/></svg>');
+    --m2g-icn-cb-white: url('data:image/svg+xml;utf8,<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><path d="M4 7.65686L7 10.6569L12.6569 5.00001"/></svg>');
+    
+    /* Border radius */
+    --m2g-br: 3px;
+    --m2g-br-l: var(--m2g-br) 0 0 var(--m2g-br); /* Left-only */
+    --m2g-br-r: 0 var(--m2g-br) var(--m2g-br) 0; /* Right-only */
+
+    /* Text */
+    --m2g-fs: 14px; /* UI font-size */
+    --m2g-fs-cell: {{ fontsize }}; /* Cell font-size */
+
+    /* Transition speeds */
+    --m2g-trans: 150ms;
+
+    /* Layout */
+    --m2g-h: 40px; /* Form element height */
+}
+
+/* Styling */
+#mols2grid {
+    font-family: {{ fontfamily }};
+    font-size: var(--m2g-fs);
+}
+
+/* Fixes */
+#mols2grid *,
+#mols2grid *::before,
+#mols2grid *::after {
+    box-sizing: border-box;
+    outline: none;
+}
+
+
+
+/**
+ * Functions section
+ */
+
+#mols2grid .m2g-functions {
+    display: flex;
+}
+#mols2grid .m2g-functions .m2g-row {
+    flex: 0;
+    display: flex;
+}
+
+/* Individual elements don't scale */
+#mols2grid .m2g-functions .m2g-row > * {
+    flex: 0 0;
+    margin-right: 10px;
+}
+#mols2grid .m2g-functions .m2g-row:last-child > *:last-child {
+    margin-right: 0;
+}
+
+/* Row 1: pagination + gap + sort */
+#mols2grid .m2g-functions .m2g-row:first-child {
+    flex: 1; /* Scale */
+}
+#mols2grid .m2g-functions .m2g-gap {
+    /* The gap in between will scale, so the pagination
+    stays on the left, while the rest moves to the right */
+    flex: 1;
+    margin-right: 0;
+}
+
+
+
+/*
+ * Pagination
+ */
+
+#mols2grid ul.m2g-pagination {
+    /* Unset defaults */
+    list-style-type: none;
+    margin-block-start: 0;
+    margin-block-end: 0;
+    margin-inline-start: 0;
+    margin-inline-end: 0;
+    padding-inline-start: 0;
+
+    /* Custom */
+    display: flex;
+}
+#mols2grid ul.m2g-pagination li {
+    background: var(--m2g-bg) ;
+    border: var(--m2g-border);
+    height: var(--m2g-h);
+    min-width: calc(var(--m2g-h) + 1px);
+    position: relative;
+    user-select: none;
+    
+    /* Compensate for double border */
+    margin-right: -1px;
+    
+    /* Center text */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#mols2grid ul.m2g-pagination li:last-child {
+    min-width: var(--m2g-h);
+}
+#mols2grid ul.m2g-pagination li a {
+    text-decoration: none;
+    color: var(--m2g-black);
+    padding: 0 10px;
+    width: 100%;
+    height: var(--m2g-h);
+    line-height: var(--m2g-h);
+    text-align: center;
+    /* Compensate for border so there's no gap between click areas  */
+    margin: 0 -1px;
+}
+
+/* Corner shape */
+#mols2grid ul.m2g-pagination li:first-child {
+    border-radius: var(--m2g-br-l);
+}
+#mols2grid ul.m2g-pagination li:last-child {
+    border-radius: var(--m2g-br-r);
+    margin-right: 0;
+}
+
+/* Focus state */
+#mols2grid ul.m2g-pagination li:focus-within {
+    border-color: var(--m2g-hl);
+    box-shadow: var(--m2g-hl-shadow);
+    z-index: 1;
+}
+
+/* Active state */
+#mols2grid ul.m2g-pagination li.active {
+    background: var(--m2g-hl);
+    z-index: 1;
+}
+#mols2grid ul.m2g-pagination li.active a {
+    cursor: default;
+    color: #fff;
+}
+
+/* Disabled sate */
+#mols2grid ul.m2g-pagination li.disabled a {
+    cursor: default;
+    color: rgba(0,0,0,.25);
+    pointer-events: none;
+}
+
+
+
+/*
+ * Dropdowns
+ */
+
+#mols2grid ::placeholder {
+    color: var(--m2g-black-soft);
+}
+#mols2grid .m2g-dropdown {
+    height: var(--m2g-h);
+    background: var(--m2g-bg);
+    border: var(--m2g-border);
+    border-radius: var(--m2g-br);
+    position: relative;
+}
+#mols2grid .m2g-dropdown select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -ms-appearance: none;
+    appearance: none;
+    background: transparent;
+    border: none;
+    height: 100%;
+    padding: 0 13px;
+    min-width: 0;
+    max-width: 250px;
+    color: var(--m2g-black);
+    cursor: pointer;
+}
+
+/* Icon */
+#mols2grid .m2g-dropdown .m2g-icon {
+    width: 30px;
+    height: var(--m2g-h);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    right: 0;
+    pointer-events: none;
+}
+#mols2grid .m2g-dropdown .m2g-icon svg:not(.m2g-stroke) {
+    fill: var(--m2g-black);
+}
+#mols2grid .m2g-dropdown .m2g-icon svg.m2g-stroke {
+    stroke: var(--m2g-black);
+}
+
+/* Display */
+/* We hide the native select element because
+ * it is limited in styling. Instead, we display
+ * the selected value in a div. */
+#mols2grid .m2g-dropdown .m2g-display {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    pointer-events: none;
+    color: var(--m2g-black);
+    line-height: var(--m2g-h);
+    padding: 0 25px 0 13px;
+
+    /* Truncate dropdown text */
+    white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+/* Focus state */
+#mols2grid .m2g-dropdown:focus-within {
+    border-color: var(--m2g-hl);
+    box-shadow: var(--m2g-hl-shadow);
+}
+
+
+
+/**
+ * Action dropdown
+ */
+
+#mols2grid .m2g-dropdown.m2g-actions {
+    width: var(--m2g-h);
+    padding: 0;
+}
+#mols2grid .m2g-dropdown.m2g-actions select {
+    opacity: 0;
+    width: var(--m2g-h);
+}
+#mols2grid .m2g-dropdown.m2g-actions .m2g-icon {
+    width: var(--m2g-h);
+}
+
+
+
+/*
+ * Sort dropdown
+ */
+
+#mols2grid .m2g-dropdown.m2g-sort {
+    flex: 0 0 200px;
+    width: 200px; /* Needed in addition to flex-basis for small sizes! */
+    border-radius: var(--m2g-br);
+    background: var(--m2g-bg);
+    display: flex;
+}
+
+/* Dropdown */
+#mols2grid .m2g-dropdown.m2g-sort select {
+    flex: 1 1;
+    opacity: 0;
+    /* padding-right: 70px; Space for "Sort:" */
+    box-sizing: border-box;
+}
+
+/* Sort order */
+#mols2grid .m2g-dropdown.m2g-sort .m2g-order {
+    background: var(--m2g-bg) var(--m2g-icn-triangle) no-repeat center;
+    flex: 0 0 30px;
+    height: 100%;
+    border-left: var(--m2g-border);
+    cursor: pointer;
+}
+#mols2grid .m2g-dropdown.m2g-sort.m2d-arrow-desc .m2g-order {
+    transform: rotate(180deg);
+    border-left: none;
+    border-right: var(--m2g-border);
+}
+
+/* Display */
+#mols2grid .m2g-dropdown.m2g-sort .m2g-display {
+    right: 31px;
+    padding-right: 13px;
+}
+#mols2grid .m2g-dropdown.m2g-sort .m2g-display::before {
+    content: 'Sort: ';
+}
+
+/* Focus state */
+#mols2grid .m2g-dropdown.m2g-sort:focus-within .m2g-display,
+#mols2grid .m2g-dropdown.m2g-sort:focus-within .m2g-order {
+    background-color: transparent;
+}
+
+
+
+/*
+ * Search bar
+ */
+
+#mols2grid .m2g-search-wrap {
+    height: var(--m2g-h);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    background: var(--m2g-bg);
+    border: var(--m2g-border);
+    border-radius: var(--m2g-br);
+}
+#mols2grid .m2g-searchbar {
+    width: 170px;
+    height: var(--m2g-h);
+    padding: 0 13px;
+    border: none;
+    color: var(--m2g-black);
+    cursor: text;
+    background: transparent;
+}
+
+/* Focus state */
+#mols2grid .m2g-search-wrap:focus-within {
+    border-color: var(--m2g-hl);
+    box-shadow: var(--m2g-hl-shadow);
+}
+
+/* Option buttons */
+#mols2grid .m2g-search-options {
+    font-size: 12px;
+    display: flex;
+    height: calc(1.5em + .75rem);
+    line-height: calc(1.5em + .75rem);
+    margin-right: 5px;
+    border-radius: var(--m2g-br);
+    color: var(--m2g-black);
+}
+#mols2grid .m2g-search-options .m2g-option {
+    background: var(--m2g-black-10);
+    padding: 0 13px;
+    cursor: default;
+    user-select: none;
+}
+#mols2grid .m2g-search-options .m2g-option:not(.sel) {
+    cursor: pointer;
+}
+#mols2grid .m2g-search-options .m2g-option:first-child {
+    border-radius: 2px 0 0 2px;
+}
+#mols2grid .m2g-search-options .m2g-option:last-child {
+    border-radius: 0 2px 2px 0;
+}
+#mols2grid .m2g-search-options .m2g-option.sel {
+    background: var(--m2g-hl);
+    color: #fff;
+}
+
+
+
+/**
+ * Grid
+ */
+
+/* Container */
+#mols2grid .m2g-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 1px; /* Compensate for negative padding on cell */
+    user-select: none;
+    margin: {{ 0 if gap == 0 else -gap }}px;
+    margin-top: {{ 20 if gap == 0 else -gap + 20 }}px;
+    font-family: {{ fontfamily }};
+    
+}
+
+/* Cell */
+#mols2grid .m2g-cell {
+    border: {{ border }};
+    text-align: {{ textalign }};
+    vertical-align: top;
+    font-family: var(--font-family);
+    padding: {{ pad }}px;
+    padding-top: max({{ pad }}px, 20px);
+    margin: {{ gap_px }};
+    flex: 1 0 {{ cell_width }}px;
+    position: relative;
+    font-size: var(--m2g-fs-cell);
+    cursor: pointer;
+    color: var(--m2g-black);
+    overflow: hidden;
+    box-sizing: border-box;
+    background-color: {{ background_color }};
+}
+#mols2grid .m2g-cell:focus {
+    z-index: 1;
+    border-color: var(--m2g-hl);
+    box-shadow: var(--m2g-hl-shadow);
+}
+
+/* Phantom cells to maintain grid structure with less results */
+#mols2grid .m2g-cell.m2g-phantom {
+    border: none;
+    pointer-events: none;
+    height: 0;
+    padding: 0;
+}
+
+/* Checkbox & ID */
+#mols2grid .m2g-cb-wrap {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    display: flex;
+    border-radius: 2px;
+    font-size: 0;
+    line-height: 0;
+    padding: 3px;
+    padding-right: 0;
+}
+#mols2grid .m2g-cb-wrap input[type=checkbox] {
+    display: none;
+}
+#mols2grid .m2g-cb-wrap input[type=checkbox] + .m2g-cb {
+	width: 16px;
+	height: 16px;
+	box-sizing: border-box;
+	background: #fff;
+	border: var(--m2g-border);
+	border-radius: 2px;
+    margin-right: 5px;
+}
+#mols2grid .m2g-cb-wrap input[type=checkbox]:checked + .m2g-cb {
+    border: none;
+    background-color: var(--m2g-blue);
+    background-image: var(--m2g-icn-cb-white);
+}
+#mols2grid .m2g-tooltip {
+    /* This is a div spanning full cell size where the
+    tooltip is rendered around, because you can't attach
+    it to the parent due to list.js limitation. */
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0;
+}
+#mols2grid .m2g-cell:has(:checked) {
+    background: #ffd !important; /* Overrides user-set background color */
+}
+#mols2grid .data-mols2grid-id-display {
+    font-size: var(--m2g-fs-cell);
+    line-height: 16px;
+}
+#mols2grid .m2g-cb-wrap input[type=checkbox] + .data-mols2grid-id-display {
+    padding: 0 5px 0 5px;
+}
+#mols2grid .m2g-cb-wrap .data-name-display {
+    font-size: var(--m2g-fs);
+    line-height: 16px;
+}
+
+/* Info + callback button wrap (28px high) */
+#mols2grid .m2g-cell-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    flex-direction: row;
+    font-size: 0;
+    line-height: 0;
+    
+    /* background: yellow; */
+}
+
+/* Info button */
+#mols2grid .m2g-info {
+    width: 28px;
+    height: 28px;
+    border-radius: 2px;
+    line-height: 28px;
+    font-size: min(14px, {{ fontsize }});
+    font-family: Georgia, serif;
+    font-style: italic;
+    padding: 0;
+    text-align: center;
+}
+#mols2grid .m2g-keep-tooltip .m2g-info {
+    color: #fff;
+}
+#mols2grid .m2g-keep-tooltip .m2g-info::before {
+    content: 'i';
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    background: var(--m2g-hl);
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    border-radius: 9px;
+}
+
+/* Callback button */
+#mols2grid .m2g-callback {
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+}
+#mols2grid .m2g-callback::after {
+    content: '';
+    display: block;
+    width: 16px;
+    height: 16px;
+    margin: 6px;
+    border: var(--m2g-border);
+    border-radius: 2px;
+    background: var(--m2g-bg) var(--m2g-icn-triangle) no-repeat center;
+    transform: rotate(-90deg);
+}
+
+/* Image */
+#mols2grid .m2g-cell .data-img {
+    padding: 0;
+}
+#mols2grid .m2g-cell img,
+#mols2grid .m2g-cell svg {
+    max-width: 100%;
+    height: auto;
+    padding: 0;
+}
+#mols2grid .m2g-cell svg > rect:first-child {
+    /* Remove the SVG background */
+    fill: transparent !important;
+}
+
+/* Text below image */
+.m2g-copy-blink {
+    animation: m2g-blink var(--m2g-trans) 3;
+}
+@keyframes m2g-blink {
+    0% {
+        opacity: 1;
+    }
+    49% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+/* Copyable text */
+.copy-me {
+    position: relative;
+    cursor: pointer;
+}
+
+
+
+/**
+ * Modal popup
+ * - - -
+ * Triggered by make_popup_callback()
+ * See https://mols2grid.readthedocs.io/en/latest/notebooks/callbacks.html#Display-a-popup-containing-descriptors
+ */
+
+/* Container */
+#m2g-modal-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--m2g-black-10);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    
+    /* Transition */
+    opacity: 0;
+    transition: opacity var(--m2g-trans) linear;
+}
+
+/* Modal */
+#m2g-modal {
+    background: #fff;
+    border-radius: var(--m2g-br);
+    box-shadow: 0 0 30px var(--m2g-black-10);
+    padding: 20px;
+    position: relative;
+    max-width: calc(100% - 80px);
+    max-height: calc(100% - 80px);
+    display: flex;
+    flex-direction: column;
+    min-width: 26px;
+
+    /* Transition */
+    opacity: 0;
+    transform: translate(0, 5px);
+    transition: transform var(--m2g-trans) ease-in-out, opacity var(--m2g-trans) linear;
+}
+#m2g-modal .m2g-modal-header {
+    flex: 0 0 26px;
+    margin-bottom: 10px;
+}
+#m2g-modal .m2g-modal-header h2 {
+    margin-bottom: 0;
+}
+#m2g-modal .m2g-modal-header h2 + p {
+    font-size: 15px;
+}
+#m2g-modal .m2g-modal-body {
+    flex: 1;
+    position: relative;
+}
+
+/* Transition */
+#m2g-modal-container.show {
+    opacity: 1;
+}
+#m2g-modal-container.show #m2g-modal {
+    opacity: 1;
+    transform: translate(0, 0);
+}
+
+/* Header + close btn */
+#m2g-modal h2 {
+    line-height: 26px;
+    padding-right: 40px;
+    text-transform: capitalize;
+}
+#m2g-modal h3 {
+    
+}
+#m2g-modal button.close {
+    background: transparent;
+    padding: 0;
+    color: var(--m2g-black);
+    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    top: 13px;
+    right: 13px;
+    border: none;
+}
+
+/* Image */
+#m2g-modal .svg-wrap svg {
+    max-width: 100%;
+    margin-bottom: 20px;
+}
+
+/* Separator */
+hr {
+    width: 100%;
+    height: 1px;
+    background: #ddd;
+    margin: 15px 0;
+    border: none;
+}
+
+
+
+/**
+ * Hover states
+ */
+@media (hover:hover) {
+    /* Pagination */
+    #mols2grid ul.m2g-pagination li:not(.active):not(.disabled):hover {
+        background: #f0f0f0;
+        z-index: 1;
+    }
+    #mols2grid ul.m2g-pagination li.active + li:hover {
+        /* Keeping the hover border consiistent */
+        margin-left: 1px;
+        border-left: none;
+        min-width: 40px;
+    }
+
+    /* Dropdowns & search */
+    #mols2grid .m2g-dropdown:not(:focus-within):hover,
+    #mols2grid .m2g-search-wrap:not(:focus-within):hover,
+    #mols2grid .m2g-sort:not(:focus-within) .m2g-order:hover {
+        background-color: #f0f0f0;
+    }
+    #mols2grid .m2g-search-wrap:not(:focus-within):hover {
+        background: #fff;
+        border-color: rgba(0,0,0,.3);
+    }
+    /* Hocus pocus to have separate hover states for dropdown and arrow */
+    #mols2grid .m2g-dropdown.m2g-sort:not(:focus-within):hover .m2g-order:not(:hover) + .m2g-display {
+        background-color: transparent;
+    }
+
+    /* Search options */
+    #mols2grid .m2g-search-options .m2g-option:not(.sel):hover {
+        background: rgba(0,0,0,.15);
+    }
+
+    /* Grid */
+    /* Note: this is in an ::after pseudo element, so the transparent
+    hover color plays nice with the cell background color. */
+    #mols2grid .m2g-cell:hover::after {
+        content: '';
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: {{ hover_color }};
+        pointer-events: none;
+    }
+
+    /* info button */
+    #mols2grid .m2g-info:hover::before {
+        content: 'i';
+        color: #fff;
+        width: 18px;
+        height: 18px;
+        line-height: 18px;
+        background: var(--m2g-hl);
+        position: absolute;
+        left: 5px;
+        top: 5px;
+        border-radius: 9px;
+    }
+    
+    /* Callback button */
+    #mols2grid .m2g-callback:hover::after {
+        background-color: var(--m2g-black);
+        background-image: var(--m2g-icn-triangle-white);
+        border-color: transparent;
+    }
+
+    /* Copyable text */
+    .copy-me:hover {
+        text-decoration: underline;
+        text-decoration-color: var(--m2g-blue);
+    }
+}
+
+
+
+/**
+ * Responsive behavior.
+ * - - -
+ * Note: container queries won't work in older browsers,
+ * but this is purely aesthetical behavior so that's ok.
+ * https://caniuse.com/css-container-queries
+ */
+
+/* This sets the msg-list div as reference container */
+#mols2grid {
+    container-type: inline-size;
+}
+
+
+
+/**
+ * Functions section
+ */
+
+/* When there's not enough space to put everything in one row, we break it into two.
+ * - - -
+ * 870px = pagination 280 + sort 200 + search 300 + menu 40 + (3*10 gap) = 850 + 20 buffer.
+ * Buffer required because the button width inside the search depends on the font.
+ */
+@container (max-width: 870px) {
+    #mols2grid .m2g-functions {
+        flex-direction: column-reverse;
+        gap: 10px;
+    }
+    #mols2grid .m2g-functions .m2g-row:last-child {
+        justify-content: flex-end;
+    }
+    #mols2grid .m2g-functions .m2g-row:first-child *:last-child {
+        margin-right: 0;
+    }
+}
+
+/* When there's not enough room for pagination + sort on one row,
+ * we reduce the sort drodpwon width.
+ */
+@container (max-width: 500px) {
+    #mols2grid .m2g-functions .m2g-sort {
+        width: 80px;
+        flex-basis: 80px;
+    }
+    #mols2grid .m2g-functions .m2g-sort .m2g-display {
+        font-size: 0;
+        line-height: 0;
+        padding-right: 0;
+    }
+    #mols2grid .m2g-functions .m2g-sort .m2g-display::before {
+        content: 'Sort';
+        font-size: var(--m2g-fs);
+        line-height: var(--m2g-h);
+    }
+}
+
+/* When there's not enough room for pagination + reduced sort on one row,
+ * we reduce the pagination width.
+ */
+@container (max-width: 500px) {
+    /* We're overriding min-width from different
+    locations, including responsive rules */
+    #mols2grid ul.m2g-pagination li,
+    #mols2grid ul.m2g-pagination li:last-child,
+    #mols2grid ul.m2g-pagination li.active + li:hover {
+        min-width: 0;
+    }
+}
+
+/* When there's not enough room for searchbar + menu
+ * we scale down the searchbar to fit the container.
+ */
+@container (max-width: 370px) {
+    #mols2grid .m2g-functions .m2g-row .m2g-search-wrap {
+        flex: 1;
+    }
+    #mols2grid .m2g-searchbar {
+        width: calc(100% - 50px);
+    }
+    #mols2grid .m2g-search-options {
+        width: 50px;
+    }
+
+    /* Collapse options in T/M buttons */
+    #mols2grid .m2g-search-options .m2g-option {
+        width: 25px;
+        text-align: center;
+        padding: 0;
+        overflow: hidden;
+    }
+    #mols2grid .m2g-search-options .m2g-option:first-child::before {
+        content: 'T\A'
+    }
+    #mols2grid .m2g-search-options .m2g-option:last-child::before {
+        content: 'S\A'
+    }
+}
+
+
+
+/**
+ * Grid
+ */
+
+/* When there's room for 5 columns, fall back to 4 */
+@container (min-width: {{ cell_width * 4 - 1 }}px) and (max-width: {{ cell_width * 6 - 1 }}px) {
+    #mols2grid .m2g-cell {
+        flex-basis: calc(100% / 4);
+    }
+}
+
+/* When there's room for 7-11 columns, fall back to 6 */
+@container (min-width: {{ cell_width * 6 - 1 }}px) and (max-width: {{ cell_width * 12 - 1 }}px) {
+    #mols2grid .m2g-cell {
+        flex-basis: calc(100% / 6);
+    }
+}
+
+/* When there's room for 13+ columns, fall back to 12 */
+@container (min-width: {{ cell_width * 12 - 1 }}px) {
+    #mols2grid .m2g-cell {
+        flex-basis: calc(100% / 12);
+    }
+}

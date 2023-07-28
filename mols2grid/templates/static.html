@@ -1,0 +1,57 @@
+{# Iframe HTML wrapper #}
+{% if use_iframe %}
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+{% endif %}
+
+
+        <style>
+            {% include 'css/common.css' %}
+            {% include 'css/static.css' %}
+
+            /* Custom CSS */
+            {{ custom_css }}
+        </style>
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        {% include 'html/common_header.html' %}
+        
+        <!-- Custom header -->
+        {{ custom_header }}
+
+
+{# Iframe HTML wrapper #}
+{% if use_iframe %}
+    </head>
+    <body class="m2g-inside-iframe">
+{% endif %}
+
+        <table id="mols2grid">
+            <tbody>
+                {{ data }}
+            </tbody>
+        </table>
+
+        <script>
+            {% if tooltip %}
+            // Tooltips
+            $.fn.tooltip.Constructor.Default.whiteList.span = ['style']
+            $('.m2g-tooltip[data-toggle="popover"]').popover({
+                placement: {{ tooltip_placement }},
+                trigger: {{ tooltip_trigger }},
+                html: true,
+            })
+            {% endif %}
+
+            // Set iframe height to fit content.
+            fitIframe(window.frameElement);
+        </script>
+
+{# Iframe HTML wrapper #}
+{% if use_iframe %}
+    </body>
+</html>
+{% endif %}
