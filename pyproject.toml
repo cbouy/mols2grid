@@ -62,8 +62,7 @@ docs = [
     "mistune<3.0.0",
 ]
 dev = [
-    "tbump",
-    "mols2grid[build,tests]",
+    "mols2grid[build,tests,docs]",
 ]
 
 [project.urls]
@@ -124,28 +123,3 @@ extend-exclude = '''
 
 [tool.isort]
 profile = "black"
-
-[tool.tbump]
-field = [
-    { name = "channel", default = "" },
-    { name = "release", default = "" },
-]
-
-[tool.tbump.version]
-current = "1.1.1"
-regex = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)(-(?P<channel>a|b|rc|.dev)(?P<release>\\d+))?"
-
-[tool.tbump.git]
-message_template = "Bump to {new_version}"
-tag_template = "v{new_version}"
-
-[[tool.tbump.file]]
-src = "pyproject.toml"
-version_template = "version = \"{major}.{minor}.{patch}{channel}{release}\""
-
-[[tool.tbump.file]]
-src = "mols2grid/_version.py"
-
-[[tool.tbump.file]]
-src = "package.json"
-version_template = "\"version\": \"{major}.{minor}.{patch}{channel}{release}\""
