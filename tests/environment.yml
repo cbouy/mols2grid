@@ -10,4 +10,3 @@ dependencies:
   - jupyterlab
   - ipywidgets>=7,<8
   - pytest==6.2.5
-  - selenium==4.10.0
