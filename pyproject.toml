@@ -76,6 +76,9 @@ Changelog = "https://github.com/cbouy/mols2grid/blob/master/CHANGELOG.md"
 [tool.setuptools.dynamic]
 version = { attr = "mols2grid._version.__version__" }
 
+[tool.hatch.version]
+path = "mols2grid/_version.py"
+
 [tool.hatch.build]
 artifacts = [
     "mols2grid/nbextension/index.*",
