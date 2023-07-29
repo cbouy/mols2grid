@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [2.0.0] - ????/??/??
+## [2.0.0] - 2023/07/23
 
 This release is a major change on the UI contributed by @themoenen, refer to
 [PR#55](https://github.com/cbouy/mols2grid/pull/55) for the full list of changes:
