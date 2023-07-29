@@ -39,7 +39,7 @@ dependencies = [
     "numpy",
     "pandas",
 ]
-version = "1.1.1"
+dynamic = ["version"]
 
 [project.license]
 file = "LICENSE"
@@ -72,6 +72,9 @@ Documentation = "https://mols2grid.readthedocs.io/en/latest/"
 Discussions = "https://github.com/cbouy/mols2grid/discussions"
 Issues = "https://github.com/cbouy/mols2grid/issues"
 Changelog = "https://github.com/cbouy/mols2grid/blob/master/CHANGELOG.md"
+
+[tool.setuptools.dynamic]
+version = { attr = "mols2grid._version.__version__" }
 
 [tool.hatch.build]
 artifacts = [
