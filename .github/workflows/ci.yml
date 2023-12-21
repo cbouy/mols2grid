@@ -108,15 +108,7 @@ jobs:
                  tests/ -m "not webdriver"
 
       - name: Run webdriver tests
-        uses: nick-fields/retry@v2
-        with:
-          timeout_seconds: 340
-          max_attempts: 5
-          retry_on: timeout
-          shell: bash
-          command: |
-            source /usr/share/miniconda/etc/profile.d/conda.sh
-            conda activate /usr/share/miniconda3/envs/test
+        run: |
             pytest --color=yes --disable-pytest-warnings \
                    --cov=mols2grid --cov-report=xml --cov-append \
                    tests/ -m "webdriver"

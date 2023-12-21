@@ -67,6 +67,7 @@ def driver():
     options.headless = True if GITHUB_ACTIONS else HEADLESS
     driver = FirefoxDriver(options=options)
     driver.set_page_load_timeout(PAGE_LOAD_TIMEOUT)
+    driver.set_window_size(1920, 1080)
     yield driver
     driver.quit()
 
