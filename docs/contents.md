@@ -17,21 +17,35 @@
 
 # 🐍 Installation
 ---
-
-mols2grid was developped for Python 3.7+ and requires rdkit (>=2020.03.1), pandas and jinja2 as dependencies.  
-The easiest way to install it is from conda:
+  
+The easiest way to install `mols2grid` is from conda:
 ```shell
 conda install -c conda-forge mols2grid
 ```
 
 Alternatively, you can also use pip:
 ```shell
-pip install rdkit mols2grid
+pip install 'mols2grid[rdkit]'
 ```
 
-If you notice that the selections, callbacks and interactive filtering aren't working as intended, you may have to manually activate the extension:
-- for Jupyter Lab: `jupyter labextension install mols2grid`
-- for Jupyter Notebook: `jupyter nbextension install mols2grid`
+## Troubleshooting
+
+If you see a JavaScript error message such as:
+```text
+Failed to load model class 'MolGridModel' from module 'mols2grid'
+Error: Module mols2grid, version XXX is not registered, however, YYY is
+```
+
+Or if you notice that the selections, callbacks and interactive filtering aren't working as intended, you may have to manually activate the extension:
+
+```shell
+jupyter labextension enable mols2grid
+```
+
+You should also make sure that you have installed compatible versions of `ipywidgets` and the
+`jupyterlab`/`notebook` stack. The following specs are currently supported:
+- `ipywidgets=7`, `jupyterlab=3`, `notebook=6`
+- `ipywidgets=8`, `jupyterlab=4`, `notebook=7`
 
 **Compatibility**
 

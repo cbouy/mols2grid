@@ -14,47 +14,35 @@ defaults:
 
 concurrency:
   group: ${{ github.ref }}-${{ github.head_ref }}"
-  cancel-in-progress: true
+  # cancel-in-progress: true
 
 jobs:
   tests:
     name: ${{ matrix.label }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
-          - label: CI-old
-            os: ubuntu-latest
+          - label: rdkit-2021
             python-version: 3.8
-            extra_dependencies: "rdkit==2020.03.1 boost-cpp=1.72.0=h359cf19_6"
-          - label: CI-edge
-            os: ubuntu-latest
+            extra_dependencies: "rdkit==2021.03.1"
+          - label: rdkit-latest
             python-version: "3.10"
             extra_dependencies: "rdkit"
-          - label: CI-py3.9-rdkit2022
-            os: ubuntu-latest
-            python-version: 3.9
-            extra_dependencies: "rdkit==2022.03.1"
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache: "yarn"
-
       - name: Install Firefox
         uses: browser-actions/setup-firefox@latest
-      
+
       - run: firefox --version
 
       - name: Prepare Selenium
         uses: browser-actions/setup-geckodriver@latest
         with:
           geckodriver-version: "0.32.0"
-      
+
       - run: geckodriver --version
 
       - name: Cache conda
@@ -64,14 +52,26 @@ jobs:
         with:
           path: ~/conda_pkgs_dir
           key:
-            conda-${{ hashFiles('environment.yml') }}-${{ matrix.label }}-${{ env.CACHE_NUMBER }}
+            conda-${{ hashFiles('tests/environment.yml') }}-${{ matrix.label }}-${{ env.CACHE_NUMBER }}
 
       - name: Cache pip
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: pip-${{ hashFiles('setup.cfg') }}
+          key: pip-${{ hashFiles('pyproject.toml') }}
           restore-keys: pip-
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache yarn
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            yarn-
 
       - name: Setup Conda
         uses: conda-incubator/setup-miniconda@v2
@@ -93,14 +93,16 @@ jobs:
 
       - name: Install remaining conda dependencies
         run: |
-          mamba install ${{ matrix.extra_dependencies }}
+          mamba install 'jupyterlab>=3,<5' ipywidgets=8 ${{ matrix.extra_dependencies }}
           mamba list
 
-      - name: Install package through pip
+      - name: Build and install package
         run: |
           pip install .[tests,build]
+          jupyter labextension develop . --overwrite
           pip list
-      
+          jupyter labextension list
+
       - name: Run tests
         run: |
           pytest --color=yes --disable-pytest-warnings \
@@ -120,26 +122,109 @@ jobs:
           fail_ci_if_error: true
           verbose: true
 
-      - name: Prepare for build
-        run: |
-          pip uninstall -y mols2grid
-          python -m build .
-          echo "$SCRIPT" > test_install.py
-          cat test_install.py
-        env:
-          SCRIPT: |
-            import mols2grid as mg
-            from rdkit import RDConfig
-            sdf = f"{RDConfig.RDDocsDir}/Book/data/solubility.test.sdf"
-            mg.save(sdf, output="/dev/null")
+  build:
+    uses: ./.github/workflows/_build-package.yml
+    with:
+      cache-package: true
 
-      - name: Test tar.gz build
-        run: |
-          pip install dist/mols2grid-*.tar.gz
-          python test_install.py
-          pip uninstall -y mols2grid
+  test-build:
+    name: Test build
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
 
-      - name: Test wheel build
-        run: |
-          pip install dist/mols2grid-*.whl
-          python test_install.py
+    - name: Retrieve cached package
+      uses: actions/cache/restore@v3
+      id: cache-mols2grid
+      with:
+        path: |
+          dist/mols2grid-*.whl
+          dist/mols2grid-*.tar.gz
+        key: mols2grid-${{ runner.os }}-${{ github.sha }}
+
+    - name: Install python with pip
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+        cache: "pip"
+
+    - name: Prepare quick test script
+      run: |
+        curl https://raw.githubusercontent.com/rdkit/rdkit/master/Docs/Book/data/solubility.test.sdf --output solubility.sdf
+        echo "$SCRIPT" > test_install.py
+        cat test_install.py
+      env:
+        SCRIPT: |
+          import mols2grid as mg
+          mg.save("solubility.sdf", output="/dev/null")
+
+    - name: Test tar.gz build
+      run: |
+        pip install rdkit dist/mols2grid-*.tar.gz \
+        && python test_install.py \
+        && pip uninstall -y mols2grid
+
+    - name: Test wheel build
+      run: |
+        pip install dist/mols2grid-*.whl \
+        && python test_install.py
+
+  # notebook-tests:
+  #   needs: [build]
+  #   name: ${{ matrix.label }}
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       include:
+  #         - label: JLab-3-Widgets-7
+  #           extra_dependencies: "'jupyterlab~=3.2' 'ipywidgets~=7.6'"
+  #         - label: JLab-4-Widgets-8
+  #           extra_dependencies: "'jupyterlab~=4.0' 'ipywidgets~=8.1'"
+
+  #   steps:
+  #     - uses: actions/checkout@v3
+
+  #     - name: Retrieve cached package
+  #       uses: actions/cache/restore@v3
+  #       id: cache-mols2grid
+  #       with:
+  #         path: |
+  #           dist/mols2grid-*.whl
+  #           dist/mols2grid-*.tar.gz
+  #         key: mols2grid-${{ runner.os }}-${{ github.sha }}
+
+  #     - name: Cache conda
+  #       uses: actions/cache@v3
+  #       env:
+  #         CACHE_NUMBER: 2
+  #       with:
+  #         path: ~/conda_pkgs_dir
+  #         key:
+  #           conda-${{ matrix.label }}-${{ env.CACHE_NUMBER }}
+
+  #     - name: Setup Conda
+  #       uses: conda-incubator/setup-miniconda@v2
+  #       with:
+  #         python-version: "3.10"
+  #         miniforge-variant: Mambaforge
+  #         miniforge-version: latest
+  #         use-mamba: true
+
+  #     - name: Install remaining conda dependencies
+  #       run: |
+  #         mamba install rdkit pandas ${{ matrix.extra_dependencies }}
+  #         mamba list
+
+  #     - name: Get wheel absolute path
+  #       id: wheel-path
+  #       run: echo "value=$(ls -d $PWD/dist/mols2grid-*.whl)" >> $GITHUB_OUTPUT
+
+  #     - name: Install the extension
+  #       run: |
+  #         pip install 'mols2grid[packaging] @ file://${{ steps.wheel-path.outputs.value }}'
+  #         jupyter labextension list
+
+  #     - name: Run test
+  #       run: |
+  #         echo TODO

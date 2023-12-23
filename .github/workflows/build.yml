@@ -12,67 +12,32 @@ env:
   IS_PRERELEASE: ${{ github.event_name == 'workflow_dispatch' }}
 
 jobs:
-  build-n-publish:
-    name: Build and publish mols2grid
+  build:
+    name: Build package
+    uses: ./.github/workflows/_build-package.yml
+    with:
+      check-prerelease: ${{ env.IS_PRERELEASE }}  
+
+  publish:
+    name: Publish to PyPI and NPM
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-    
-    - name: Get prerelease version tags
-      if: env.IS_PRERELEASE == 'true'
-      run: |
-        py_dirty_tag=$(awk '/__version__ = "[[:digit:]+]\.[[:digit:]+]\.[[:digit:]+]\-.+"/ {print $3}' ./mols2grid/_version.py)
-        py_is_pre=$(test -z "$py_dirty_tag" && echo "false" || echo "true")
-        js_version_string=$(grep '"version":' ./package.json)
-        js_dirty_tag=$(echo "$js_version_string" | cut -d- -f2)
-        js_is_pre=$(test "$js_version_string" == "$js_dirty_tag" && echo "false" || echo "true")
-        echo "py_is_pre=$py_is_pre" >> $GITHUB_ENV
-        echo "js_is_pre=$js_is_pre" >> $GITHUB_ENV
-
-    - name: Fail if prerelease is not correctly versioned
-      if: (env.IS_PRERELEASE == 'true') && !( env.py_is_pre && env.js_is_pre )
-      uses: actions/github-script@v3
+    - name: Retrieve cached package
+      uses: actions/cache/restore@v3
+      id: cache-mols2grid
       with:
-        script: |
-          core.setFailed("Versions are not tagged as a prerelease")
+        path: |
+          dist/mols2grid-*.whl
+          dist/mols2grid-*.tar.gz
+        key: mols2grid-${{ runner.os }}-${{ github.sha }}
 
-    - name: Install node
-      uses: actions/setup-node@v3
+    - name: Publish package to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
       with:
-        node-version: 18
-        registry-url: 'https://registry.npmjs.org/'
-        cache: "yarn"
+        password: ${{ secrets.PYPI_TOKEN }}
 
-    - name: Install python with pip
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.8
-        cache: "pip"
-
-    - name: Install dependencies for packaging
-      run: |
-        pip install setuptools wheel build virtualenv twine
-    
-    - name: Check python installation
-      run: |
-        which python
-        python --version
-        pip --version
-        pip list
-
-    - name: Build package
-      run: |
-        python -m build .
-    
-    - name: Publish the Python package
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-      run: twine upload dist/mols2grid*.{tar.gz,whl}
-
-    - name: Publish the NPM package
+    - name: Publish the package through NPM
       run: npm publish
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

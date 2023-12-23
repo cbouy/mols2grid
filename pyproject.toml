@@ -1,7 +1,7 @@
 [build-system]
 requires = [
     "hatchling",
-    "jupyterlab==3.*",
+    "jupyterlab==4.*",
 ]
 build-backend = "hatchling.build"
 
@@ -23,6 +23,9 @@ keywords = [
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Framework :: Jupyter",
+    "Framework :: Jupyter :: JupyterLab",
+    "Framework :: Jupyter :: JupyterLab :: Extensions",
+    "Framework :: Jupyter :: JupyterLab :: Extensions :: Prebuilt",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
@@ -38,7 +41,7 @@ dependencies = [
     "ipywidgets>=7.6.0,<9",
     "jinja2>=2.11.0",
     "numpy",
-    "pandas",
+    "pandas"
 ]
 dynamic = ["version"]
 
@@ -46,8 +49,14 @@ dynamic = ["version"]
 file = "LICENSE"
 
 [project.optional-dependencies]
+rdkit = [
+    "rdkit",
+]
 build = [
     "build",
+]
+packaging = [
+    "jupyter-packaging~=0.10",
 ]
 tests = [
     "cairosvg==2.5.2",
@@ -63,7 +72,7 @@ docs = [
     "mistune<3.0.0",
 ]
 dev = [
-    "mols2grid[build,tests,docs]",
+    "mols2grid[build,tests,docs,packaging]",
 ]
 
 [project.urls]

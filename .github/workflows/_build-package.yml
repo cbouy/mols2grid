@@ -1,0 +1,86 @@
+name: build-package
+on:
+    workflow_call:
+      inputs:
+        check-prerelease:
+          default: false
+          required: false
+          type: boolean
+        cache-package:
+          default: false
+          required: false
+          type: boolean
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+jobs:
+  build:
+    name: Build mols2grid package
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Get prerelease version tags
+      if: inputs.check-prerelease
+      id: prerelease-check
+      run: |
+        py_dirty_tag=$(awk '/__version__ = "[[:digit:]+]\.[[:digit:]+]\.[[:digit:]+]\-.+"/ {print $3}' ./mols2grid/_version.py)
+        py_is_pre=$(test -z "$py_dirty_tag" && echo "false" || echo "true")
+        js_version_string=$(grep '"version":' ./package.json)
+        js_dirty_tag=$(echo "$js_version_string" | cut -d- -f2)
+        js_is_pre=$(test "$js_version_string" == "$js_dirty_tag" && echo "false" || echo "true")
+        echo "py=$py_is_pre" >> $GITHUB_OUTPUT
+        echo "js=$js_is_pre" >> $GITHUB_OUTPUT
+
+    - name: Fail if prerelease is not correctly versioned
+      if: (inputs.check-prerelease) && !( steps.prerelease-check.outputs.py && steps.prerelease-check.outputs.js )
+      uses: actions/github-script@v3
+      with:
+        script: |
+          core.setFailed("Versions are not tagged as a prerelease")
+
+    - name: Install node
+      uses: actions/setup-node@v3
+      with:
+        node-version: "18.12.1"
+        registry-url: 'https://registry.npmjs.org/'
+        cache: "yarn"
+
+    - name: Install python with pip
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+        cache: "pip"
+
+    - name: Install dependencies for packaging
+      run: |
+        pip install setuptools wheel build virtualenv
+
+    - name: Check python installation
+      run: |
+        which python
+        python --version
+        pip --version
+        pip list
+
+    - name: Build package
+      run: |
+        python -m build .
+    
+    - name: List output
+      run: |
+        ls -lah dist/*
+
+    - name: Cache package
+      if: inputs.cache-package
+      uses: actions/cache/save@v3
+      id: cache-mols2grid
+      with:
+        path: |
+          dist/mols2grid-*.whl
+          dist/mols2grid-*.tar.gz
+        key: mols2grid-${{ runner.os }}-${{ github.sha }}

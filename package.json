@@ -1,6 +1,6 @@
 {
   "name": "mols2grid",
-  "version": "2.0.1a2",
+  "version": "2.0.1",
   "description": "Custom widget for the Python mols2grid package",
   "keywords": [
     "jupyter",
@@ -54,7 +54,7 @@
   "devDependencies": {
     "@babel/core": "^7.5.0",
     "@babel/preset-env": "^7.5.0",
-    "@jupyterlab/builder": "^3.0.0",
+    "@jupyterlab/builder": "^4.0.0",
     "@lumino/application": "^1.6.0",
     "@lumino/widgets": "^1.6.0",
     "@types/jest": "^26.0.0",

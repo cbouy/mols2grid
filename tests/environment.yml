@@ -3,10 +3,8 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - nodejs==17.9.0
-  - yarn==1.22.18
-  - pandas
-  - jinja2>=2.11.0
-  - jupyterlab
-  - ipywidgets>=7,<8
+  - nodejs==18.12.1
+  - yarn==1.22.19
+  - pandas=2
+  - jinja2>=3.1.2
   - pytest==6.2.5
