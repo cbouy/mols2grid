@@ -10,6 +10,10 @@ on:
           default: false
           required: false
           type: boolean
+        upload-package:
+          default: false
+          required: false
+          type: boolean
 
 defaults:
   run:
@@ -78,9 +82,19 @@ jobs:
     - name: Cache package
       if: inputs.cache-package
       uses: actions/cache/save@v3
-      id: cache-mols2grid
       with:
         path: |
           dist/mols2grid-*.whl
           dist/mols2grid-*.tar.gz
         key: mols2grid-${{ runner.os }}-${{ github.sha }}
+
+    - name: Expose package as artifact
+      if: inputs.upload-package
+      uses: actions/upload-artifact@v4
+      with:
+        name: mols2grid-package
+        path: |
+          dist/mols2grid-*.whl
+          dist/mols2grid-*.tar.gz
+        if-no-files-found: error
+        retention-days: 20

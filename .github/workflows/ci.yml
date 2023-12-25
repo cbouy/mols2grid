@@ -17,117 +17,118 @@ concurrency:
   # cancel-in-progress: true
 
 jobs:
-  tests:
-    name: ${{ matrix.label }}
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - label: rdkit-2021
-            python-version: 3.8
-            extra_dependencies: "rdkit==2021.03.1"
-          - label: rdkit-latest
-            python-version: "3.10"
-            extra_dependencies: "rdkit"
+  # unit-tests:
+  #   name: ${{ matrix.label }}
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       include:
+  #         - label: rdkit-2021
+  #           python-version: 3.8
+  #           extra_dependencies: "rdkit==2021.03.1"
+  #         - label: rdkit-latest
+  #           python-version: "3.10"
+  #           extra_dependencies: "rdkit"
 
-    steps:
-      - uses: actions/checkout@v3
+  #   steps:
+  #     - uses: actions/checkout@v3
 
-      - name: Install Firefox
-        uses: browser-actions/setup-firefox@latest
+  #     - name: Install Firefox
+  #       uses: browser-actions/setup-firefox@latest
 
-      - run: firefox --version
+  #     - run: firefox --version
 
-      - name: Prepare Selenium
-        uses: browser-actions/setup-geckodriver@latest
-        with:
-          geckodriver-version: "0.32.0"
+  #     - name: Prepare Selenium
+  #       uses: browser-actions/setup-geckodriver@latest
+  #       with:
+  #         geckodriver-version: "0.32.0"
 
-      - run: geckodriver --version
+  #     - run: geckodriver --version
 
-      - name: Cache conda
-        uses: actions/cache@v3
-        env:
-          CACHE_NUMBER: 0
-        with:
-          path: ~/conda_pkgs_dir
-          key:
-            conda-${{ hashFiles('tests/environment.yml') }}-${{ matrix.label }}-${{ env.CACHE_NUMBER }}
+  #     - name: Cache conda
+  #       uses: actions/cache@v3
+  #       env:
+  #         CACHE_NUMBER: 0
+  #       with:
+  #         path: ~/conda_pkgs_dir
+  #         key:
+  #           conda-${{ hashFiles('tests/environment.yml') }}-${{ matrix.label }}-${{ env.CACHE_NUMBER }}
 
-      - name: Cache pip
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: pip-${{ hashFiles('pyproject.toml') }}
-          restore-keys: pip-
+  #     - name: Cache pip
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: ~/.cache/pip
+  #         key: pip-${{ hashFiles('pyproject.toml') }}
+  #         restore-keys: pip-
 
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+  #     - name: Get yarn cache directory path
+  #       id: yarn-cache-dir-path
+  #       run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
 
-      - name: Cache yarn
-        uses: actions/cache@v3
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: yarn-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            yarn-
+  #     - name: Cache yarn
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+  #         key: yarn-${{ hashFiles('yarn.lock') }}
+  #         restore-keys: |
+  #           yarn-
 
-      - name: Setup Conda
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-          environment-file: tests/environment.yml
-          use-only-tar-bz2: true
-          miniforge-variant: Mambaforge
-          miniforge-version: latest
-          use-mamba: true
+  #     - name: Setup Conda
+  #       uses: conda-incubator/setup-miniconda@v2
+  #       with:
+  #         python-version: ${{ matrix.python-version }}
+  #         environment-file: tests/environment.yml
+  #         use-only-tar-bz2: true
+  #         miniforge-variant: Mambaforge
+  #         miniforge-version: latest
+  #         use-mamba: true
 
-      - name: Check conda and pip
-        run: |
-          which python
-          python --version
-          pip --version
-          conda --version
-          mamba --version
+  #     - name: Check conda and pip
+  #       run: |
+  #         which python
+  #         python --version
+  #         pip --version
+  #         conda --version
+  #         mamba --version
 
-      - name: Install remaining conda dependencies
-        run: |
-          mamba install 'jupyterlab>=3,<5' ipywidgets=8 ${{ matrix.extra_dependencies }}
-          mamba list
+  #     - name: Install remaining conda dependencies
+  #       run: |
+  #         mamba install 'jupyterlab>=3,<5' ipywidgets=8 ${{ matrix.extra_dependencies }}
+  #         mamba list
 
-      - name: Build and install package
-        run: |
-          pip install .[tests,build]
-          jupyter labextension develop . --overwrite
-          pip list
-          jupyter labextension list
+  #     - name: Build and install package
+  #       run: |
+  #         pip install .[tests,build]
+  #         jupyter labextension develop . --overwrite
+  #         pip list
+  #         jupyter labextension list
 
-      - name: Run tests
-        run: |
-          pytest --color=yes --disable-pytest-warnings \
-                 --cov=mols2grid --cov-report=xml \
-                 tests/ -m "not webdriver"
+  #     - name: Run tests
+  #       run: |
+  #         pytest --color=yes --disable-pytest-warnings \
+  #                --cov=mols2grid --cov-report=xml \
+  #                tests/ -m "not webdriver"
 
-      - name: Run webdriver tests
-        run: |
-          pytest --color=yes --disable-pytest-warnings \
-                 --cov=mols2grid --cov-report=xml --cov-append \
-                 tests/ -m "webdriver"
+  #     - name: Run webdriver tests
+  #       run: |
+  #         pytest --color=yes --disable-pytest-warnings \
+  #                --cov=mols2grid --cov-report=xml --cov-append \
+  #                tests/ -m "webdriver"
 
-      - name: Measure tests coverage
-        uses: codecov/codecov-action@v3
-        with:
-          files: ./coverage.xml
-          fail_ci_if_error: true
-          verbose: true
+  #     - name: Measure tests coverage
+  #       uses: codecov/codecov-action@v3
+  #       with:
+  #         files: ./coverage.xml
+  #         fail_ci_if_error: true
+  #         verbose: true
 
   build:
     uses: ./.github/workflows/_build-package.yml
     with:
       cache-package: true
+      upload-package: true
 
-  test-build:
+  build-test:
     name: Test build
     needs: [build]
     runs-on: ubuntu-latest
@@ -170,61 +171,100 @@ jobs:
         pip install dist/mols2grid-*.whl \
         && python test_install.py
 
-  # notebook-tests:
-  #   needs: [build]
-  #   name: ${{ matrix.label }}
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       include:
-  #         - label: JLab-3-Widgets-7
-  #           extra_dependencies: "'jupyterlab~=3.2' 'ipywidgets~=7.6'"
-  #         - label: JLab-4-Widgets-8
-  #           extra_dependencies: "'jupyterlab~=4.0' 'ipywidgets~=8.1'"
+  ui-tests:
+    needs: [build]
+    name: ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - label: JLab-3-Widgets-7
+            extra_dependencies: "'jupyterlab~=3.2' 'ipywidgets~=7.6'"
+          - label: JLab-4-Widgets-8
+            extra_dependencies: "'jupyterlab~=4.0' 'ipywidgets~=8.1'"
 
-  #   steps:
-  #     - uses: actions/checkout@v3
+    steps:
+      - uses: actions/checkout@v3
 
-  #     - name: Retrieve cached package
-  #       uses: actions/cache/restore@v3
-  #       id: cache-mols2grid
-  #       with:
-  #         path: |
-  #           dist/mols2grid-*.whl
-  #           dist/mols2grid-*.tar.gz
-  #         key: mols2grid-${{ runner.os }}-${{ github.sha }}
+      - name: Retrieve cached package
+        uses: actions/cache/restore@v3
+        id: cache-mols2grid
+        with:
+          path: |
+            dist/mols2grid-*.whl
+            dist/mols2grid-*.tar.gz
+          key: mols2grid-${{ runner.os }}-${{ github.sha }}
 
-  #     - name: Cache conda
-  #       uses: actions/cache@v3
-  #       env:
-  #         CACHE_NUMBER: 2
-  #       with:
-  #         path: ~/conda_pkgs_dir
-  #         key:
-  #           conda-${{ matrix.label }}-${{ env.CACHE_NUMBER }}
+      - name: Cache conda
+        uses: actions/cache@v3
+        env:
+          CACHE_NUMBER: 2
+        with:
+          path: ~/conda_pkgs_dir
+          key:
+            conda-${{ matrix.label }}-${{ env.CACHE_NUMBER }}
 
-  #     - name: Setup Conda
-  #       uses: conda-incubator/setup-miniconda@v2
-  #       with:
-  #         python-version: "3.10"
-  #         miniforge-variant: Mambaforge
-  #         miniforge-version: latest
-  #         use-mamba: true
+      - name: Setup Conda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          python-version: "3.10"
+          miniforge-variant: Mambaforge
+          miniforge-version: latest
+          use-mamba: true
 
-  #     - name: Install remaining conda dependencies
-  #       run: |
-  #         mamba install rdkit pandas ${{ matrix.extra_dependencies }}
-  #         mamba list
+      - name: Install remaining conda dependencies
+        run: |
+          mamba install \
+            rdkit pandas \
+            ${{ matrix.extra_dependencies }}
+          mamba install -c microsoft playwright
+          mamba list
+      
+      - name: Install XeLatex
+        run: sudo apt-get install texlive-xetex
+      
+      - name: Install Ghostscript for ImageMagick
+        run: sudo apt-get install ghostscript
 
-  #     - name: Get wheel absolute path
-  #       id: wheel-path
-  #       run: echo "value=$(ls -d $PWD/dist/mols2grid-*.whl)" >> $GITHUB_OUTPUT
+      - name: Install the extension
+        run: |
+          pip install dist/mols2grid-*.whl
+          jupyter labextension list
+      
+      - name: Run test notebook and convert to PDF
+        working-directory: tests/notebooks/
+        run: |
+          jupyter nbconvert --execute --no-input \
+            --allow-chromium-download --to webpdf \
+            filtering.ipynb
+      
+      - name: Change ImageMagick policy to allow pdf->png conversion
+        run: |
+          sudo sed -i 's/^.*policy.*coder.*none.*PDF.*//' /etc/ImageMagick-6/policy.xml
+      
+      - name: Convert to PNG
+        id: png-conv
+        working-directory: tests/notebooks/
+        run: |
+          mv filtering.pdf ${{ matrix.label }}.pdf
+          convert -density 192 ${{ matrix.label }}.pdf \
+            -quality 100 -alpha remove ${{ matrix.label }}.png
+          ls
 
-  #     - name: Install the extension
-  #       run: |
-  #         pip install 'mols2grid[packaging] @ file://${{ steps.wheel-path.outputs.value }}'
-  #         jupyter labextension list
+      - name: Run diff
+        id: diff-test
+        working-directory: tests/notebooks/
+        run: |
+          delta=$(compare -metric AE -fuzz 10% ref-${{ matrix.label }}.png ${{ matrix.label }}.png null:)
+          echo "Delta: $delta"
+          [[ $delta -eq 0 ]]
 
-  #     - name: Run test
-  #       run: |
-  #         echo TODO
+      - name: Upload output if fail
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: notebook-${{ matrix.label }}
+          path: |
+            tests/notebooks/${{ matrix.label }}*
+          if-no-files-found: error
+          retention-days: 5
