@@ -1,5 +1,4 @@
 import gzip
-from tempfile import NamedTemporaryFile
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
@@ -23,7 +22,7 @@ def test_requires():
 
 
 @pytest.mark.parametrize(
-    ["subset", "fmt", "style", "transform", "exp"],
+    ("subset", "fmt", "style", "transform", "exp"),
     [
         (
             ["SMILES", "ID"],
@@ -37,7 +36,7 @@ def test_requires():
         (
             ["ID"],
             "{value}",
-            {"ID": lambda x: "color: red"},
+            {"ID": lambda x: "color: red"},  # noqa: ARG005
             {},
             '<span class="copy-me" style="color: red">0</span>',
         ),
@@ -70,13 +69,10 @@ def test_tooltip_formatter(subset, fmt, style, transform, exp):
 
 
 @pytest.mark.parametrize(
-    ["smi", "exp"], [("CCO", "CCO"), ("blabla", None), (None, None)]
+    ("smi", "exp"), [("CCO", "CCO"), ("blabla", None), (None, None)]
 )
 def test_mol_to_smiles(smi, exp):
-    if smi:
-        mol = Chem.MolFromSmiles(smi)
-    else:
-        mol = smi
+    mol = Chem.MolFromSmiles(smi) if smi else smi
     assert utils.mol_to_smiles(mol) == exp
 
 
@@ -96,7 +92,7 @@ def test_mol_to_record():
         else:
             mol.SetProp(prop, value)
     new = utils.mol_to_record(mol)
-    assert "mol" in new.keys()
+    assert "mol" in new
     new.pop("mol")
     assert new == props
 
@@ -145,13 +141,13 @@ def test_sdf_to_dataframe_custom_mol_col(sdf_path):
 
 def test_sdf_to_df_gz(sdf_path, tmp_path):
     tmp_file = tmp_path / "mols.sdf.gz"
-    with open(sdf_path, "rb") as fi, open(tmp_file, "wb") as tf:
-        gz = gzip.compress(fi.read(), compresslevel=1)
+    with open(tmp_file, "wb") as tf:
+        gz = gzip.compress(sdf_path.read_text(), compresslevel=1)
         tf.write(gz)
         tf.flush()
         df = utils.sdf_to_dataframe(tmp_file).drop(columns=["mol"])
         ref = utils.sdf_to_dataframe(sdf_path).drop(columns=["mol"])
-        assert (df == ref).values.all()
+        assert (df == ref).to_numpy().all()
 
 
 def test_remove_coordinates():
@@ -165,7 +161,7 @@ def test_remove_coordinates():
 
 
 @pytest.mark.parametrize(
-    ["string", "expected"],
+    ("string", "expected"),
     [
         ("Mol", "Mol"),
         ("mol name", "mol-name"),
@@ -183,7 +179,9 @@ def test_slugify(string, expected):
 
 @pytest.mark.parametrize("value", [1, 2])
 def test_callback_handler(value):
-    callback = lambda x: x + 1
+    def callback(x):
+        return x + 1
+
     mock = Mock(side_effect=callback)
     event = SimpleNamespace(new=str(value))
     utils.callback_handler(mock, event)
@@ -195,7 +193,7 @@ def test_is_running_within_streamlit():
     with patch(
         "mols2grid.utils._get_streamlit_script_run_ctx",
         create=True,
-        new=lambda: object(),
+        new=object,
     ):
         assert utils.is_running_within_streamlit() is True
     with patch(

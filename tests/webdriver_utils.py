@@ -23,7 +23,7 @@ class selection_available:
         sel = literal_eval(sel)
         if sel == {} and self.empty:
             return True
-        elif sel != {} and not self.empty:
+        if sel != {} and not self.empty:
             return sel
         return False
 

@@ -41,5 +41,5 @@ def grid(df):
 
 
 @pytest.fixture(scope="module")
-def mols(small_df):
+def mols(small_df):  # noqa: FURB118, RUF100
     return small_df["mol"]

@@ -93,7 +93,7 @@ def info(title="SMILES", subtitle=None, img_size=(400, 300), style="") -> _JSCal
 def show_3d(
     title="SMILES",
     subtitle=None,
-    query=["pubchem", "cactus"],
+    query=None,
     height="100%",
     style="width:100%;height:100%",
 ) -> _JSCallback:
@@ -126,6 +126,8 @@ def show_3d(
     style : str
         CSS style applied to the modal window.
     """
+    if query is None:
+        query = ["pubchem", "cactus"]
     js_script = env.get_template("js/callbacks/show_3d.js").render(query=query)
     code = make_popup_callback(
         title=_get_title_field(title),
@@ -134,7 +136,12 @@ def show_3d(
         js=js_script,
         style=style,
     )
-    library = """<script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/1.8.0/3Dmol-nojquery-min.js" integrity="sha512-9iiTgstim185ZZPL/nZ+t+MLMmIbZEMfoZ1swSBUhxt4AukOPY34yyO2217X1dN5ziVMKi+YLmp/JBj+KyEaUQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>"""
+    library = (
+        '<script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/1.8.0/'
+        '3Dmol-nojquery-min.js" integrity="sha512-9iiTgstim185ZZPL/nZ+t+MLMmIbZEMfoZ1sw'
+        'SBUhxt4AukOPY34yyO2217X1dN5ziVMKi+YLmp/JBj+KyEaUQ==" crossorigin="anonymous" '
+        'referrerpolicy="no-referrer"></script>'
+    )
     return _JSCallback(code=code, library_src=library)
 
 

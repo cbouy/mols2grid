@@ -115,7 +115,7 @@ class MolGrid:
         default to avoid a systematic error when using ``MolGrid.from_sdf``.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0912
         self,
         df,
         smiles_col="SMILES",
@@ -143,6 +143,7 @@ class MolGrid:
                 raise ValueError("On-the-fly rendering of PNG images not supported")
             if use_coords and mol_col:
                 raise ValueError("Cannot use coordinates with on-the-fly rendering")
+
         self.prefer_coordGen = coordGen
         self.removeHs = removeHs
         self.useSVG = useSVG
@@ -151,13 +152,10 @@ class MolGrid:
         self.prerender = prerender
         self.smiles_col = smiles_col
         self.mol_col = mol_col
-        if isinstance(df, pd.DataFrame):
-            dataframe = df.copy()
-        else:
-            # List of dicts or other input formats for dataframes.
-            dataframe = pd.DataFrame(df)
+        dataframe = df.copy() if isinstance(df, pd.DataFrame) else pd.DataFrame(df)
         if rename:
-            dataframe.rename(columns=rename, inplace=True)
+            dataframe = dataframe.rename(columns=rename)
+
         self._extra_columns = ["img", "mols2grid-id"]
         # Add index.
         dataframe["mols2grid-id"] = list(range(len(dataframe)))
@@ -183,9 +181,11 @@ class MolGrid:
             opts.update(kwargs)
             opts.update({"width": self.img_size[0], "height": self.img_size[1]})
             self.json_draw_opts = json.dumps(opts)
+
         # Prepare smiles and images.
         self._prepare_dataframe(dataframe)
         self.dataframe = dataframe
+
         # Register instance.
         self._grid_id = name
         if cache_selection:
@@ -199,10 +199,12 @@ class MolGrid:
         else:
             self._cached_selection = {}
             register._init_grid(name)
+
         # Create widget.
         widget = MolGridWidget(grid_id=name, selection=str(self._cached_selection))
         selection_handler = partial(register.selection_updated, name)
         widget.observe(selection_handler, names=["selection"])
+
         # Register widget JS-side.
         display(widget)
         self.widget = widget
@@ -253,7 +255,7 @@ class MolGrid:
 
     @template.setter
     def template(self, value):
-        if value not in ["interactive", "static"]:
+        if value not in {"interactive", "static"}:
             raise ValueError(
                 f"template={value!r} not supported. "
                 "Use either 'interactive' or 'static'."
@@ -292,7 +294,7 @@ class MolGrid:
                     Chem.MolFromSmiles
                 )
             # Drop empty mols.
-            dataframe.dropna(axis=0, subset=[self.mol_col], inplace=True)
+            dataframe = dataframe.dropna(axis=0, subset=[self.mol_col])
             # Modify mol according to user pref.
             if not self.use_coords:
                 dataframe[self.mol_col] = dataframe[self.mol_col].apply(
@@ -304,7 +306,7 @@ class MolGrid:
             dataframe["img"] = dataframe[self.mol_col].apply(self.mol_to_img)
             # Cleanup.
             if not keep_mols:
-                dataframe.drop(columns=self.mol_col, inplace=True)
+                dataframe = dataframe.drop(columns=self.mol_col)
                 self.mol_col = None
         else:
             dataframe["img"] = None
@@ -335,7 +337,7 @@ class MolGrid:
         self.template = template
         return getattr(self, f"to_{self.template}")(**kwargs)
 
-    def to_interactive(
+    def to_interactive(  # noqa: PLR0912
         self,
         # Display
         subset=None,
@@ -365,7 +367,6 @@ class MolGrid:
         # Customization
         custom_header=None,
         callback=None,
-        **kwargs,
     ):
         """Returns the HTML document for the "interactive" template.
 
@@ -416,7 +417,8 @@ class MolGrid:
             top of each cell. In the context of a Jupyter Notebook, this gives
             you access to your selection (index and SMILES) through
             :func:`mols2grid.get_selection()` or :meth:`MolGrid.get_selection()`.
-            In all cases, you can export your selection by clicking on the triple-dot menu.
+            In all cases, you can export your selection by clicking on the triple-dot
+            menu.
 
         Parameters: Mols
         ----------------
@@ -461,20 +463,22 @@ class MolGrid:
             You can also style a whole cell using the ``__all__`` key, the
             corresponding function then has access to all values for each cell::
 
-                style={"__all__": lambda x: "color: red" if x["Solubility"] < -5 else ""}
+                style={
+                    "__all__": lambda x: "color: red" if x["Solubility"] < -5 else ""
+                }
 
-            Parameters: Customization
-            -------------------------
-            custom_header : str or None, default=None
-                Custom libraries to be loaded in the header of the document.
-            callback : str, callable or None, default=None
-                JavaScript or Python callback to be executed when clicking on an image.
-                A dictionnary containing the data for the full cell is directly available
-                as ``data`` in JS. For Python, the callback function must have ``data``
-                as the first argument to the function. All the values in the ``data`` dict
-                are parsed as strings, except "mols2grid-id" which is always an integer.
-                Note that fields containing spaces in their name will be replaced by
-                hyphens, i.e. "mol weight" becomes available as ``data["mol-weight"]``.
+        Parameters: Customization
+        -------------------------
+        custom_header : str or None, default=None
+            Custom libraries to be loaded in the header of the document.
+        callback : str, callable or None, default=None
+            JavaScript or Python callback to be executed when clicking on an image.
+            A dictionnary containing the data for the full cell is directly available
+            as ``data`` in JS. For Python, the callback function must have ``data``
+            as the first argument to the function. All the values in the ``data`` dict
+            are parsed as strings, except "mols2grid-id" which is always an integer.
+            Note that fields containing spaces in their name will be replaced by
+            hyphens, i.e. "mol weight" becomes available as ``data["mol-weight"]``.
 
         Returns
         -------
@@ -550,13 +554,16 @@ class MolGrid:
             search_cols.extend([f"data-{col}" for col in tooltip])
             for col in tooltip:
                 if col not in subset:
-                    s = f'<div class="data data-{slugify(col)}" style="display: none;"></div>'
+                    s = (
+                        f'<div class="data data-{slugify(col)}" '
+                        'style="display: none;"></div>'
+                    )
                     content.append(s)
                     column_map[col] = f"data-{col}"
         else:
             tooltip = []
-        sort_cols = search_cols[:]
-        sort_cols = ["data-mols2grid-id"] + sort_cols
+        sort_cols = search_cols.copy()
+        sort_cols = ["data-mols2grid-id", *sort_cols]
 
         # Get unique list but keep order.
         sort_cols = list(dict.fromkeys(sort_cols))
@@ -564,7 +571,7 @@ class MolGrid:
             style = {}
         if transform is None:
             transform = {}
-        value_names = list(set(subset + [smiles] + tooltip))
+        value_names = list({*subset, smiles, *tooltip})
         value_names = [f"data-{col}" for col in value_names]
 
         # Force id, SMILES, and tooltip values to be present in the data.
@@ -591,8 +598,8 @@ class MolGrid:
                 s = f'<a class="data data-{col}"></a>'
             elif style.get(col):
                 s = (
-                    f'<div class="data data-{slugify(col)} copy-me style-{slugify(col)}" '
-                    'style=""></div>'
+                    f'<div class="data data-{slugify(col)} '
+                    f'copy-me style-{slugify(col)}" style=""></div>'
                 )
             else:
                 s = f'<div class="data data-{slugify(col)} copy-me"></div>'
@@ -602,12 +609,15 @@ class MolGrid:
 
         # Add but hide SMILES div if not present.
         if smiles not in (subset + tooltip):
-            s = f'<div class="data data-{slugify(smiles)} copy-me" style="display: none;"></div>'
+            s = (
+                f'<div class="data data-{slugify(smiles)} copy-me" '
+                'style="display: none;"></div>'
+            )
             content.append(s)
             column_map[smiles] = f"data-{smiles}"
 
         # Set mapping for list.js.
-        if "__all__" in style.keys():
+        if "__all__" in style:
             whole_cell_style = True
             x = "[{data: ['mols2grid-id', 'cellstyle']}, "
         else:
@@ -664,17 +674,15 @@ class MolGrid:
             checkbox_html = ""
 
         # Add callback button.
-        if callback:
-            callback_btn_html = '<div class="m2g-callback"></div>'
-        else:
-            callback_btn_html = ""
+        callback_btn_html = '<div class="m2g-callback"></div>' if callback else ""
 
         # Generate cell HTML.
         item = (
             '<div class="m2g-cell" data-mols2grid-id="0" tabindex="0">'
-            '<div class="m2g-cb-wrap">{checkbox_html}<div class="m2g-cb"></div>{id_display_html}</div>'
-            '<div class="m2g-cell-actions">{info_btn_html}{callback_btn_html}</div>'
-            "{content}"
+            f'<div class="m2g-cb-wrap">{checkbox_html}<div class="m2g-cb"></div>'
+            f"{id_display_html}</div>"
+            f'<div class="m2g-cell-actions">{info_btn_html}{callback_btn_html}</div>'
+            f"{content}"
             "{tooltip_html}"
             "</div>"
         )
@@ -685,7 +693,9 @@ class MolGrid:
             info_btn_html=info_btn_html,
             callback_btn_html=callback_btn_html,
             content="".join(content),
-            tooltip_html='<div class="m2g-tooltip" data-toggle="popover" data-content="."></div>'
+            tooltip_html=(
+                '<div class="m2g-tooltip" data-toggle="popover" data-content="."></div>'
+            )
             if tooltip
             else "",
         )
@@ -723,35 +733,37 @@ class MolGrid:
         df = df[final_columns].rename(columns=column_map).sort_values(sort_by)
 
         template = env.get_template("interactive.html")
-        template_kwargs = dict(
-            tooltip=tooltip,
-            tooltip_placement=repr(tooltip_placement),
-            n_items_per_page=n_items_per_page,
-            selection=selection,
-            truncate=truncate,
-            sort_by=sort_by,
-            use_iframe=use_iframe,
-            border=border,
-            gap=gap,
-            gap_px="-1px -1px 0 0" if gap == 0 else f"{gap}px",
-            pad=pad,
-            fontsize=fontsize,
-            fontfamily=fontfamily,
-            textalign=textalign,
-            background_color=background_color,
-            hover_color=hover_color,
-            iframe_padding=18,
-            cell_width=self.img_size[0],
-            image_width=self.img_size[0],
-            image_height=self.img_size[1],
-            item=item,
-            item_repr=repr(item),
-            value_names=value_names,
-            search_cols=search_cols,
-            data=json.dumps(
-                df.to_dict("records"), indent=None, default=lambda x: "🤷‍♂️"
+        template_kwargs = {
+            "tooltip": tooltip,
+            "tooltip_placement": repr(tooltip_placement),
+            "n_items_per_page": n_items_per_page,
+            "selection": selection,
+            "truncate": truncate,
+            "sort_by": sort_by,
+            "use_iframe": use_iframe,
+            "border": border,
+            "gap": gap,
+            "gap_px": "-1px -1px 0 0" if gap == 0 else f"{gap}px",
+            "pad": pad,
+            "fontsize": fontsize,
+            "fontfamily": fontfamily,
+            "textalign": textalign,
+            "background_color": background_color,
+            "hover_color": hover_color,
+            "iframe_padding": 18,
+            "cell_width": self.img_size[0],
+            "image_width": self.img_size[0],
+            "image_height": self.img_size[1],
+            "item": item,
+            "item_repr": repr(item),
+            "value_names": value_names,
+            "search_cols": search_cols,
+            "data": json.dumps(
+                df.to_dict("records"),
+                indent=None,
+                default=lambda x: "🤷‍♂️",  # noqa: ARG005
             ),
-            cached_selection=(
+            "cached_selection": (
                 [
                     list(self._cached_selection.keys()),
                     list(self._cached_selection.values()),
@@ -759,21 +771,21 @@ class MolGrid:
                 if self._cached_selection
                 else False
             ),
-            smiles_col=smiles,
-            sort_cols=sort_cols,
-            grid_id=self._grid_id,
-            whole_cell_style=whole_cell_style,
-            custom_css=custom_css or "",
-            custom_header=custom_header or "",
-            callback=callback,
-            callback_type=callback_type,
-            removeHs=self.removeHs,
-            prefer_coordGen=self.prefer_coordGen,
-            onthefly=not self.prerender,
-            substruct_highlight=substruct_highlight,
-            json_draw_opts=getattr(self, "json_draw_opts", ""),
-            single_highlight=single_highlight,
-        )
+            "smiles_col": smiles,
+            "sort_cols": sort_cols,
+            "grid_id": self._grid_id,
+            "whole_cell_style": whole_cell_style,
+            "custom_css": custom_css or "",
+            "custom_header": custom_header or "",
+            "callback": callback,
+            "callback_type": callback_type,
+            "removeHs": self.removeHs,
+            "prefer_coordGen": self.prefer_coordGen,
+            "onthefly": not self.prerender,
+            "substruct_highlight": substruct_highlight,
+            "json_draw_opts": getattr(self, "json_draw_opts", ""),
+            "single_highlight": single_highlight,
+        }
         return template.render(**template_kwargs)
 
     def get_selection(self):
@@ -805,6 +817,7 @@ class MolGrid:
             )
             return Javascript(filtering_script)
         self.widget.filter_mask = mask
+        return None
 
     def filter_by_index(self, indices):
         """Filters the grid using the dataframe's index."""
@@ -813,7 +826,7 @@ class MolGrid:
         mask = self.dataframe.index.isin(indices)
         return self.filter(mask)
 
-    def to_static(
+    def to_static(  # noqa: PLR0912
         self,
         # Display
         subset=None,
@@ -837,7 +850,6 @@ class MolGrid:
         style=None,
         # Customization
         custom_header=None,
-        **kwargs,
     ):
         """Returns the HTML document for the "static" template
 
@@ -915,7 +927,9 @@ class MolGrid:
             You can also style a whole cell using the ``__all__`` key, the
             corresponding function then has access to all values for each cell::
 
-                style={"__all__": lambda x: "color: red" if x["Solubility"] < -5 else ""}
+                style={
+                    "__all__": lambda x: "color: red" if x["Solubility"] < -5 else ""
+                }
 
         Parameters: Customization
         -----------------------
@@ -970,7 +984,7 @@ class MolGrid:
             subset.insert(0, "img")
 
         # Always make surer the image comes first.
-        subset = [subset.pop(subset.index("img"))] + subset
+        subset = [subset.pop(subset.index("img")), *subset]
 
         if style is None:
             style = {}
@@ -984,9 +998,10 @@ class MolGrid:
             nrow, ncol = divmod(i, n_cols)
             popover = tooltip_formatter(row, tooltip, tooltip_fmt, style, transform)
             td = [
-                f'<td class="col-{ncol} m2g-tooltip" tabindex="0" data-toggle="popover" data-content="{escape(popover)}">'
+                f'<td class="col-{ncol} m2g-tooltip" tabindex="0" '
+                f'data-toggle="popover" data-content="{escape(popover)}">'
             ]
-            if "__all__" in style.keys():
+            if "__all__" in style:
                 s = style["__all__"](row)
                 div = [f'<div class="m2g-cell-{i}" style="{s}">']
             else:
@@ -999,7 +1014,10 @@ class MolGrid:
                     func = style.get(col)
                     slug_col = slugify(col)
                     if func:
-                        item = f'<div class="data copy-me data-{slug_col}" style="{func(v)}">'
+                        item = (
+                            f'<div class="data copy-me data-{slug_col}" '
+                            f'style="{func(v)}">'
+                        )
                     else:
                         item = f'<div class="data copy-me data-{slug_col}">'
                     func = transform.get(col)
@@ -1007,36 +1025,34 @@ class MolGrid:
                     item += f"{v}</div>"
                 div.append(item)
             div.append("</div>")
-            td.append("\n".join(div))
-            td.append("</td>")
+            td.extend(("\n".join(div), "</td>"))
             tr.append("\n".join(td))
 
             if (ncell % n_cols == 0) or (ncell == len(df)):
                 cell = [f'<tr class="row-{nrow}">']
-                cell.append("\n".join(tr))
-                cell.append("</tr>")
+                cell.extend(("\n".join(tr), "</tr>"))
                 data.append("\n".join(cell))
                 tr = []
 
         template = env.get_template("static.html")
-        template_kwargs = dict(
-            tooltip=tooltip,
-            tooltip_trigger=repr(tooltip_trigger),
-            tooltip_placement=repr(tooltip_placement),
-            use_iframe=use_iframe,
-            truncate=truncate,
-            border=border,
-            gap=gap,
-            pad=pad,
-            textalign=textalign,
-            fontsize=fontsize,
-            fontfamily=fontfamily,
-            iframe_padding=18,
-            cell_width=self.img_size[0],
-            custom_css=custom_css or "",
-            custom_header=custom_header or "",
-            data="\n".join(data),
-        )
+        template_kwargs = {
+            "tooltip": tooltip,
+            "tooltip_trigger": repr(tooltip_trigger),
+            "tooltip_placement": repr(tooltip_placement),
+            "use_iframe": use_iframe,
+            "truncate": truncate,
+            "border": border,
+            "gap": gap,
+            "pad": pad,
+            "textalign": textalign,
+            "fontsize": fontsize,
+            "fontfamily": fontfamily,
+            "iframe_padding": 18,
+            "cell_width": self.img_size[0],
+            "custom_css": custom_css or "",
+            "custom_header": custom_header or "",
+            "data": "\n".join(data),
+        }
         return template.render(**template_kwargs)
 
     @requires("IPython.display")
@@ -1046,7 +1062,9 @@ class MolGrid:
         iframe_width="100%",
         iframe_height=None,
         iframe_allow="clipboard-write",
-        iframe_sandbox="allow-scripts allow-same-origin allow-downloads allow-popups allow-modals",
+        iframe_sandbox=(
+            "allow-scripts allow-same-origin allow-downloads allow-popups allow-modals"
+        ),
         **kwargs,
     ):
         """Render and display the grid in a Jupyter notebook.

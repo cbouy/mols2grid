@@ -26,7 +26,7 @@ def test_update_current_grid(smiles_records):
 
 
 def test_init_grid():
-    assert "foo" in register.SELECTIONS.keys()
+    assert "foo" in register.SELECTIONS
     assert register.current_selection == "foo"
 
 
@@ -34,7 +34,7 @@ def test_overwrite_warning():
     event = SimpleNamespace(new='{0: "C"}')
     register.selection_updated("foo", event)
     with pytest.warns(
-        UserWarning, match=f"Overwriting non-empty 'foo' grid selection: {{0: 'C'}}"
+        UserWarning, match="Overwriting non-empty 'foo' grid selection: {0: 'C'}"
     ):
         register._init_grid("foo")
     assert register.get_selection() == {}

@@ -12,7 +12,7 @@ _SIGNATURE = {
 }
 for method in ["render", "to_interactive", "to_static", "display"]:
     _SIGNATURE[method].pop("self")
-    if method in ["render", "display"]:
+    if method in {"render", "display"}:
         _SIGNATURE[method].pop("kwargs")
 
 
@@ -34,7 +34,7 @@ def _prepare_kwargs(kwargs, kind):
 
 
 @singledispatch
-def display(arg, **kwargs):
+def display(arg, **kwargs):  # noqa: ARG001
     """Display molecules on an interactive grid.
 
     Parameters: Data
@@ -207,8 +207,8 @@ def display(arg, **kwargs):
 
     Notes
     -----
-    You can also directly use RDKit's :class:`~rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions`
-    parameters as arguments.
+    You can also directly use RDKit's
+    :class:`~rdkit.Chem.Draw.rdMolDraw2D.MolDrawOptions` parameters as arguments.
     Additionally, ``atomColourPalette`` is available to customize the atom
     palette if you're not prerendering image (``prerender=False``).
 
@@ -257,7 +257,7 @@ def _(mols, **kwargs):
 
 
 @singledispatch
-def save(arg, **kwargs):
+def save(arg, **kwargs):  # noqa: ARG001
     """Generate an interactive grid of molecules and save it.
 
     Parameters

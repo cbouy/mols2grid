@@ -43,7 +43,7 @@ skip_no_coordgen = pytest.mark.skipif(
 pyautogecko.install()
 
 
-def determine_scope(fixture_name, config):
+def determine_scope(fixture_name, config):  # noqa: ARG001
     if GITHUB_ACTIONS:
         return "function"
     return "module"
@@ -57,7 +57,7 @@ def get_grid(df, **kwargs):
 def get_doc(grid, kwargs):
     html = grid.render(**kwargs)
     html = b64encode(html.encode()).decode()
-    return "data:text/html;base64,{}".format(html)
+    return f"data:text/html;base64,{html}"
 
 
 @pytest.fixture(scope=determine_scope)
@@ -74,11 +74,11 @@ def driver():
 def html_doc(grid):
     return get_doc(
         grid,
-        dict(
-            n_items_per_page=5,
-            subset=["_Name", "img"],
-            size=(160, 120),
-        ),
+        {
+            "n_items_per_page": 5,
+            "subset": ["_Name", "img"],
+            "size": (160, 120),
+        },
     )
 
 
@@ -108,7 +108,7 @@ def test_smiles_hidden(driver: FirefoxDriver, html_doc):
 
 @pytest.mark.parametrize("page", [1, 2, 3])
 def test_page_click(driver: FirefoxDriver, grid, page):
-    doc = get_doc(grid, dict(subset=["img", "_Name"], n_items_per_page=9))
+    doc = get_doc(grid, {"subset": ["img", "_Name"], "n_items_per_page": 9})
     driver.get(doc)
     for i in range(2, page + 1):
         driver.wait_for_img_load()
@@ -122,7 +122,7 @@ def test_page_click(driver: FirefoxDriver, grid, page):
 
 
 @pytest.mark.parametrize(
-    ["name", "css_prop", "value", "expected"],
+    ("name", "css_prop", "value", "expected"),
     [
         ("gap", "margin-top", 20, "20px"),
         ("border", "border-top-width", "3px solid", "3px"),
@@ -290,7 +290,7 @@ def test_image_use_coords(driver: FirefoxDriver, df):
 
 
 @pytest.mark.parametrize(
-    ["coordGen", "prerender", "expected"],
+    ("coordGen", "prerender", "expected"),
     [
         pytest.param(
             True,
@@ -334,7 +334,7 @@ def test_coordgen(driver: FirefoxDriver, mols, coordGen, prerender, expected):
 
 
 @pytest.mark.parametrize(
-    ["removeHs", "prerender", "expected"],
+    ("removeHs", "prerender", "expected"),
     [
         pytest.param(
             True,
@@ -377,10 +377,7 @@ def test_removeHs(driver: FirefoxDriver, df, removeHs, prerender, expected):
     driver.get(doc)
     if not prerender:
         driver.wait_for_img_load()
-    if useSVG:
-        hash_ = driver.get_svg_hash()
-    else:
-        hash_ = driver.get_png_hash()
+    hash_ = driver.get_svg_hash() if useSVG else driver.get_png_hash()
     if expected == "":
         raise AssertionError(str(hash_))
     diff = hash_ - imagehash.hex_to_hash(expected)
@@ -388,29 +385,29 @@ def test_removeHs(driver: FirefoxDriver, df, removeHs, prerender, expected):
 
 
 @pytest.mark.parametrize(
-    ["kwargs", "expected"],
+    ("kwargs", "expected"),
     [
         (
-            dict(addAtomIndices=True),
+            {"addAtomIndices": True},
             "ffffffffff7ffe3ffe7ffefffeff3e7f3e791830c184e7cfe7cff7cfffffffff",
         ),
         (
-            dict(fixedBondLength=10),
+            {"fixedBondLength": 10},
             "fffffffffffffffffffffffffe7ffe7ff81ffc3fffffffffffffffffffffffff",
         ),
         (
-            dict(atomColourPalette={6: (0, 0.8, 0.8)}),
+            {"atomColourPalette": {6: (0, 0.8, 0.8)}},
             "fffffffffffffffffe7ffe7ffe7ffe7ffe7f3e7c8819c183e7e7ffffffffffff",
         ),
         (
-            dict(legend="foo"),
+            {"legend": "foo"},
             "fffffffffffffe7ffe7ffe7ffe7ffe7f3e7c1818c183e7e7fffffffffe7ffe7f",
         ),
     ],
 )
 def test_moldrawoptions(driver: FirefoxDriver, df, kwargs, expected):
     grid = get_grid(df, size=(160, 120), **kwargs)
-    doc = get_doc(grid, dict(n_items_per_page=1, subset=["img"]))
+    doc = get_doc(grid, {"n_items_per_page": 1, "subset": ["img"]})
     driver.get(doc)
     driver.wait_for_img_load()
     hash_ = driver.get_svg_hash()
@@ -476,8 +473,8 @@ def test_style(driver: FirefoxDriver, grid):
         {
             "tooltip": ["_Name"],
             "style": {
-                "__all__": lambda x: "color: red",
-                "_Name": lambda x: "color: blue",
+                "__all__": lambda x: "color: red",  # noqa: ARG005
+                "_Name": lambda x: "color: blue",  # noqa: ARG005
             },
         },
     )
@@ -516,9 +513,9 @@ def test_transform_style_tooltip(driver: FirefoxDriver, grid):
         grid,
         {
             "tooltip": ["_Name"],
-            "transform": {"_Name": lambda x: "foo"},
+            "transform": {"_Name": lambda x: "foo"},  # noqa: ARG005
             "style": {
-                "__all__": lambda x: "background-color: red",
+                "__all__": lambda x: "background-color: red",  # noqa: ARG005
                 "_Name": lambda x: "color: green" if x == "foo" else "color: blue",
             },
         },
@@ -572,7 +569,7 @@ def test_sort_button(driver: FirefoxDriver, html_doc):
 
 
 @pytest.mark.parametrize(
-    ["substruct_highlight", "expected"],
+    ("substruct_highlight", "expected"),
     [
         (True, "fffffe7ffc3ffc3ffe7ffe7ffe7ffe7ffe7ffc3ff81fc003c3c3c7e3c7e3eff7"),
         (False, "fe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffc3ff99fe3c7c7e3cff3"),
@@ -661,7 +658,7 @@ def test_subset_gives_rows_order(driver: FirefoxDriver, grid):
     i = 0
     for el in elements:
         class_list = el.get_attribute("class").split()
-        name = [x.replace("data-", "") for x in class_list if x.startswith("data-")][0]
+        name = next(x.replace("data-", "") for x in class_list if x.startswith("data-"))
         if name in {"img", "SMILES"}:
             continue
         assert name == subset[i]
@@ -678,7 +675,11 @@ def test_colname_with_spaces(driver: FirefoxDriver, df):
     grid = mols2grid.MolGrid(df, smiles_col="Molecule")
     doc = get_doc(
         grid,
-        dict(subset=["Molecule name", "img"], tooltip=["Molecule"], n_items_per_page=5),
+        {
+            "subset": ["Molecule name", "img"],
+            "tooltip": ["Molecule"],
+            "n_items_per_page": 5,
+        },
     )
     driver.get(doc)
     driver.wait_for_img_load()
@@ -707,13 +708,13 @@ def test_static_template(driver: FirefoxDriver, sdf_path):
     grid = mols2grid.MolGrid(df, mol_col="mol", prerender=True, size=(160, 120))
     doc = get_doc(
         grid,
-        dict(
-            template="static",
-            subset=["mols2grid-id", "img"],
-            tooltip=["_Name"],
-            sort_by="_Name",
-            tooltip_trigger="hover",
-        ),
+        {
+            "template": "static",
+            "subset": ["mols2grid-id", "img"],
+            "tooltip": ["_Name"],
+            "sort_by": "_Name",
+            "tooltip_trigger": "hover",
+        },
     )
     driver.get(doc)
     el = driver.find_by_css_selector("#mols2grid td.col-0")
@@ -791,6 +792,7 @@ def test_mol_depiction_aligned_to_query(driver: FirefoxDriver, html_doc):
             "fffffffffcf9f8f8f0708001070f0f8f9f9fffdfffdfff9fff8fff8fffffffff",
             "fffffffffffffff9fff9fff9fff9f8f9f8f0d0018003078f8f8fffffffffffff",
         ],
+        strict=False,
     ):
         hash_ = imagehash.average_hash(img, hash_size=16)
         assert str(hash_) == expected
@@ -807,7 +809,7 @@ def test_highlight_with_hydrogens(driver: FirefoxDriver, df):
         removeHs=False,
         size=(160, 120),
     )
-    doc = get_doc(grid, dict(substruct_highlight=True, single_highlight=False))
+    doc = get_doc(grid, {"substruct_highlight": True, "single_highlight": False})
     driver.get(doc)
     driver.wait_for_img_load()
     driver.substructure_query("Cl")
