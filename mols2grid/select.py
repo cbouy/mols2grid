@@ -23,7 +23,8 @@ class SelectionRegister:
         overwrite = self.SELECTIONS.get(name, False)
         if overwrite:
             warnings.warn(
-                f"Overwriting non-empty {name!r} grid selection: {str(overwrite)}"
+                f"Overwriting non-empty {name!r} grid selection: {overwrite!s}",
+                stacklevel=2,
             )
         self.SELECTIONS[name] = {}
         self._update_current_grid(name)

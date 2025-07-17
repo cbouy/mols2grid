@@ -1,15 +1,8 @@
-[build-system]
-requires = [
-    "hatchling",
-    "jupyterlab==3.*",
-]
-build-backend = "hatchling.build"
-
 [project]
 name = "mols2grid"
 description = "Interactive 2D small molecule viewer"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.10"
 authors = [
     { name = "Cédric Bouysset", email = "cedric@bouysset.net" },
 ]
@@ -24,30 +17,28 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Framework :: Jupyter",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Chemistry",
 ]
 dependencies = [
-    "ipywidgets>=7,<8",
+    "anywidget",
     "jinja2>=2.11.0",
     "numpy",
     "pandas",
+    "rdkit",
 ]
 dynamic = ["version"]
 
 [project.license]
 file = "LICENSE"
 
-[project.optional-dependencies]
-build = [
-    "build",
-]
+[dependency-groups]
+build = ["watchfiles", "jupyterlab"]
 tests = [
     "cairosvg==2.5.2",
     "flaky==3.7.0",
@@ -60,9 +51,17 @@ tests = [
 ]
 docs = [
     "mistune<3.0.0",
+    "py3dmol",
+    "sphinx-rtd-theme",
+    "sphinx-mdinclude",
 ]
 dev = [
-    "mols2grid[build,tests,docs]",
+    "ruff==0.11.2",
+    "black[jupyter]",
+    "poethepoet>=0.33.0",
+    { include-group = "build" },
+    { include-group = "tests" },
+    { include-group = "docs" },
 ]
 
 [project.urls]
@@ -72,54 +71,155 @@ Discussions = "https://github.com/cbouy/mols2grid/discussions"
 Issues = "https://github.com/cbouy/mols2grid/issues"
 Changelog = "https://github.com/cbouy/mols2grid/blob/master/CHANGELOG.md"
 
-[tool.setuptools.dynamic]
-version = { attr = "mols2grid._version.__version__" }
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.hatch.version]
 path = "mols2grid/_version.py"
 
 [tool.hatch.build]
-artifacts = [
-    "mols2grid/nbextension/index.*",
-    "mols2grid/labextension",
-]
-
-[tool.hatch.build.targets.wheel.shared-data]
-"mols2grid/nbextension" = "share/jupyter/nbextensions/mols2grid"
-"mols2grid/labextension" = "share/jupyter/labextensions/mols2grid"
-"./install.json" = "share/jupyter/labextensions/mols2grid/install.json"
-"./mols2grid.json" = "etc/jupyter/nbconfig/notebook.d/mols2grid.json"
-
-[tool.hatch.build.targets.sdist]
-exclude = [
-    ".github",
-]
+only-packages = true
+artifacts = ["mols2grid/static/*"]
 
 [tool.hatch.build.hooks.jupyter-builder]
-ensured-targets = [
-    "mols2grid/nbextension/index.js",
-    "mols2grid/labextension/package.json",
-]
-skip-if-exists = [
-    "mols2grid/nbextension/index.js",
-    "mols2grid/labextension/package.json",
-]
-dependencies = [
-    "hatch-jupyter-builder>=0.8.1",
-]
 build-function = "hatch_jupyter_builder.npm_builder"
+ensured-targets = ["mols2grid/static/widget.js"]
+skip-if-exists = ["mols2grid/static/widget.js"]
+dependencies = ["hatch-jupyter-builder>=0.5.0"]
 
 [tool.hatch.build.hooks.jupyter-builder.build-kwargs]
-path = "."
-build_cmd = "build:prod"
+npm = "npm"
+build_cmd = "build"
 
-[tool.black]
-line-length = 88
-extend-exclude = '''
-(
-  ^/docs/conf.py
-)
-'''
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+extend-exclude = [
+    "*.ipynb",
+    ".ipynb_checkpoints",
+    ".pytest_cache",
+    ".vscode",
+    "build",
+    "site-packages",
+]
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # Warning
+    "W",
+    # pyupgrade
+    "UP",
+    # flake8
+    "B",   # bugbear
+    "SIM", # simplify
+    "A",   # builtins
+    "COM", # commas
+    "C4",  # comprehensions
+    "ISC", # implicit-str-concat
+    "ICN", # import-conventions
+    "PIE", # pie
+    "T20", # print
+    "PT",  # pytest-style
+    "Q",   # quotes
+    "RET", # return
+    "ARG", # unused-arguments
+    "PTH", # use-pathlib
+    # pandas-vet
+    "PD",
+    # pylint
+    "PLR", # refactor
+    "PLW", # warning
+    # numpy
+    "NPY",
+    # refurb
+    "FURB",
+    # ruff
+    "RUF",
+    # isort
+    "I",
+]
+ignore = [
+    "PLW3201",
+    "PLW1514",
+    "PTH123",
+    "PLR0904",
+    "PLR0911",
+    "PLR0913",
+    "PLR0914",
+    "PLR0915",
+    "PLR0916",
+    "PLR0917",
+    "PLR1702",
+    "PLR2004",
+    "PLR6301",
+    "PD901",
+    "PT001",
+    "PT018",
+    "FURB103",
+    "COM812",
+    "UP037",
+]
 
 [tool.isort]
 profile = "black"
+
+[tool.black]
+target-version = ["py310", "py311", "py312", "py313"]
+include = '(docs/notebooks/.+\.ipynb)$'
+
+[tool.coverage.report]
+include_namespace_packages = true
+exclude_also = [
+    "def __repr__",
+    "if __name__ == .__main__.:",
+    "if .*TYPE_CHECKING:",
+    "@.*abstractmethod",
+]
+
+[tool.poe.tasks.format-check]
+help = "Checks that the code and notebooks don't require formatting"
+sequence = [
+    { cmd = "ruff format --diff" },
+    { cmd = "black --diff docs/notebooks/" },
+]
+
+[tool.poe.tasks.lint-check]
+help = "Checks if the code requires linting"
+cmd = "ruff check --preview --diff"
+
+[tool.poe.tasks.style-check]
+help = "Runs the formatting and linting checks"
+sequence = [{ ref = "format-check" }, { ref = "lint-check" }]
+
+[tool.poe.tasks.format]
+help = "Formats the code and notebooks"
+sequence = [{ cmd = "ruff format" }, { cmd = "black docs/notebooks/" }]
+
+[tool.poe.tasks.lint]
+help = "Lints the code"
+cmd = "ruff check --preview --fix"
+
+[tool.poe.tasks.style-fix]
+help = "Fixes formatting and linting issues"
+sequence = [{ ref = "format" }, { ref = "lint" }]
+
+[tool.poe.tasks.tests]
+help = "Runs the test suite"
+cmd = "pytest"
+
+[tool.poe.tasks.docs]
+help = "Builds the documentation"
+cmd = "sphinx-build -M html docs/ docs/_build/"
+
+[tool.poe.tasks.check]
+help = "Runs all of the checks"
+sequence = [{ ref = "style-check" }, { ref = "type-check" }, { ref = "tests" }, { ref = "docs" }]

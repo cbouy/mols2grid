@@ -1,6 +1,6 @@
-from typing import NamedTuple, Optional
+from typing import NamedTuple
 
-from .utils import env
+from mols2grid.utils import env
 
 
 class _JSCallback(NamedTuple):
@@ -10,7 +10,7 @@ class _JSCallback(NamedTuple):
     """
 
     code: str
-    library_src: Optional[str] = None
+    library_src: str | None = None
 
 
 def make_popup_callback(title=None, subtitle=None, svg=None, html="", js="", style=""):

@@ -1,11 +1,14 @@
-from ipywidgets import DOMWidget, register
+from pathlib import Path
+
+import anywidget
 from traitlets import Bool, List, Unicode
 
-from ._frontend import module_name, module_version
+from mols2grid._version import __version__  # noqa: F401
+
+BUNDLER_OUTPUT_DIR = Path(__file__).parent / "static"
 
 
-@register
-class MolGridWidget(DOMWidget):
+class MolGridWidget(anywidget.AnyWidget):
     """A custom widget for the MolGrid class. Handles selections and callbacks.
 
     Attributes
@@ -23,12 +26,8 @@ class MolGridWidget(DOMWidget):
         (False)
     """
 
-    _model_name = Unicode("MolGridModel").tag(sync=True)
-    _model_module = Unicode(module_name).tag(sync=True)
-    _model_module_version = Unicode(module_version).tag(sync=True)
-    _view_name = Unicode("MolGridView").tag(sync=True)
-    _view_module = Unicode(module_name).tag(sync=True)
-    _view_module_version = Unicode(module_version).tag(sync=True)
+    _esm = BUNDLER_OUTPUT_DIR / "widget.js"
+    _css = BUNDLER_OUTPUT_DIR / "widget.css"
 
     grid_id = Unicode("default").tag(sync=True)
     selection = Unicode("{}").tag(sync=True)

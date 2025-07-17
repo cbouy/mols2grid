@@ -9,9 +9,9 @@ import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import Draw
 
-from .callbacks import _JSCallback
-from .select import register
-from .utils import (
+from mols2grid.callbacks import _JSCallback
+from mols2grid.select import register
+from mols2grid.utils import (
     callback_handler,
     env,
     is_running_within_streamlit,
@@ -23,7 +23,7 @@ from .utils import (
     slugify,
     tooltip_formatter,
 )
-from .widget import MolGridWidget
+from mols2grid.widget import MolGridWidget
 
 try:
     from IPython.display import HTML, Javascript, display
@@ -120,17 +120,14 @@ class MolGrid:
         df,
         smiles_col="SMILES",
         mol_col=None,
-        #
         size=(130, 90),
         useSVG=True,
         prerender=False,
         cache_selection=False,
-        #
         removeHs=False,
         use_coords=False,
         coordGen=True,
         MolDrawOptions=None,
-        #
         name="default",
         rename=None,
         **kwargs,
@@ -592,14 +589,13 @@ class MolGrid:
                 s = ""  # Avoid an empty div to be created for the display id.
             elif col == "img" and tooltip:
                 s = f'<a class="data data-{col}"></a>'
+            elif style.get(col):
+                s = (
+                    f'<div class="data data-{slugify(col)} copy-me style-{slugify(col)}" '
+                    'style=""></div>'
+                )
             else:
-                if style.get(col):
-                    s = (
-                        f'<div class="data data-{slugify(col)} copy-me style-{slugify(col)}" '
-                        'style=""></div>'
-                    )
-                else:
-                    s = f'<div class="data data-{slugify(col)} copy-me"></div>'
+                s = f'<div class="data data-{slugify(col)} copy-me"></div>'
             temp.append(s)
             column_map[col] = f"data-{col}"
         content = temp + content
@@ -714,7 +710,7 @@ class MolGrid:
                 sort_by = f"data-{slugify(sort_by)}"
             else:
                 raise ValueError(
-                    f"{sort_by!r} is not an available field in " "`subset` or `tooltip`"
+                    f"{sort_by!r} is not an available field in `subset` or `tooltip`"
                 )
         else:
             sort_by = "mols2grid-id"
@@ -735,7 +731,6 @@ class MolGrid:
             truncate=truncate,
             sort_by=sort_by,
             use_iframe=use_iframe,
-            #
             border=border,
             gap=gap,
             gap_px="-1px -1px 0 0" if gap == 0 else f"{gap}px",
@@ -745,12 +740,10 @@ class MolGrid:
             textalign=textalign,
             background_color=background_color,
             hover_color=hover_color,
-            #
             iframe_padding=18,
             cell_width=self.img_size[0],
             image_width=self.img_size[0],
             image_height=self.img_size[1],
-            #
             item=item,
             item_repr=repr(item),
             value_names=value_names,
@@ -811,8 +804,7 @@ class MolGrid:
                 grid_id=self._grid_id, mask=json.dumps(mask)
             )
             return Javascript(filtering_script)
-        else:
-            self.widget.filter_mask = mask
+        self.widget.filter_mask = mask
 
     def filter_by_index(self, indices):
         """Filters the grid using the dataframe's index."""
@@ -1002,7 +994,7 @@ class MolGrid:
             for col in subset:
                 v = row[col]
                 if col == "img" and tooltip:
-                    item = f'<div class="data data-img">' f"{v}</div>"
+                    item = f'<div class="data data-img">{v}</div>'
                 else:
                     func = style.get(col)
                     slug_col = slugify(col)
@@ -1033,17 +1025,14 @@ class MolGrid:
             tooltip_placement=repr(tooltip_placement),
             use_iframe=use_iframe,
             truncate=truncate,
-            #
             border=border,
             gap=gap,
             pad=pad,
             textalign=textalign,
             fontsize=fontsize,
             fontfamily=fontfamily,
-            #
             iframe_padding=18,
             cell_width=self.img_size[0],
-            #
             custom_css=custom_css or "",
             custom_header=custom_header or "",
             data="\n".join(data),
@@ -1078,9 +1067,8 @@ class MolGrid:
                 doc=escape(doc),
             )
             return HTML(iframe)
-        else:
-            # Render HTML regularly.
-            return HTML(doc)
+        # Render HTML regularly.
+        return HTML(doc)
 
     def save(self, output, **kwargs):
         """Render and save the grid in an HTML document."""

@@ -55,7 +55,7 @@ def tooltip_formatter(s, subset, fmt, style, transform):
             else f'<span class="copy-me">{displayed}</span>'
         )
         items.append(fmt.format(key=k, value=v))
-    return '<br>'.join(items)
+    return "<br>".join(items)
 
 
 def mol_to_smiles(mol):
@@ -83,14 +83,10 @@ def sdf_to_dataframe(sdf_path, mol_col="mol"):
     -------
     df : pandas.DataFrame
     """
-    if str(sdf_path).endswith(".gz"):
-        read_file = gzip.open
-    else:
-        read_file = partial(open, mode="rb")
+    read_file = gzip.open if str(sdf_path).endswith(".gz") else partial(open, mode="rb")
     with read_file(sdf_path) as f:
         return pd.DataFrame(
-            [mol_to_record(mol, mol_col)
-             for mol in Chem.ForwardSDMolSupplier(f)]
+            [mol_to_record(mol, mol_col) for mol in Chem.ForwardSDMolSupplier(f)]
         )
 
 

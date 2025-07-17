@@ -4,7 +4,7 @@ from pathlib import Path
 
 from pandas import DataFrame, Series
 
-from .molgrid import MolGrid
+from mols2grid.molgrid import MolGrid
 
 _SIGNATURE = {
     method: dict(inspect.signature(getattr(MolGrid, method)).parameters.items())
