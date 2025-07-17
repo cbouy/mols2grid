@@ -11,7 +11,6 @@ import pyautogecko
 import pytest
 from flaky import flaky
 from rdkit import Chem
-from rdkit import __version__ as rdkit_version
 from rdkit.Chem import AllChem
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
@@ -346,11 +345,7 @@ def test_coordgen(driver: FirefoxDriver, mols, coordGen, prerender, expected):
         pytest.param(
             False,
             True,
-            (
-                "ffffff7fff3fffbff907e02fe13ff80fcbafe33fe033cb07fa4ffa4fff97ffd7"
-                if rdkit_version == "2020.03.1"
-                else "ff7ffe1ff91ffd3ff00ff0cffcbff0bff00ffd3fe1bff887f29ff30fff6fff7f"
-            ),
+            "ff7ffe1ff91ffd3ff00ff0cffcbff0bff00ffd3fe1bff887f29ff30fff6fff7f",
             marks=skip_no_coordgen,
         ),
         (
