@@ -223,3 +223,7 @@ cmd = "sphinx-build -M html docs/ docs/_build/"
 [tool.poe.tasks.check]
 help = "Runs all of the checks"
 sequence = [{ ref = "style-check" }, { ref = "type-check" }, { ref = "tests" }, { ref = "docs" }]
+
+[tool.poe.tasks.build]
+help = "Builds the package"
+cmd = "python -m build ."

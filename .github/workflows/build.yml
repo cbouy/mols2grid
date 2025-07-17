@@ -18,7 +18,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     - name: Get prerelease version tags
       if: env.IS_PRERELEASE == 'true'
@@ -33,47 +33,56 @@ jobs:
 
     - name: Fail if prerelease is not correctly versioned
       if: (env.IS_PRERELEASE == 'true') && !( env.py_is_pre && env.js_is_pre )
-      uses: actions/github-script@v3
+      uses: actions/github-script@v7
       with:
         script: |
           core.setFailed("Versions are not tagged as a prerelease")
 
     - name: Install node
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
-        node-version: '12.x'
-        registry-url: 'https://registry.npmjs.org/'
+        node-version: 24
+        registry-url: "https://registry.npmjs.org/"
         cache: "npm"
 
-    - name: Install python with pip
-      uses: actions/setup-python@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
       with:
-        python-version: 3.8
-        cache: "pip"
-
-    - name: Install dependencies for packaging
-      run: |
-        pip install setuptools wheel build virtualenv twine
+        python-version: 3.11
+        enable-cache: true
+        cache-dependency-glob: "uv.lock"
     
-    - name: Check python installation
+    - name: Install project and dependencies
       run: |
-        which python
-        python --version
-        pip --version
-        pip list
+        uv sync --group build
+
+    - name: Show installed environment
+      run: |
+        uv pip list
 
     - name: Build package
       run: |
-        python -m build .
-    
-    - name: Publish the Python package
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-      run: twine upload dist/mols2grid*.{tar.gz,whl}
+        uv run poe build
 
-    - name: Publish the NPM package
-      run: npm publish
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.PYPI_TOKEN }}
+
+    - name: Publish the NPM package (pre-release)
+      if: env.IS_PRERELEASE == 'true'
+      run: |
+        npm publish --tag dev
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         PRE_RELEASE: ${{ env.IS_PRERELEASE }}
+      working-directory: mols2grid
+
+    - name: Publish the NPM package
+      if: env.IS_PRERELEASE != 'true'
+      run: |
+        npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        PRE_RELEASE: ${{ env.IS_PRERELEASE }}
+      working-directory: mols2grid

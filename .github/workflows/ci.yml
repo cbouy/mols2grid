@@ -48,24 +48,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Get prerelease version tags
-        if: env.IS_PRERELEASE == 'true'
-        run: |
-          py_dirty_tag=$(awk '/__version__ = "[[:digit:]+]\.[[:digit:]+]\.[[:digit:]+]\-.+"/ {print $3}' ./mols2grid/_version.py)
-          py_is_pre=$(test -z "$py_dirty_tag" && echo "false" || echo "true")
-          js_version_string=$(grep '"version":' ./package.json)
-          js_dirty_tag=$(echo "$js_version_string" | cut -d- -f2)
-          js_is_pre=$(test "$js_version_string" == "$js_dirty_tag" && echo "false" || echo "true")
-          echo "py_is_pre=$py_is_pre" >> $GITHUB_ENV
-          echo "js_is_pre=$js_is_pre" >> $GITHUB_ENV
-
-      - name: Fail if prerelease is not correctly versioned
-        if: (env.IS_PRERELEASE == 'true') && !( env.py_is_pre && env.js_is_pre )
-        uses: actions/github-script@v7
-        with:
-          script: |
-            core.setFailed("Versions are not tagged as a prerelease")
-
       - name: Install node
         uses: actions/setup-node@v4
         with:
@@ -132,7 +114,7 @@ jobs:
       - name: Prepare for build
         run: |
           uv pip uninstall mols2grid
-          uv run python -m build .
+          uv run poe build
           echo "$SCRIPT" > test_install.py
           cat test_install.py
         env:
