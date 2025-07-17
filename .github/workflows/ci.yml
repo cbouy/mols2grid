@@ -84,8 +84,7 @@ jobs:
       
       - name: Run tests
         run: |
-          uv run ${{ matrix.uv-run-args }} pytest \
-            --color=yes --disable-pytest-warnings \
+          uv run ${{ matrix.uv-run-args }} poe tests \
             --cov=mols2grid --cov-report=xml \
             tests/ -m "not webdriver"
 
@@ -97,8 +96,7 @@ jobs:
           retry_on: timeout
           shell: bash
           command: |
-            uv run ${{ matrix.uv-run-args }} pytest \
-              --color=yes --disable-pytest-warnings \
+            uv run ${{ matrix.uv-run-args }} poe tests \
               --cov=mols2grid --cov-report=xml --cov-append \
               tests/ -m "webdriver"
 
