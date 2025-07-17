@@ -1,0 +1,34 @@
+name: "Ruff/Black"
+
+on:
+  push:
+    branches: [ "*" ]
+  pull_request:
+    branches: [ "*" ]
+
+jobs:
+  formatting:
+    name: Code formatting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Code formatting
+        uses: astral-sh/ruff-action@v2
+        with:
+          version: 0.9.10
+          args: "format --diff"
+
+      - name: Notebook formatting
+        uses: psf/black@stable
+        with:
+          src: "docs/notebooks/"
+          jupyter: true
+
+      - name: Code linting
+        uses: astral-sh/ruff-action@v2
+        with:
+          version: 0.9.10
+          args: "check --preview --diff"
