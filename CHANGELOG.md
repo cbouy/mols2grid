@@ -6,6 +6,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Switched to `anywidget` as the widget backend.
+- Using `uv` for venv and running tasks.
+
+### Added
+
+- `ruff` and `black` for linting/formatting.
+- `poethepoet` for managing dev commands.
+- Support for python 3.11 to 3.13.
+- `rdkit` is now part of the dependencies.
+
+### Removed
+
+- Dropped support for python 3.7 to 3.9
+
 ---
 
 ## [2.0.0] - 2023/07/23

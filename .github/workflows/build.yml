@@ -76,7 +76,6 @@ jobs:
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         PRE_RELEASE: ${{ env.IS_PRERELEASE }}
-      working-directory: mols2grid
 
     - name: Publish the NPM package
       if: env.IS_PRERELEASE != 'true'
@@ -85,4 +84,3 @@ jobs:
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         PRE_RELEASE: ${{ env.IS_PRERELEASE }}
-      working-directory: mols2grid
