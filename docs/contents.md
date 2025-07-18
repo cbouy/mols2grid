@@ -18,7 +18,7 @@
 # 🐍 Installation
 ---
 
-mols2grid was developped for Python 3.7+ and requires rdkit (>=2020.03.1), pandas and jinja2 as dependencies.  
+mols2grid was developped for Python 3.10+ and requires rdkit, pandas and jinja2 as dependencies.  
 The easiest way to install it is from conda:
 ```shell
 conda install -c conda-forge mols2grid
@@ -26,12 +26,8 @@ conda install -c conda-forge mols2grid
 
 Alternatively, you can also use pip:
 ```shell
-pip install rdkit mols2grid
+pip install mols2grid
 ```
-
-If you notice that the selections, callbacks and interactive filtering aren't working as intended, you may have to manually activate the extension:
-- for Jupyter Lab: `jupyter labextension install mols2grid`
-- for Jupyter Notebook: `jupyter nbextension install mols2grid`
 
 **Compatibility**
 
@@ -100,7 +96,7 @@ You can refer to mols2grid in your research by using the following DOI:
 
 Unless otherwise noted, all files in this directory and all subdirectories are distributed under the Apache License, Version 2.0:
 ```text
-    Copyright 2021-2022 Cédric BOUYSSET
+    Copyright 2021-2025 Cédric BOUYSSET
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.

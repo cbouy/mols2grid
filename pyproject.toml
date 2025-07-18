@@ -48,10 +48,14 @@ tests = [
     "selenium~=4.11",
 ]
 docs = [
-    "mistune<3.0.0",
     "py3dmol",
-    "sphinx-rtd-theme",
+    "ipywidgets",
+    "sphinx",
+    "myst-nb<1.0",
+    "recommonmark",
+    "sphinx-book-theme",
     "sphinx-mdinclude",
+    "sphinx-copybutton",
 ]
 dev = [
     "ruff==0.11.2",

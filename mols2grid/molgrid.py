@@ -897,7 +897,7 @@ class MolGrid:
             Number of columns in the table.
 
         Parameters: CSS
-        --------------
+        ---------------
         border : str, default="1px solid #cccccc"
             Styling of the border around each cell.
         gap : int, default=0
@@ -932,7 +932,7 @@ class MolGrid:
                 }
 
         Parameters: Customization
-        -----------------------
+        -------------------------
         custom_header : str or None
             Custom libraries to be loaded in the header of the document
 
