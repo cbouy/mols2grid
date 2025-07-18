@@ -112,7 +112,7 @@ function initToolTip() {
             if ($(e.target).hasClass('copy-me')) {
                 copyOnClick(e.target)
             } else if ($(e.target).is('button')) {
-                
+
             }
         })
     }).mouseleave(function() {
@@ -139,9 +139,10 @@ function initCheckbox() {
         var _id = parseInt($(this).closest(".m2g-cell").attr("data-mols2grid-id"));
         if (this.checked) {
             var _smiles = $($(this).closest(".m2g-cell").children(".data-{{ smiles_col }}")[0]).text();
-            add_selection({{ grid_id | tojson }}, [_id], [_smiles]);
-        } else {
-            del_selection({{ grid_id | tojson }}, [_id]);
+            add_selection({{ grid_id | tojson }
+    }, [_id], [_smiles]);
+} else {
+    del_selection({{ grid_id | tojson }}, [_id]);
         }
     });
 }
@@ -150,7 +151,7 @@ function initCheckbox() {
 function onCallbackButtonClick(target) {
     var data = {}
     data["mols2grid-id"] = parseInt($(target).closest(".m2g-cell")
-                                            .attr("data-mols2grid-id"));
+        .attr("data-mols2grid-id"));
     data["img"] = $(target).parent().siblings(".data-img").eq(0).get(0).innerHTML;
     $(target).parent().siblings(".data").not(".data-img").each(function() {
         let name = this.className.split(" ")
@@ -161,17 +162,18 @@ function onCallbackButtonClick(target) {
 
     {% if callback_type == "python" %}
     // Trigger custom python callback.
-    let model = window.parent["_MOLS2GRID_" + {{ grid_id | tojson }}];
-    if (model) {
-        model.set("callback_kwargs", JSON.stringify(data));
-        model.save_changes();
-    } else {
-        // No kernel detected for callback.
-    }
-    {% else %}
-    // Call custom js callback.
-    {{ callback }}
-    {% endif %}
+    let model = window.parent["_MOLS2GRID_" + {{ grid_id | tojson
+}}];
+if (model) {
+    model.set("callback_kwargs", JSON.stringify(data));
+    model.save_changes();
+} else {
+    // No kernel detected for callback.
+}
+{% else %}
+// Call custom js callback.
+{ { callback } }
+{% endif %}
 }
 
 
@@ -183,7 +185,7 @@ function onCallbackButtonClick(target) {
 // Listen to action dropdown.
 $('#mols2grid .m2g-actions select').change(function(e) {
     var val = e.target.value
-    switch(val) {
+    switch (val) {
         case 'select-all':
             selectAll()
             break
@@ -213,7 +215,7 @@ $('#mols2grid .m2g-actions select').change(function(e) {
 function selectAll(e) {
     var _id = [];
     var _smiles = [];
-    listObj.items.forEach(function (item) {
+    listObj.items.forEach(function(item) {
         if (item.elm) {
             item.elm.getElementsByTagName("input")[0].checked = true;
         } else {
@@ -232,7 +234,7 @@ function selectAll(e) {
 function selectMatching(e) {
     var _id = [];
     var _smiles = [];
-    listObj.matchingItems.forEach(function (item) {
+    listObj.matchingItems.forEach(function(item) {
         if (item.elm) {
             item.elm.getElementsByTagName("input")[0].checked = true;
         } else {
@@ -249,7 +251,7 @@ function selectMatching(e) {
 // Uncheck all.
 function unselectAll(e) {
     var _id = [];
-    listObj.items.forEach(function (item) {
+    listObj.items.forEach(function(item) {
         if (item.elm) {
             item.elm.getElementsByTagName("input")[0].checked = false;
         } else {
@@ -267,7 +269,7 @@ function invertSelection(e) {
     var _id_add = [];
     var _id_del = [];
     var _smiles = [];
-    listObj.items.forEach(function (item) {
+    listObj.items.forEach(function(item) {
         if (item.elm) {
             var chkbox = item.elm.getElementsByTagName("input")[0]
             chkbox.checked = !chkbox.checked;
@@ -285,7 +287,7 @@ function invertSelection(e) {
         }
     });
     del_selection({{ grid_id | tojson }}, _id_del);
-    add_selection({{ grid_id | tojson }}, _id_add, _smiles);
+add_selection({{ grid_id | tojson }}, _id_add, _smiles);
 };
 
 // Copy to clipboard.
@@ -309,9 +311,9 @@ function saveSmiles(e) {
 
 // Export CSV.
 function saveCSV(e) {
-    content = _renderCSV(';')
+    content = _renderCSV(',')
     var a = document.createElement("a");
-    var file = new Blob([content], {type: "text/csv"});
+    var file = new Blob([content], { type: "text/csv" });
     a.href = URL.createObjectURL(file);
     a.download = "selection.csv";
     a.click();
@@ -329,7 +331,7 @@ function _renderCSV(sep) {
     // CSV content
     header = ["index"].concat(header).join(sep);
     var content = header + "\n";
-    listObj.items.forEach(function (item) {
+    listObj.items.forEach(function(item) {
         let data = item.values();
         let index = data["mols2grid-id"];
         if (SELECTION.has(index) || SELECTION.size === 0) {
