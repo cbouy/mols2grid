@@ -373,7 +373,8 @@ $RECYCLE.BIN/
 # Custom
 # ======
 
-mols2grid/nbextension/index.*
-mols2grid/labextension
+__marimo__/
+mols2grid/static
 .vscode/
 quickstart-grid.html
+docs/**/*.sdf

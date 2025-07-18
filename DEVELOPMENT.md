@@ -1,27 +1,62 @@
 This is a short guide to setup a dev environment for mols2grid.
 
-1. Install conda or mamba
-2. Create a new environment. Python 3.7+ (prefer 3.8):
+1. Install [uv](https://docs.astral.sh/uv/)
+2. Create a new environment and install:
    ```
-   conda env create --name mols2grid --file docs/environment.yml
-   ```
-3. Install all the package dependencies in editable mode:
-   ```
-   pip install -e .[dev]
+   uv sync --python 3.11
    ```
 
-To run tests locally:
-- Install Firefox (needed for UI testing)
-- Test your installation:
-  ```
-  pytest tests/
-  ```
-- You can select/skip the UI testing by specifying the `webdriver` mark in the pytest
+We use [poethepoet](https://poethepoet.natn.io/) to define tasks to run in development environments.
+You can run all of the checks detailed below using the command
+```
+uv run poe check
+```
+
+You can also get a list of available checks with:
+```
+uv run poe --help
+```
+
+  a. Running tests
+
+To run the test suite, simply execute:
+```
+uv run poe tests
+```
+You can select/skip the UI testing by specifying the `webdriver` mark in the pytest
   command: `-m webdriver` to select UI tests only, or `-m "not webdriver"` to skip them.
 
-We use `black` and `isort` for formatting so either install the corresponding extension
-from your IDE or install the package with `pip install black isort`. The configuration
-is done inside the `pyproject.toml` file.
+  b. Building the documentation
+
+Building the HTML files for the documentation and tutorials can be done with the following command:
+```
+uv run poe docs
+```
+You can then open the `docs/_build/html/index.html` file with your browser to navigate the docs and
+see any changes that you've made.
+
+If you're adding a new module, you will need to update some `.rst` files in the `docs/api/`
+folder.
+
+You will find the tutorials notebooks in the `docs/notebooks/` section. These are Jupyter-notebook
+files with a twist for Markdown cells: you can use the
+[MyST syntax](https://myst-nb.readthedocs.io/en/latest/authoring/jupyter-notebooks.html#syntax)
+to format the content. See the [Authoring section](https://myst-parser.readthedocs.io/en/latest/syntax/typography.html)
+for more details.
+
+  c. Code formatting and linting
+
+You can check if your code complies with our code style standards with the following command:
+```
+uv run poe style-check
+```
+
+You can automatically format your changes to match with the style used in this project, as well as
+fixing any lint errors (unused imports, type annotations...etc.) with the following command:
+
+```
+uv run poe style-fix
+```
 
 Making a pull request will automatically run the tests and documentation build for you.
 Don't forget to update the `CHANGELOG.md` file with your changes.

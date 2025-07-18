@@ -1,10 +1,12 @@
-from ._version import __version__
-from .callbacks import make_popup_callback
-from .dispatch import display, save
-from .molgrid import MolGrid
-from .select import get_selection, list_grids
-from .utils import sdf_to_dataframe
-from .widget import _jupyter_labextension_paths, _jupyter_nbextension_paths
+from mols2grid import datafiles as datafiles
+from mols2grid._version import __version__ as __version__
+from mols2grid.callbacks import make_popup_callback as make_popup_callback
+from mols2grid.dispatch import display as display
+from mols2grid.dispatch import save as save
+from mols2grid.molgrid import MolGrid as MolGrid
+from mols2grid.select import get_selection as get_selection
+from mols2grid.select import list_grids as list_grids
+from mols2grid.utils import sdf_to_dataframe as sdf_to_dataframe
 
 try:
     from google.colab import output

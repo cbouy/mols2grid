@@ -24,20 +24,20 @@ def test_no_input_specified(small_df):
 
 def test_name_not_str(small_df):
     with pytest.raises(
-        TypeError, match="`name` must be a string. Currently of type int"
+        TypeError, match=r"`name` must be a string\. Currently of type int"
     ):
         get_grid(small_df, name=0)
 
 
 def test_uses_svg(grid_prerendered):
-    assert grid_prerendered.useSVG == True
+    assert grid_prerendered.useSVG is True
     data = grid_prerendered.dataframe.loc[0, "img"]
     assert "<svg " in data[:100]
 
 
 def test_uses_png(small_df):
     grid = get_grid(small_df, useSVG=False, prerender=True)
-    assert grid.useSVG == False
+    assert grid.useSVG is False
     data = grid.dataframe.loc[0, "img"]
     assert data.startswith('<img src="data:image/png;base64')
 
@@ -135,7 +135,7 @@ def test_from_mols_custom_mol_col(mols):
 
 
 @pytest.mark.parametrize(
-    ["param", "attr", "value"],
+    ("param", "attr", "value"),
     [
         ("name", "_grid_id", "foobar"),
         ("coordGen", "prefer_coordGen", False),
@@ -149,7 +149,7 @@ def test_from_mols_custom_mol_col(mols):
     ],
 )
 def test_from_mols_kwargs(mols, param, attr, value):
-    if param in ["useSVG"]:
+    if param == "useSVG":
         grid = MolGrid.from_mols(mols, prerender=True, **{param: value})
     else:
         grid = MolGrid.from_mols(mols, **{param: value})
@@ -170,7 +170,7 @@ def test_from_sdf_custom_mol_col(sdf_path):
 
 
 @pytest.mark.parametrize(
-    ["param", "attr", "value"],
+    ("param", "attr", "value"),
     [
         ("name", "_grid_id", "foobar"),
         ("coordGen", "prefer_coordGen", False),
@@ -184,7 +184,7 @@ def test_from_sdf_custom_mol_col(sdf_path):
     ],
 )
 def test_from_sdf_kwargs(sdf_path, param, attr, value):
-    if param in ["useSVG"]:
+    if param == "useSVG":
         grid = MolGrid.from_sdf(sdf_path, prerender=True, **{param: value})
     else:
         grid = MolGrid.from_sdf(sdf_path, **{param: value})
@@ -258,12 +258,12 @@ def test_render_wrong_template(grid):
 @pytest.mark.parametrize(
     "kwargs",
     [
-        dict(),
-        dict(subset=["ID"]),
-        dict(tooltip=["ID"]),
-        dict(gap=5),
-        dict(style={"ID": lambda x: "color: red" if x == 1 else ""}),
-        dict(transform={"ID": lambda x: f"Id. #{x}"}),
+        {},
+        {"subset": ["ID"]},
+        {"tooltip": ["ID"]},
+        {"gap": 5},
+        {"style": {"ID": lambda x: "color: red" if x == 1 else ""}},
+        {"transform": {"ID": lambda x: f"Id. #{x}"}},
     ],
 )
 def test_integration_static(grid_prerendered, kwargs):
@@ -271,7 +271,7 @@ def test_integration_static(grid_prerendered, kwargs):
 
 
 def test_python_callback(grid):
-    html = grid.to_interactive(subset=["img"], callback=lambda data: None)
+    html = grid.to_interactive(subset=["img"], callback=lambda data: None)  # noqa: ARG005
     assert "// Trigger custom python callback" in html
     assert "// No kernel detected for callback" in html
 

@@ -1,14 +1,13 @@
 from pathlib import Path
 
 import pytest
-from rdkit import RDConfig
 
-from mols2grid import MolGrid, sdf_to_dataframe
+from mols2grid import MolGrid, datafiles, sdf_to_dataframe
 
 
 @pytest.fixture(scope="module")
 def sdf_path():
-    return Path(RDConfig.RDDocsDir) / "Book" / "data" / "solubility.test.sdf"
+    return Path(datafiles.SOLUBILITY_SDF)
 
 
 @pytest.fixture(scope="module")
@@ -42,5 +41,5 @@ def grid(df):
 
 
 @pytest.fixture(scope="module")
-def mols(small_df):
+def mols(small_df):  # noqa: FURB118, RUF100
     return small_df["mol"]
