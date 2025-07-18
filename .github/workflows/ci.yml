@@ -100,28 +100,52 @@ jobs:
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
 
+
+  test-packaging:
+    name: 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: "https://registry.npmjs.org/"
+          cache: "npm"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: 3.11
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install project and dependencies
+        run: |
+          uv sync --group build --locked
+
       - name: Prepare for build
         run: |
-          uv pip uninstall mols2grid
-          uv run poe build
           echo "$SCRIPT" > test_install.py
           cat test_install.py
         env:
           SCRIPT: |
             import mols2grid as mg
-            from rdkit import RDConfig
-            sdf = f"{RDConfig.RDDocsDir}/Book/data/solubility.test.sdf"
-            mg.save(sdf, output="/dev/null")
+            mg.save(mg.datafiles.SOLUBILITY_SDF, output="/dev/null")
+
+      - run: uv run poe build
 
       - name: Test tar.gz build
         run: |
+          uv pip uninstall mols2grid
           uv pip install dist/mols2grid-*.tar.gz
           source .venv/bin/activate
           python test_install.py
-          uv pip uninstall mols2grid
 
       - name: Test wheel build
         run: |
+          uv pip uninstall mols2grid
           uv pip install dist/mols2grid-*.whl
           source .venv/bin/activate
           python test_install.py

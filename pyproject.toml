@@ -38,7 +38,7 @@ dynamic = ["version"]
 file = "LICENSE"
 
 [dependency-groups]
-build = ["watchfiles", "jupyterlab"]
+build = ["build", "watchfiles", "jupyterlab"]
 tests = [
     "pytest",
     "pytest-cov",
@@ -78,7 +78,10 @@ path = "mols2grid/_version.py"
 
 [tool.hatch.build]
 only-packages = true
-artifacts = ["mols2grid/static/*"]
+artifacts = [
+    "mols2grid/static/*",
+    "mols2grid/data/*"
+]
 
 [tool.hatch.build.hooks.jupyter-builder]
 build-function = "hatch_jupyter_builder.npm_builder"
@@ -227,4 +230,4 @@ sequence = [{ ref = "style-check" }, { ref = "tests" }, { ref = "docs" }]
 
 [tool.poe.tasks.build]
 help = "Builds the package"
-cmd = "python -m build ."
+cmd = "python -m build"
