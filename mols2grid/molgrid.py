@@ -679,10 +679,10 @@ class MolGrid:
         # Generate cell HTML.
         item = (
             '<div class="m2g-cell" data-mols2grid-id="0" tabindex="0">'
-            f'<div class="m2g-cb-wrap">{checkbox_html}<div class="m2g-cb"></div>'
-            f"{id_display_html}</div>"
-            f'<div class="m2g-cell-actions">{info_btn_html}{callback_btn_html}</div>'
-            f"{content}"
+            '<div class="m2g-cb-wrap">{checkbox_html}<div class="m2g-cb"></div>'
+            "{id_display_html}</div>"
+            '<div class="m2g-cell-actions">{info_btn_html}{callback_btn_html}</div>'
+            "{content}"
             "{tooltip_html}"
             "</div>"
         )
