@@ -40,7 +40,6 @@ skip_no_coordgen = pytest.mark.skipif(
     not COORDGEN_SUPPORT,
     reason="CoordGen library not available in this RDKit build",
 )
-pyautogecko.install()
 
 
 def determine_scope(fixture_name, config):  # noqa: ARG001
@@ -58,6 +57,11 @@ def get_doc(grid, kwargs):
     html = grid.render(**kwargs)
     html = b64encode(html.encode()).decode()
     return f"data:text/html;base64,{html}"
+
+
+@pytest.fixture(scope="module", autouse=True)
+def install_firefox_driver():
+    pyautogecko.install()
 
 
 @pytest.fixture(scope=determine_scope)

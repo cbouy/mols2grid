@@ -183,8 +183,7 @@ class MolGrid:
             self.json_draw_opts = json.dumps(opts)
 
         # Prepare smiles and images.
-        self._prepare_dataframe(dataframe)
-        self.dataframe = dataframe
+        self.dataframe = self._prepare_dataframe(dataframe)
 
         # Register instance.
         self._grid_id = name
@@ -313,6 +312,7 @@ class MolGrid:
         # Generate smiles col if not present or needs to be updated.
         if self.mol_col and self.smiles_col not in dataframe.columns:
             dataframe[self.smiles_col] = dataframe[self.mol_col].apply(mol_to_smiles)
+        return dataframe
 
     def render(self, template="interactive", **kwargs):
         """Returns the HTML document corresponding to the "interactive" or "static"

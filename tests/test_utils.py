@@ -127,6 +127,7 @@ def test_sdf_to_dataframe(sdf_source, request):
         "SOL_classification": "(A) low",
         "_MolFileComments": "",
         "_MolFileInfo": "  SciTegic05121109362D",
+        "_MolFileChiralFlag": 0,
         "_Name": "3-methylpentane",
     }
     new = df.iloc[0].drop(["mol"]).to_dict()
@@ -142,7 +143,7 @@ def test_sdf_to_dataframe_custom_mol_col(sdf_path):
 def test_sdf_to_df_gz(sdf_path, tmp_path):
     tmp_file = tmp_path / "mols.sdf.gz"
     with open(tmp_file, "wb") as tf:
-        gz = gzip.compress(sdf_path.read_text(), compresslevel=1)
+        gz = gzip.compress(sdf_path.read_bytes(), compresslevel=1)
         tf.write(gz)
         tf.flush()
         df = utils.sdf_to_dataframe(tmp_file).drop(columns=["mol"])
