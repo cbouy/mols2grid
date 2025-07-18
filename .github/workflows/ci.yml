@@ -55,17 +55,14 @@ jobs:
           registry-url: "https://registry.npmjs.org/"
           cache: "npm"
 
-      - name: Install Firefox
-        uses: browser-actions/setup-firefox@latest
+      - name: Install Chrome
+        uses: browser-actions/setup-chrome@latest
       
-      - run: firefox --version
+      - run: google-chrome --version
 
-      - name: Prepare Selenium
-        uses: browser-actions/setup-geckodriver@latest
-        with:
-          geckodriver-version: "0.32.0"
-      
-      - run: geckodriver --version
+      - name: Configure Selenium
+        run: |
+          sed -i 's?/usr/bin/brave-browser?/usr/bin/google-chrome?' se-config.toml
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -86,19 +83,13 @@ jobs:
         run: |
           uv run ${{ matrix.uv-run-args }} poe tests \
             --cov=mols2grid --cov-report=xml \
-            tests/ -m "not webdriver"
+            -m "not webdriver"
 
       - name: Run webdriver tests
-        uses: nick-fields/retry@v3
-        with:
-          timeout_seconds: 340
-          max_attempts: 5
-          retry_on: timeout
-          shell: bash
-          command: |
-            uv run ${{ matrix.uv-run-args }} poe tests \
-              --cov=mols2grid --cov-report=xml --cov-append \
-              tests/ -m "webdriver"
+        run: |
+          uv run ${{ matrix.uv-run-args }} poe tests \
+            --cov=mols2grid --cov-report=xml --cov-append \
+            -m "webdriver"
 
       - name: Measure tests coverage
         if: matrix.coverage

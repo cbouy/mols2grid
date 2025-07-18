@@ -1,0 +1,5 @@
+browser = "chrome"
+driver = "chromedriver"
+browser-version = "stable"
+language-binding = "Python"
+avoid-stats = true

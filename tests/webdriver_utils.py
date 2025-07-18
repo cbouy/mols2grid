@@ -28,7 +28,7 @@ class selection_available:
         return False
 
 
-class FirefoxDriver(webdriver.Firefox):
+class CustomDriver(webdriver.Chrome):
     def wait_for_img_load(
         self, max_delay=5, selector="#mols2grid .m2g-cell .data-img svg"
     ):
@@ -106,11 +106,12 @@ class FirefoxDriver(webdriver.Firefox):
         self.find_clickable(By.CSS_SELECTOR, "#mols2grid .m2g-sort .m2g-order").click()
         self.wait_for_img_load()
 
-    def grid_action(self, action):
+    def grid_action(self, action, pause=0):
         self.find_clickable(By.CSS_SELECTOR, "#mols2grid .m2g-actions").click()
         self.find_clickable(
             By.CSS_SELECTOR, f'#mols2grid .m2g-actions option[value="{action}"]'
         ).click()
+        ActionChains(self).pause(pause).perform()
 
     def get_tooltip_content(self, pause=0, selector=".m2g-cell .m2g-info"):
         (
