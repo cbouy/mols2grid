@@ -1,6 +1,6 @@
 {
 	"name": "mols2grid",
-	"version": "2.1.0-a2",
+	"version": "2.1.0-a3",
 	"description": "Custom widget for the mols2grid package",
 	"keywords": [
 		"rdkit",
@@ -23,6 +23,11 @@
 		"name": "Cedric Bouysset",
 		"email": "cedric@bouysset.net"
 	},
+	"files": [
+		"mols2grid/static/**/*.{js,js.map,d.ts,json,css}",
+		"src/**/*.{js,js.map,d.ts,json,css}"
+	],
+	"main": "mols2grid/static/widget.js",
 	"scripts": {
 		"dev": "npm run build -- --sourcemap=inline --watch",
 		"build": "esbuild src/widget.ts --minify --format=esm --bundle --outdir=mols2grid/static",
