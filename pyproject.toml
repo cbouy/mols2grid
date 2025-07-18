@@ -97,6 +97,9 @@ default-groups = ["dev"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "webdriver: marks tests requiring a webdriver"
+]
 
 [tool.ruff]
 extend-exclude = [

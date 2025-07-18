@@ -82,8 +82,6 @@ def html_doc(grid):
     )
 
 
-# make sure non-parametrized test is ran first
-@pytest.mark.order(1)
 def test_no_subset_all_visible(driver: FirefoxDriver, grid):
     doc = get_doc(grid, {"tooltip": [], "selection": False})
     driver.get(doc)
