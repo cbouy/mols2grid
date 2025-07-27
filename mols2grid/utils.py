@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader
+
 from rdkit import Chem
 
 env = Environment(
@@ -55,6 +56,7 @@ def tooltip_formatter(s, subset, fmt, style, transform):
             else f'<span class="copy-me">{displayed}</span>'
         )
         items.append(fmt.format(key=k, value=value))
+    items.append("<div class='arrow'></div>")
     return "<br>".join(items)
 
 

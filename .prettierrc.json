@@ -1,13 +1,13 @@
 {
   "proseWrap": "preserve",
-  "printWidth": 110,
+  "printWidth": 88,
   "tabWidth": 4,
   "useTabs": false,
   "semi": false,
-  "singleQuote": true,
+  "singleQuote": false,
   "quoteProps": "as-needed",
   "trailingComma": "es5",
-  "bracketSpacing": false,
+  "bracketSpacing": true,
   "bracketSameLine": true,
   "arrowParens": "avoid",
   "htmlWhitespaceSensitivity": "css"
