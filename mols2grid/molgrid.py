@@ -7,7 +7,6 @@ from html import escape
 import numpy as np
 import pandas as pd
 
-from mols2grid.callbacks import _JSCallback
 from mols2grid.select import register
 from mols2grid.utils import (
     callback_handler,
@@ -26,7 +25,7 @@ from rdkit import Chem
 from rdkit.Chem import Draw
 
 try:
-    from IPython.display import HTML, Javascript, display
+    from IPython.display import Javascript
 except ModuleNotFoundError:
     pass
 else:
@@ -687,19 +686,10 @@ class MolGrid:
         )
 
         # Callback
-        if isinstance(callback, _JSCallback):
-            if custom_header and callback.library_src:
-                custom_header = callback.library_src + custom_header
-            else:
-                custom_header = callback.library_src
-            callback = callback.code
         if callable(callback):
-            callback_type = "python"
-            cb_handler = partial(callback_handler, callback)
-            self.widget.observe(cb_handler, names=["callback_kwargs"])
-            callback = ""
+            callback_content = {"callbackType": "python", "callbackFn": ""}
         else:
-            callback_type = "js"
+            callback_content = {"callbackType": "js", "callbackFn": callback}
 
         # Sort
         if sort_by and sort_by != "mols2grid-id":
@@ -758,11 +748,7 @@ class MolGrid:
                         "tooltipPlacement": (
                             None if tooltip_placement == "auto" else tooltip_placement
                         ),
-                        "callback": {
-                            "customHeader": custom_header,
-                            "callbackFn": callback,
-                            "callbackType": callback_type,
-                        },
+                        "callback": callback_content,
                         "onTheFlyRendering": not self.prerender,
                         "drawOptions": self.draw_opts,
                         "smartsOptions": {
@@ -772,6 +758,7 @@ class MolGrid:
                             "singleHighlight": single_highlight,
                         },
                         "searchCols": search_cols,
+                        "customHeader": custom_header,
                         "css": {
                             "fontFamily": fontfamily,
                             "fontsize": fontsize,
@@ -792,6 +779,9 @@ class MolGrid:
         )
         selection_handler = partial(register.selection_updated, self._grid_id)
         widget.observe(selection_handler, names=["selection"])
+        if callable(callback):
+            cb_handler = partial(callback_handler, callback)
+            widget.observe(cb_handler, names=["callback_kwargs"])
         self.widget = widget
         return widget
 

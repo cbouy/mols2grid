@@ -1,19 +1,9 @@
-from typing import NamedTuple
-
 from mols2grid.utils import env
 
 
-class _JSCallback(NamedTuple):
-    """Class that holds JavaScript code for running a callback function. If an external
-    library is required for the callback to function correctly, it can be passed in
-    the optional ``library_src`` as a ``<script>`` tag.
-    """
-
-    code: str
-    library_src: str | None = None
-
-
-def make_popup_callback(title=None, subtitle=None, svg=None, html="", js="", style=""):
+def make_popup_callback(
+    title=None, subtitle=None, svg=None, html=None, js=None, style=None
+):
     """Creates a JavaScript callback that displays a popup window
 
     Parameters
@@ -40,7 +30,12 @@ def make_popup_callback(title=None, subtitle=None, svg=None, html="", js="", sty
         JavaScript code that allows to display a popup window
     """
     return env.get_template("js/popup.js").render(
-        title=title, subtitle=subtitle, html=html, svg=svg, js=js, style=style
+        title=title,
+        subtitle=subtitle,
+        html=html or "",
+        svg=svg,
+        js=js or "",
+        style=style or "",
     )
 
 
@@ -48,7 +43,9 @@ def _get_title_field(title):
     return "${data['" + title + "']}" if title else None
 
 
-def info(title="SMILES", subtitle=None, img_size=(400, 300), style="") -> _JSCallback:
+def info(
+    title="SMILES", subtitle=None, img_size=(-1, -1), style=None, scaling_factor=25
+) -> str:
     """Displays a bigger image of the molecule, alongside some useful descriptors:
     molecular weight, number of Hydrogen bond donors and acceptors, TPSA, Crippen ClogP
     and InChIKey.
@@ -64,14 +61,21 @@ def info(title="SMILES", subtitle=None, img_size=(400, 300), style="") -> _JSCal
         Width and height of the molecule depiction.
     style : str
         CSS style applied to the modal window.
+    scaling_factor : int
+        Scaling factor used for the drawings.
     """
-    code = make_popup_callback(
+    return make_popup_callback(
         title=_get_title_field(title),
         subtitle=_get_title_field(subtitle),
         svg="${svg}",
         js=f"""
             let mol = RDKit.get_mol(data["SMILES"]);
-            let svg = mol.get_svg({img_size[0]}, {img_size[1]});
+            let options = {{
+                width: {img_size[0]},
+                height: {img_size[0]},
+                scalingFactor: {scaling_factor}
+            }}
+            let svg = mol.get_svg_with_highlights(JSON.stringify(options));
             let desc = JSON.parse(mol.get_descriptors());
             let inchikey = RDKit.get_inchikey_for_inchi(mol.get_inchi());
             mol.delete();
@@ -87,7 +91,6 @@ def info(title="SMILES", subtitle=None, img_size=(400, 300), style="") -> _JSCal
             """,
         style=style,
     )
-    return _JSCallback(code=code)
 
 
 def show_3d(
@@ -95,8 +98,8 @@ def show_3d(
     subtitle=None,
     query=None,
     height="100%",
-    style="width:100%;height:100%",
-) -> _JSCallback:
+    style="width:100%; height:100%",
+) -> str:
     """Queries the API(s) listed in ``query`` using the SMILES of the structure, to
     fetch the 3D structure and display it with ``3Dmol.js``
 
@@ -129,20 +132,13 @@ def show_3d(
     if query is None:
         query = ["pubchem", "cactus"]
     js_script = env.get_template("js/callbacks/show_3d.js").render(query=query)
-    code = make_popup_callback(
+    return make_popup_callback(
         title=_get_title_field(title),
         subtitle=_get_title_field(subtitle),
         html=f'<div id="molviewer" style="width: 100%; height: {height};"></div>',
         js=js_script,
         style=style,
     )
-    library = (
-        '<script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/1.8.0/'
-        '3Dmol-nojquery-min.js" integrity="sha512-9iiTgstim185ZZPL/nZ+t+MLMmIbZEMfoZ1sw'
-        'SBUhxt4AukOPY34yyO2217X1dN5ziVMKi+YLmp/JBj+KyEaUQ==" crossorigin="anonymous" '
-        'referrerpolicy="no-referrer"></script>'
-    )
-    return _JSCallback(code=code, library_src=library)
 
 
 def external_link(
@@ -150,7 +146,7 @@ def external_link(
     field="SMILES",
     url_encode=False,
     b64_encode=True,
-) -> _JSCallback:
+) -> str:
     """Opens an external link using ``url`` as a template string and the value in the
     corresponding ``field``. The value can be URL-encoded or base64-encoded if needed.
 
@@ -173,10 +169,9 @@ def external_link(
     """
     if url_encode and b64_encode:
         raise ValueError("Setting both URL and B64 encoding is not supported")
-    code = env.get_template("js/callbacks/external_link.js").render(
+    return env.get_template("js/callbacks/external_link.js").render(
         url=url,
         field=field,
         url_encode=url_encode,
         b64_encode=b64_encode,
     )
-    return _JSCallback(code=code)

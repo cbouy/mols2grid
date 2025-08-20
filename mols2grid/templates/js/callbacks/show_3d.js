@@ -72,12 +72,13 @@ function show_3d(data, apis_or_custom_resolver, viewer) {
         },
     });
 }
-$(document).ready(function() {
-    // 3Dmol.js options
-    let element = $('#molviewer');
-    let config = { backgroundColor: 'white' };
-    let viewer = $3Dmol.createViewer(element, config);
-    // prepare query to fetch 3D SDF from SMILES
-    let apis_or_custom_resolver = {{ query | tojson }};
-    show_3d(data, apis_or_custom_resolver, viewer);
-});
+import("https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.5.2/3Dmol.es6-min.js").then(($3Dmol) => {
+    $(function() {
+        const element = document.querySelector("#molviewer")
+        const config = { backgroundColor: 'white' };
+        const viewer = $3Dmol.createViewer(element, config);
+        // prepare query to fetch 3D SDF from SMILES
+        let apis_or_custom_resolver = {{ query | tojson }};
+        show_3d(data, apis_or_custom_resolver, viewer);
+    });
+})

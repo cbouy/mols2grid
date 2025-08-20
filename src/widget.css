@@ -671,7 +671,7 @@
     align-items: center;
     justify-content: center;
     background: var(--m2g-black-10);
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     z-index: 1;
@@ -747,7 +747,7 @@
 /* Image */
 #m2g-modal .svg-wrap svg {
     max-width: 100%;
-    margin-bottom: 20px;
+    /* margin-bottom: 20px; */
 }
 
 /* Separator */

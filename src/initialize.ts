@@ -2,7 +2,7 @@ import initRDKitModule from "@rdkit/rdkit"
 import type { RDKitModule } from "@rdkit/rdkit"
 import { type AnyModel } from "@anywidget/types"
 import { type Placement } from "@floating-ui/dom"
-import { type CSSOptions, type WidgetModel } from "./widget"
+import { Callback, type CSSOptions, type WidgetModel } from "./widget"
 import { type MolGrid } from "./molgrid"
 import { type SmartsMatches } from "./rdkit/smarts"
 import { initCellClick } from "./interactions/click"
@@ -43,12 +43,11 @@ export function initInteractions(
     smartsMatches: SmartsMatches,
     smilesCol: string,
     searchCols: string[],
-    callbackType: string,
-    callbackFn: string,
+    callback: Callback,
     tooltip: boolean,
     tooltipPlacement: Placement | null
 ) {
-    initCellClick(model, supportSelection, callbackType, callbackFn)
+    initCellClick(model, supportSelection, callback)
     if (tooltip) {
         initToolTip({tooltipPlacement: tooltipPlacement})
     }
