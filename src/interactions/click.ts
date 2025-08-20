@@ -1,7 +1,7 @@
 import type { AnyModel } from "@anywidget/types"
 import $ from "jquery"
-import type { WidgetModel } from "../widget"
-import { RDKit } from "../initialize"
+import type { Callback, WidgetModel } from "../widget"
+import { onCallbackButtonClick } from "./callback"
 
 // Store an element's text content in the clipboard.
 export function copyOnClick(target: HTMLElement) {
@@ -19,8 +19,7 @@ export function copyOnClick(target: HTMLElement) {
 export function initCellClick(
     model: AnyModel<WidgetModel>,
     supportSelection: boolean,
-    callbackType: string,
-    callbackFn: string
+    callback: Callback,
 ) {
     $("#mols2grid .m2g-cell")
         .off("click")
@@ -32,7 +31,7 @@ export function initCellClick(
                 copyOnClick(e.target)
             } else if ($(e.target).hasClass("m2g-callback")) {
                 // Callback button.
-                onCallbackButtonClick(e.target, model, callbackType, callbackFn)
+                onCallbackButtonClick(e.target, model, callback)
             } else {
                 // Outside checkbox --> toggle the checkbox.
                 if (supportSelection) {
@@ -44,43 +43,4 @@ export function initCellClick(
                 }
             }
         })
-}
-
-// Callback button
-function onCallbackButtonClick(
-    target: HTMLElement,
-    model: AnyModel<WidgetModel>,
-    callbackType: string,
-    callbackFn: string
-) {
-    let data = {}
-    // @ts-expect-error
-    data["mols2grid-id"] = parseInt(
-        // @ts-expect-error
-        $(target).closest(".m2g-cell").attr("data-mols2grid-id")
-    )
-    // @ts-expect-error
-    data["img"] = $(target).parent().siblings(".data-img").eq(0).get(0).innerHTML
-    $(target)
-        .parent()
-        .siblings(".data")
-        .not(".data-img")
-        .each(function (_: number, el: HTMLElement) {
-            let name = el.className
-                .split(" ")
-                .filter(cls => cls.startsWith("data-"))[0]
-                .substring(5)
-            // @ts-expect-error
-            data[name] = el.innerHTML
-        })
-
-    if (callbackType == "python") {
-        // Trigger custom python callback.
-        model.set("callback_kwargs", JSON.stringify(data))
-        model.save_changes()
-    } else {
-        // Call custom js callback.
-        const callback = new Function("data", "RDKit", callbackFn)
-        callback(data, RDKit)
-    }
 }

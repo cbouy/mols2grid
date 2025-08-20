@@ -13,6 +13,7 @@ import { type MolOptions, type DrawOptions, initMolDrawing } from "./rdkit/draw"
 import { makeHTML } from "./html"
 import { initStyling, initHeader } from "./initialize"
 import { addSortingHandler } from "./interactions/sort"
+import { type Callback } from "./interactions/callback"
 
 export interface WidgetModel {
     options: string
@@ -34,12 +35,6 @@ export interface CSSOptions {
     custom: string
 }
 
-export interface Callback {
-    customHeader: string | null
-    callbackFn: string
-    callbackType: string
-}
-
 export interface GridConfig {
     listConfig: ListConfig
     smilesCol: string
@@ -52,6 +47,7 @@ export interface GridConfig {
     drawOptions: DrawOptions
     smartsOptions: SmartsOptions
     searchCols: string[]
+    customHeader: string
     css: CSSOptions
 }
 
@@ -92,8 +88,8 @@ export function createGrid(
     gridConfig: GridConfig
 ) {
     initStyling(el, gridConfig.css)
-    if (gridConfig.callback.customHeader) {
-        initHeader(el, gridConfig.callback.customHeader)
+    if (gridConfig.customHeader) {
+        initHeader(el, gridConfig.customHeader)
     }
     let gridTarget = <HTMLElement>el.querySelector("#mols2grid")
     let smartsMatches: SmartsMatches = new Map()
@@ -140,8 +136,7 @@ export function createGrid(
             smartsMatches,
             gridConfig.smilesCol,
             gridConfig.searchCols,
-            gridConfig.callback.callbackType,
-            gridConfig.callback.callbackFn,
+            gridConfig.callback,
             gridConfig.tooltip,
             gridConfig.tooltipPlacement
         )
