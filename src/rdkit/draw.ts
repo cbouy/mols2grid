@@ -44,12 +44,13 @@ export function drawMol(
 
 // Update images when the list is updated.
 export function initMolDrawing(
+    identifier: string,
     smilesCol: string,
     drawOptions: DrawOptions,
     molOptions: MolOptions,
     smartsMatches: SmartsMatches
 ) {
-    var query = $("#mols2grid .m2g-searchbar").val()
+    var query = $(`#${identifier} .m2g-searchbar`).val()
     var templateMol: JSMol | null | undefined = null
     if (!query || typeof query !== "string") {
         smartsMatches.clear()
@@ -59,7 +60,7 @@ export function initMolDrawing(
             templateMol.set_new_coords(molOptions.preferCoordGen)
         }
     }
-    $("#mols2grid .m2g-cell").each(function (_: number, el: HTMLElement) {
+    $(`#${identifier} .m2g-cell`).each(function (_: number, el: HTMLElement) {
         var $t = $(el)
         var smiles = $t.children(`.data-${smilesCol}`).first().text()
         var index = parseInt(<string>el.getAttribute("data-mols2grid-id"))
