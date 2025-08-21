@@ -1,6 +1,7 @@
-import type { MolGrid } from "../molgrid"
 import type { AnyModel } from "@anywidget/types"
+import type { MolGrid } from "../molgrid"
 import type { WidgetModel } from "../widget"
+import $ from "jquery"
 
 // Check all.
 export function selectAll(

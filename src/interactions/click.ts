@@ -1,7 +1,7 @@
 import type { AnyModel } from "@anywidget/types"
 import $ from "jquery"
-import type { Callback, WidgetModel } from "../widget"
-import { onCallbackButtonClick } from "./callback"
+import type { WidgetModel } from "../widget"
+import { onCallbackButtonClick, type Callback } from "./callback"
 
 // Store an element's text content in the clipboard.
 export function copyOnClick(target: HTMLElement) {
@@ -21,7 +21,7 @@ export function initCellClick(
     supportSelection: boolean,
     callback: Callback,
 ) {
-    $("#mols2grid .m2g-cell")
+    $(`#${model.get("identifier")} .m2g-cell`)
         .off("click")
         .on("click", function (e: JQuery.ClickEvent) {
             if ($(e.target).hasClass("m2g-info") || $(e.target).is(":checkbox")) {

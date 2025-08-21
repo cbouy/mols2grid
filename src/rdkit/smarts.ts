@@ -1,6 +1,7 @@
 import { RDKit } from "../initialize"
 import { MolGrid } from "../molgrid"
 import { JSMol } from "@rdkit/rdkit"
+import $ from "jquery"
 
 export interface SmartsOptions {
     removeHs: boolean
@@ -23,7 +24,7 @@ export function smartsSearchFactory(
 ) {
     return (_: string, columns: Array<any>) => {
         var smilesCol: string = columns[0]
-        var query = $("#mols2grid .m2g-searchbar").val()
+        var query = $(`#${molgrid.listObj.listContainer.id} .m2g-searchbar`).val()
         if (typeof query !== "string") {
             return
         }

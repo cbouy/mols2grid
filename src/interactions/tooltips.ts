@@ -1,3 +1,4 @@
+import $ from "jquery"
 import { copyOnClick } from "./click"
 import {
     computePosition,
@@ -15,8 +16,8 @@ export interface TooltipOptions {
 }
 
 // Show tooltip when hovering the info icon.
-export function initToolTip(options: TooltipOptions) {
-    $("#mols2grid .m2g-info")
+export function initToolTip(identifier: string, options: TooltipOptions) {
+    $(`#${identifier} .m2g-info`)
         .off("mouseenter")
         .on("mouseenter", function (e: JQuery.MouseEnterEvent) {
             const $t = $(e.target).closest(".m2g-cell")
@@ -26,7 +27,9 @@ export function initToolTip(options: TooltipOptions) {
             }
             const referenceEl = $t[0]
             const contentEl = $t.find(".m2g-tooltip")[0]
-            const tooltip = new Tooltip(e.target, referenceEl, contentEl, options)
+            const tooltip = new Tooltip(
+                identifier, e.target, referenceEl, contentEl, options
+            )
             tooltip.start()
             $t.attr("m2g-tooltip-active", "1")
         })
@@ -40,6 +43,7 @@ const placementMap = new Map([
 ])
 
 class Tooltip {
+    private identifier: string
     private triggerEl: HTMLElement
     private referenceEl: HTMLElement
     private floatingEl: HTMLElement
@@ -48,11 +52,13 @@ class Tooltip {
     private listeners: [string, () => void][]
 
     public constructor(
+        identifier: string,
         triggerEl: HTMLElement,
         referenceEl: HTMLElement,
         contentEl: HTMLElement,
         options: TooltipOptions
     ) {
+        this.identifier = identifier
         this.triggerEl = triggerEl
         this.referenceEl = referenceEl
         this.options = options || {}
@@ -60,7 +66,7 @@ class Tooltip {
         this.floatingEl = document.createElement("div")
         this.floatingEl.classList.add("m2g-popover")
         this.floatingEl.innerHTML = <string>contentEl.getAttribute("data-content")
-        $(this.referenceEl).closest("#mols2grid").append(this.floatingEl)
+        $(this.referenceEl).closest(`#${identifier}`).append(this.floatingEl)
         this.arrowEl = $(this.floatingEl).children(".arrow")[0]
     }
 
@@ -152,7 +158,7 @@ class Tooltip {
             this.triggerEl.addEventListener(...eventListener)
             this.listeners.push(eventListener)
         })
-        $("#mols2grid .m2g-functions").on("click", (_: JQuery.ClickEvent) => {
+        $(`#${this.identifier} .m2g-functions`).on("click", (_: JQuery.ClickEvent) => {
             this.hide(true)
         })
     }

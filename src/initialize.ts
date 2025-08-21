@@ -1,10 +1,12 @@
 import initRDKitModule from "@rdkit/rdkit"
 import type { RDKitModule } from "@rdkit/rdkit"
+import $ from "jquery"
 import { type AnyModel } from "@anywidget/types"
 import { type Placement } from "@floating-ui/dom"
-import { Callback, type CSSOptions, type WidgetModel } from "./widget"
+import { type CSSOptions, type WidgetModel } from "./widget"
 import { type MolGrid } from "./molgrid"
 import { type SmartsMatches } from "./rdkit/smarts"
+import { type Callback } from "./interactions/callback"
 import { initCellClick } from "./interactions/click"
 import { initCheckbox } from "./interactions/select"
 import { initKeyboard } from "./interactions/keyboard"
@@ -47,11 +49,12 @@ export function initInteractions(
     tooltip: boolean,
     tooltipPlacement: Placement | null
 ) {
+    let identifier = model.get("identifier")
     initCellClick(model, supportSelection, callback)
     if (tooltip) {
-        initToolTip({tooltipPlacement: tooltipPlacement})
+        initToolTip(identifier, {tooltipPlacement: tooltipPlacement})
     }
-    initKeyboard()
+    initKeyboard(identifier)
     if (supportSelection) {
         initCheckbox(model, molgrid, smilesCol)
     }
@@ -60,21 +63,21 @@ export function initInteractions(
     // Hide pagination if there is only one page.
     // @ts-expect-error
     if (molgrid.listObj.matchingItems.length <= molgrid.listObj.page) {
-        $("#mols2grid .m2g-pagination").hide()
+        $(`#${identifier} .m2g-pagination`).hide()
     } else {
-        $("#mols2grid .m2g-pagination").show()
+        $(`#${identifier} .m2g-pagination`).show()
     }
 
     // Add a bunch of phantom cells.
     // These are used as filler to make sure that
     // no grid cells need to be resized when there's
     // not enough results to fill the row.
-    $("#mols2grid .m2g-list").append(
+    $(`#${identifier} .m2g-list`).append(
         '<div class="m2g-cell m2g-phantom"></div>'.repeat(11)
     )
 
     // Listen to action dropdown.
-    $("#mols2grid .m2g-actions select").on("change", function (e: JQuery.ChangeEvent) {
+    $(`#${identifier} .m2g-actions select`).on("change", function (e: JQuery.ChangeEvent) {
         var val = e.target.value
         switch (val) {
             case "select-all":

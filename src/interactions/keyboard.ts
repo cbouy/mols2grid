@@ -1,7 +1,9 @@
+import $ from "jquery"
+
 // Keyboard actions.
-export function initKeyboard() {
+export function initKeyboard(identifier: string) {
     // Disable scroll when pressing UP/DOWN arrows
-    $("#mols2grid .m2g-cell")
+    $(`#${identifier} .m2g-cell`)
         .off("keydown")
         .on("keydown", function (e) {
             if (e.which == 38 || e.which == 40) {
@@ -9,7 +11,7 @@ export function initKeyboard() {
             }
         })
 
-    $("#mols2grid .m2g-cell")
+    $(`#${identifier} .m2g-cell`)
         .off("keyup")
         .on("keyup", function (e: JQuery.KeyUpEvent) {
             let $t = $(e.target).closest(".m2g-cell")

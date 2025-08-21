@@ -20,6 +20,7 @@ export interface WidgetModel {
     selection: string
     callback_kwargs: string
     filter_mask: boolean[]
+    identifier: string
 }
 
 export interface CSSOptions {
@@ -63,11 +64,13 @@ function render({ model, el }: RenderProps<WidgetModel>) {
     let params: WidgetOptions = JSON.parse(model.get("options"))
     let { supportSelection, sortOptions, molOptions, gridConfig } = params
     RDKit?.prefer_coordgen(molOptions.preferCoordGen)
-
-    // create DOM elements
-    let html = makeHTML(sortOptions.field, sortOptions.columns, supportSelection)
+    let uuid = crypto.randomUUID()
+    el.id = `m2g-widget-${uuid}`
+    let identifier = `m2g-${uuid}`
+    model.set("identifier", identifier)
+    model.save_changes()
+    let html = makeHTML(identifier, sortOptions.field, sortOptions.columns, supportSelection)
     el.innerHTML = html
-    el.id = crypto.randomUUID()
     let molgrid = createGrid(
         el,
         model,
@@ -87,11 +90,12 @@ export function createGrid(
     molOptions: MolOptions,
     gridConfig: GridConfig
 ) {
+    let identifier = model.get("identifier")
     initStyling(el, gridConfig.css)
     if (gridConfig.customHeader) {
         initHeader(el, gridConfig.customHeader)
     }
-    let gridTarget = <HTMLElement>el.querySelector("#mols2grid")
+    let gridTarget = <HTMLElement>el.querySelector(`#${identifier}`)
     let smartsMatches: SmartsMatches = new Map()
     let molgrid = new MolGrid(
         gridTarget,
@@ -109,7 +113,7 @@ export function createGrid(
     if (gridConfig.cachedSelection) {
         molgrid.store.zipSet(...gridConfig.cachedSelection)
         molgrid.listObj.on("updated", (_: List) => {
-            $('#mols2grid .m2g-cell input[checked="false"]').prop("checked", false)
+            $(`#${identifier} .m2g-cell input[checked="false"]`).prop("checked", false)
         })
     }
     // Sorting
@@ -118,7 +122,7 @@ export function createGrid(
     // Add style for whole cell
     if (gridConfig.wholeCellStyle) {
         molgrid.listObj.on("updated", (_: List) => {
-            $("#mols2grid div.m2g-cell").each(function (_: number, el: HTMLElement) {
+            $(`#${identifier} div.m2g-cell`).each(function (_: number, el: HTMLElement) {
                 var $t = $(el)
                 $t.attr({ style: $t.attr("data-cellstyle") }).removeAttr(
                     "data-cellstyle"
@@ -142,6 +146,7 @@ export function createGrid(
         )
         if (gridConfig.onTheFlyRendering) {
             initMolDrawing(
+                identifier,
                 gridConfig.smilesCol,
                 gridConfig.drawOptions,
                 molOptions,

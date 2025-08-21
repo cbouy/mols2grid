@@ -1,4 +1,5 @@
 export function makeHTML(
+    identifier: string,
     sortBy: string,
     sortCols: string[],
     supportSelection: boolean
@@ -6,7 +7,7 @@ export function makeHTML(
     let defaultSort = sortBy.replace("data-", "")
     let sortDisplayValue = defaultSort == "mols2grid-id" ? "Index" : defaultSort
     let chunks: string[] = []
-    chunks.push(`<div id="mols2grid">
+    chunks.push(`<div id="${identifier}">
     <!-- Pagination & search -->
     <div class="m2g-functions">
         <!-- Rows are used to collapse functions into two rows on smaller screens -->

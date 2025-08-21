@@ -1,4 +1,5 @@
 import type { MolGrid } from "../molgrid"
+import $ from "jquery"
 
 export interface SortOptions {
     field: string
@@ -29,10 +30,11 @@ export function checkboxSort(a: any, b: any, _?: any): number | undefined {
 }
 
 export function addSortingHandler(molgrid: MolGrid, sortOptions: SortOptions) {
-    $("#mols2grid .m2g-sort select").on("change", (e: JQuery.ChangeEvent) => {
+    let identifier = molgrid.listObj.listContainer.id
+    $(`#${identifier} .m2g-sort select`).on("change", (e: JQuery.ChangeEvent) => {
         molgrid.sort(e, true)
     })
-    $("#mols2grid .m2g-order").on("click", function (e: JQuery.ClickEvent) {
+    $(`#${identifier} .m2g-order`).on("click", function (e: JQuery.ClickEvent) {
         let $t = $(e.target).closest(".m2g-sort")
         $t.removeClass(`m2g-arrow-${sortOptions.order}`)
         sortOptions.order = sortOptions.order === "desc" ? "asc" : "desc"
