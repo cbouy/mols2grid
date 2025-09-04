@@ -117,14 +117,13 @@ export function initStyling(el: HTMLElement, css: CSSOptions) {
         css.gap === 0 ? "-1px -1px 0 0" : `${css.gap}px`
     )
     el.style.setProperty("--m2g-textalign", css.textalign)
+    // https://stackoverflow.com/a/75217048
+    el.style.setProperty("--m2g-truncate", css.truncate ? "initial" : " ")
+    el.style.setProperty("--m2g-no-truncate", css.truncate ? " " : "initial")
     if (css.custom) {
         let style = document.createElement("style")
         style.textContent = css.custom
         el.appendChild(style)
     }
     addResizeHandler(el, css)
-}
-
-export function initHeader(el: HTMLElement, header: string) {
-    el.innerHTML = header + el.innerHTML
 }

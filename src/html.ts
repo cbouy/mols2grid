@@ -1,9 +1,15 @@
-export function makeHTML(
+import { type CSSOptions } from "./widget"
+import { initStyling } from "./initialize"
+
+export function setupHTML(
+    container: HTMLElement,
     identifier: string,
     sortBy: string,
     sortCols: string[],
-    supportSelection: boolean
-): string {
+    supportSelection: boolean,
+    css: CSSOptions,
+    customHeader: string,
+): HTMLElement {
     let defaultSort = sortBy.replace("data-", "")
     let sortDisplayValue = defaultSort == "mols2grid-id" ? "Index" : defaultSort
     let chunks: string[] = []
@@ -78,5 +84,8 @@ export function makeHTML(
     <!-- Grid -->
     <div class="m2g-list"></div>
 </div>`)
-    return chunks.join("\n")
+    initStyling(container, css)
+    let content = chunks.join("\n")
+    container.innerHTML = customHeader ? customHeader + content : content
+    return container
 }

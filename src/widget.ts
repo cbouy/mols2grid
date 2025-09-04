@@ -10,8 +10,7 @@ import { initInteractions } from "./initialize"
 import { RDKit } from "./initialize"
 import { type SmartsMatches, type SmartsOptions } from "./rdkit/smarts"
 import { type MolOptions, type DrawOptions, initMolDrawing } from "./rdkit/draw"
-import { makeHTML } from "./html"
-import { initStyling, initHeader } from "./initialize"
+import { setupHTML } from "./html"
 import { addSortingHandler } from "./interactions/sort"
 import { type Callback } from "./interactions/callback"
 
@@ -33,6 +32,7 @@ export interface CSSOptions {
     textalign: string
     backgroundColor: string
     hoverColor: string
+    truncate: boolean
     custom: string
 }
 
@@ -48,8 +48,6 @@ export interface GridConfig {
     drawOptions: DrawOptions
     smartsOptions: SmartsOptions
     searchCols: string[]
-    customHeader: string
-    css: CSSOptions
 }
 
 export interface WidgetOptions {
@@ -57,22 +55,38 @@ export interface WidgetOptions {
     sortOptions: SortOptions
     molOptions: MolOptions
     gridConfig: GridConfig
+    css: CSSOptions
+    customHeader: string
 }
 
 function render({ model, el }: RenderProps<WidgetModel>) {
     // Render the widget's view into the el HTMLElement.
     let params: WidgetOptions = JSON.parse(model.get("options"))
-    let { supportSelection, sortOptions, molOptions, gridConfig } = params
+    let {
+        supportSelection,
+        sortOptions,
+        molOptions,
+        gridConfig,
+        css,
+        customHeader,
+    } = params
     RDKit?.prefer_coordgen(molOptions.preferCoordGen)
     let uuid = crypto.randomUUID()
     el.id = `m2g-widget-${uuid}`
     let identifier = `m2g-${uuid}`
     model.set("identifier", identifier)
     model.save_changes()
-    let html = makeHTML(identifier, sortOptions.field, sortOptions.columns, supportSelection)
-    el.innerHTML = html
-    let molgrid = createGrid(
+    let container = setupHTML(
         el,
+        identifier,
+        sortOptions.field,
+        sortOptions.columns,
+        supportSelection,
+        css,
+        customHeader
+    )
+    let molgrid = createGrid(
+        container,
         model,
         supportSelection,
         sortOptions,
@@ -91,10 +105,6 @@ export function createGrid(
     gridConfig: GridConfig
 ) {
     let identifier = model.get("identifier")
-    initStyling(el, gridConfig.css)
-    if (gridConfig.customHeader) {
-        initHeader(el, gridConfig.customHeader)
-    }
     let gridTarget = <HTMLElement>el.querySelector(`#${identifier}`)
     let smartsMatches: SmartsMatches = new Map()
     let molgrid = new MolGrid(
