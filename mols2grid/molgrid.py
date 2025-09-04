@@ -25,7 +25,7 @@ from rdkit import Chem
 from rdkit.Chem import Draw
 
 try:
-    from IPython.display import Javascript
+    from IPython.core.display import HTML, Javascript
 except ModuleNotFoundError:
     pass
 else:
@@ -336,7 +336,6 @@ class MolGrid:
         tooltip_placement="auto",
         transform=None,
         sort_by=None,
-        use_iframe=False,
         truncate=True,
         n_items_per_page=24,
         selection=True,
@@ -357,14 +356,8 @@ class MolGrid:
         # Customization
         custom_header=None,
         callback=None,
-        # iframe
-        iframe_width="100%",
-        iframe_height=None,
-        iframe_allow="clipboard-write",
-        iframe_sandbox=(
-            "allow-scripts allow-same-origin allow-downloads allow-popups allow-modals"
-        ),
-        iframe_padding=18,
+        # Deprecated
+        use_iframe=None,  # noqa: ARG002
     ):
         """Returns the HTML document for the "interactive" template.
 
@@ -401,9 +394,6 @@ class MolGrid:
         sort_by : str or None, default=None
             Sort the grid according to the following field (which must be
             present in ``subset`` or ``tooltip``).
-        use_iframe : bool, default=False
-            Whether to use an iframe to display the grid. When the grid is displayed
-            inside a Jupyter Notebook or JupyterLab, this will default to ``True``.
         truncate: bool, default=True/False
             Whether to truncate the text in each cell if it's too long.
             Defaults to ``True`` for interactive grids, ``False`` for static grid.
@@ -477,6 +467,9 @@ class MolGrid:
             are parsed as strings, except "mols2grid-id" which is always an integer.
             Note that fields containing spaces in their name will be replaced by
             hyphens, i.e. "mol weight" becomes available as ``data["mol-weight"]``.
+
+        use_iframe : bool, default=False
+            Deprecated.
 
         Returns
         -------
@@ -722,14 +715,6 @@ class MolGrid:
                         "removeHs": self.removeHs,
                         "preferCoordGen": self.prefer_coordGen,
                     },
-                    # "iframeOptions": {
-                    #     "enabled": use_iframe,
-                    #     "width": iframe_width,
-                    #     "height": iframe_height,
-                    #     "padding": iframe_padding,
-                    #     "allow": iframe_allow,
-                    #     "sandbox": iframe_sandbox,
-                    # },
                     "gridConfig": {
                         "listConfig": {
                             "valueNames": value_names,
@@ -758,20 +743,21 @@ class MolGrid:
                             "singleHighlight": single_highlight,
                         },
                         "searchCols": search_cols,
-                        "customHeader": custom_header,
-                        "css": {
-                            "fontFamily": fontfamily,
-                            "fontsize": fontsize,
-                            "cellWidth": self.img_size[0],
-                            "gap": gap,
-                            "border": border,
-                            "pad": pad,
-                            "textalign": textalign,
-                            "backgroundColor": background_color,
-                            "hoverColor": hover_color,
-                            "custom": custom_css,
-                        },
                     },
+                    "css": {
+                        "fontFamily": fontfamily,
+                        "fontsize": fontsize,
+                        "cellWidth": self.img_size[0],
+                        "gap": gap,
+                        "border": border,
+                        "pad": pad,
+                        "textalign": textalign,
+                        "backgroundColor": background_color,
+                        "hoverColor": hover_color,
+                        "truncate": truncate,
+                        "custom": custom_css,
+                    },
+                    "customHeader": custom_header,
                 },
                 indent=None,
                 default=lambda _: "🤷‍♂️",
@@ -784,12 +770,6 @@ class MolGrid:
             widget.observe(cb_handler, names=["callback_kwargs"])
         self.widget = widget
         return widget
-
-    # missing
-    # custom_css / custom_header
-    # proper handling of iframe and CSS
-    # truncate in CSS, with --truncate/--no-truncate=0/1 vars
-    # and `word-wrap: calc(var(--truncate)*"normal") calc(var(--no-truncate)*"break-word")``
 
     def get_selection(self):
         """Retrieve the dataframe subset corresponding to your selection.
@@ -1061,7 +1041,7 @@ class MolGrid:
     @requires("IPython.display")
     def display(
         self,
-        use_iframe=False,
+        use_iframe=None,
         iframe_width="100%",
         iframe_height=None,
         iframe_allow="clipboard-write",
@@ -1076,25 +1056,29 @@ class MolGrid:
         -------
         view : IPython.core.display.HTML
         """
-        use_iframe = is_jupyter or use_iframe
-        doc = self.render(**kwargs, use_iframe=use_iframe)
-        # if use_iframe:
-        #     # Render HTML in iframe.
-        #     iframe = env.get_template("html/iframe.html").render(
-        #         width=iframe_width,
-        #         height=iframe_height,
-        #         allow=iframe_allow,
-        #         sandbox=iframe_sandbox,
-        #         doc=escape(doc),
-        #     )
-        #     return HTML(iframe)
-        # # Render HTML regularly.
-        # return HTML(doc)
-        return doc
+        use_iframe = is_jupyter if use_iframe is None else use_iframe
+        is_widget = kwargs.get("template", "interactive")
+        obj = self.render(**kwargs, use_iframe=use_iframe)
+        if is_widget or not use_iframe:
+            return HTML(obj)
+
+        iframe = env.get_template("html/iframe.html").render(
+            width=iframe_width,
+            height=iframe_height,
+            allow=iframe_allow,
+            sandbox=iframe_sandbox,
+            doc=escape(obj),
+        )
+        return HTML(iframe)
 
     def save(self, output, **kwargs):
         """Render and save the grid in an HTML document."""
-        # from ipywidgets.embed import embed_minimal_html
-        # embed_minimal_html("export.html", views=[self.widget], drop_defaults=False)
-        with open(output, "w", encoding="utf-8") as f:
-            f.write(self.render(**kwargs))
+        is_widget = kwargs.get("template", "interactive")
+        obj = self.render(**kwargs)
+        if is_widget:
+            from ipywidgets.embed import embed_minimal_html
+
+            embed_minimal_html(output, views=[obj], drop_defaults=False)
+        else:
+            with open(output, "w", encoding="utf-8") as f:
+                f.write(obj)
