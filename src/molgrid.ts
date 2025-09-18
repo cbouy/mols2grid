@@ -1,4 +1,3 @@
-import $ from "jquery"
 import type { AnyModel } from "@anywidget/types"
 import List from "list.js-fixed"
 import type { WidgetModel } from "./widget.ts"
@@ -9,6 +8,7 @@ import {
     type SmartsOptions,
     type SmartsMatches,
 } from "./rdkit/smarts.ts"
+import {$} from "./query.ts"
 
 export interface ListConfig {
     valueNames: string[]
@@ -51,11 +51,12 @@ export class MolGrid {
         this.smartsSearchFunc = smartsSearchFactory(this, smartsOptions, smartsMatches)
     }
 
-    public sort(e: JQuery.ChangeEvent | JQuery.ClickEvent, updateOptions: boolean) {
+    public sort(el: HTMLSelectElement, updateOptions: boolean) {
         if (updateOptions) {
-            this.sortOptions.field = e.target.value
-            var selectedOption = e.target.options[e.target.selectedIndex]
-            var sortFieldDisplay = selectedOption.text
+            this.sortOptions.field = el.value
+            var sortFieldDisplay = <string>el.options[el.selectedIndex].textContent
+            // Update UI.
+            $(el).parent.find(".m2g-display").text = sortFieldDisplay
         }
         // Sort
         if (this.sortOptions.field == "checkbox") {
@@ -66,8 +67,6 @@ export class MolGrid {
         } else {
             this.listObj.sort(this.sortOptions.field, { order: this.sortOptions.order })
         }
-        // Update UI.
-        $(e.target).closest(".m2g-sort").find(".m2g-display").text(sortFieldDisplay)
     }
 
     public filter(model: AnyModel<WidgetModel>) {

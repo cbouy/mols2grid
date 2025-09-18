@@ -1,5 +1,5 @@
 import type { AnyModel } from "@anywidget/types"
-import $ from "jquery"
+import {$} from "../query"
 import type { WidgetModel } from "../widget"
 import { RDKit } from "../initialize"
 
@@ -8,24 +8,26 @@ export interface Callback {
     callbackType: string
 }
 
+interface Data {
+    "mols2grid-id": Number
+    "img": string
+}
+
 export function onCallbackButtonClick(
     target: HTMLElement,
     model: AnyModel<WidgetModel>,
     callback: Callback
 ) {
-    let data = {}
-    // @ts-expect-error
+    let data = <Data>{}
     data["mols2grid-id"] = parseInt(
-        // @ts-expect-error
-        $(target).closest(".m2g-cell").attr("data-mols2grid-id")
+        <string>$(target).closest(".m2g-cell").getAttr("data-mols2grid-id")[0]
     )
-    // @ts-expect-error
-    data["img"] = $(target).parent().siblings(".data-img").eq(0).get(0).innerHTML
+    data["img"] = $(target).parent.siblings(".data-img").elements[0].innerHTML
     $(target)
-        .parent()
+        .parent
         .siblings(".data")
-        .not(".data-img")
-        .each(function (_: number, el: HTMLElement) {
+        .filter(e => !e.classList.contains(".data-img"))
+        .each(el => {
             let name = el.className
                 .split(" ")
                 .filter(cls => cls.startsWith("data-"))[0]

@@ -1,11 +1,11 @@
 import type { AnyModel } from "@anywidget/types"
-import $ from "jquery"
+import {$} from "../query"
 import type { WidgetModel } from "../widget"
 import { onCallbackButtonClick, type Callback } from "./callback"
 
 // Store an element's text content in the clipboard.
 export function copyOnClick(target: HTMLElement) {
-    let text = $(target).text()
+    let text = $(target).text
     navigator.clipboard.writeText(text)
 
     // Blink the cell to indicate that the text was copied.
@@ -23,23 +23,24 @@ export function initCellClick(
 ) {
     $(`#${model.get("identifier")} .m2g-cell`)
         .off("click")
-        .on("click", function (e: JQuery.ClickEvent) {
-            if ($(e.target).hasClass("m2g-info") || $(e.target).is(":checkbox")) {
+        .on("click", ev => {
+            let $t = $(<HTMLElement>ev.target)
+            if ($t.hasClass("m2g-info") || (<HTMLElement>ev.target).matches("[type=checkbox]")) {
                 // Info button / Checkbox --> do nothing.
-            } else if ($(e.target).is("div") && $(e.target).hasClass("data")) {
+            } else if ((<HTMLElement>ev.target).matches("div") && $t.hasClass("data")) {
                 // Data string --> copy text.
-                copyOnClick(e.target)
-            } else if ($(e.target).hasClass("m2g-callback")) {
+                copyOnClick(<HTMLElement>ev.target)
+            } else if ($t.hasClass("m2g-callback")) {
                 // Callback button.
-                onCallbackButtonClick(e.target, model, callback)
+                onCallbackButtonClick(<HTMLElement>ev.target, model, callback)
             } else {
                 // Outside checkbox --> toggle the checkbox.
                 if (supportSelection) {
-                    var chkbox: any = $(e.target)
+                    var chkbox = (<HTMLInputElement>$t
                         .closest(".m2g-cell")
-                        .find("input:checkbox")[0]
+                        .find("input[type=checkbox]").elements[0])
                     chkbox.checked = !chkbox.checked
-                    $(chkbox).trigger("change")
+                    $(chkbox).change()
                 }
             }
         })

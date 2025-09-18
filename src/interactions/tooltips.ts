@@ -1,5 +1,3 @@
-import $ from "jquery"
-import { copyOnClick } from "./click"
 import {
     computePosition,
     offset,
@@ -9,6 +7,8 @@ import {
     type Placement,
     type ComputePositionConfig,
 } from "@floating-ui/dom"
+import { copyOnClick } from "./click"
+import { $ } from "../query"
 
 
 export interface TooltipOptions {
@@ -19,19 +19,20 @@ export interface TooltipOptions {
 export function initToolTip(identifier: string, options: TooltipOptions) {
     $(`#${identifier} .m2g-info`)
         .off("mouseenter")
-        .on("mouseenter", function (e: JQuery.MouseEnterEvent) {
-            const $t = $(e.target).closest(".m2g-cell")
-            if ($t.attr("m2g-tooltip-active") === "1") {
+        .on("mouseenter", ev => {
+            const $t = $(<HTMLElement>ev.target).closest(".m2g-cell")
+            if ($t.getAttr("m2g-tooltip-active")[0] === "1") {
                 // already an existing tooltip
                 return
             }
-            const referenceEl = $t[0]
-            const contentEl = $t.find(".m2g-tooltip")[0]
+            const referenceEl = $t.elements[0]
+            const contentEl = $t.find(".m2g-tooltip").elements[0]
             const tooltip = new Tooltip(
-                identifier, e.target, referenceEl, contentEl, options
+                identifier, <HTMLElement>ev.target, referenceEl, contentEl, options
             )
+            $t.setAttr({"m2g-tooltip-active": "1"})
             tooltip.start()
-            $t.attr("m2g-tooltip-active", "1")
+            tooltip.show()
         })
 }
 
@@ -67,7 +68,7 @@ class Tooltip {
         this.floatingEl.classList.add("m2g-popover")
         this.floatingEl.innerHTML = <string>contentEl.getAttribute("data-content")
         $(this.referenceEl).closest(`#${identifier}`).append(this.floatingEl)
-        this.arrowEl = $(this.floatingEl).children(".arrow")[0]
+        this.arrowEl = $(this.floatingEl).find(".arrow").elements[0]
     }
 
     public show() {
@@ -76,7 +77,7 @@ class Tooltip {
     }
 
     public hide(force: boolean = false) {
-        const $t = $(this.triggerEl).closest(".m2g-cell")
+        const $t = $(this.referenceEl)
         if ($t.hasClass("m2g-keep-tooltip") && !force) {
             return
         }
@@ -85,13 +86,13 @@ class Tooltip {
         this.listeners.forEach(eventListener => {
             this.triggerEl.removeEventListener(...eventListener)
         })
-        $(this.floatingEl).children(".copy-me").off("click")
+        $(this.floatingEl).find(".copy-me").off("click")
         this.floatingEl.remove()
-        $t.attr("m2g-tooltip-active", "0")
+        $t.setAttr({"m2g-tooltip-active": "0"})
     }
 
     public click() {
-        const $t = $(this.triggerEl).closest(".m2g-cell")
+        const $t = $(this.referenceEl)
         $t.toggleClass("m2g-keep-tooltip")
         if ($t.hasClass("m2g-keep-tooltip")) {
             this.show()
@@ -144,9 +145,9 @@ class Tooltip {
     public start() {
         // copy event
         $(this.floatingEl)
-            .children(".copy-me")
-            .on("click", function (e: JQuery.ClickEvent) {
-                copyOnClick(e.target)
+            .find(".copy-me")
+            .on("click", ev => {
+                copyOnClick(<HTMLElement>ev.target)
             })
         // add main events
         let events: [string, () => void][] = [
@@ -158,7 +159,7 @@ class Tooltip {
             this.triggerEl.addEventListener(...eventListener)
             this.listeners.push(eventListener)
         })
-        $(`#${this.identifier} .m2g-functions`).on("click", (_: JQuery.ClickEvent) => {
+        $(`#${this.identifier} .m2g-functions`).on("click", _ => {
             this.hide(true)
         })
     }

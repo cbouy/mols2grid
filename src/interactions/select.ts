@@ -1,7 +1,7 @@
 import type { AnyModel } from "@anywidget/types"
 import type { MolGrid } from "../molgrid"
 import type { WidgetModel } from "../widget"
-import $ from "jquery"
+import { $ } from "../query"
 
 // Check all.
 export function selectAll(
@@ -99,17 +99,14 @@ export function initCheckbox(
     molgrid: MolGrid,
     smilesCol: string
 ) {
-    $("input:checkbox")
+    $<HTMLInputElement>("input[type=checkbox]")
         .off("change")
-        .on("change", function (e: JQuery.ChangeEvent) {
+        .on("change", ev => {
             var identifier = parseInt(
-                // @ts-expect-error
-                $(e.target).closest(".m2g-cell").attr("data-mols2grid-id")
+                <string>$(<HTMLInputElement>ev.target).closest(".m2g-cell").getAttr("data-mols2grid-id")[0]
             )
-            if (e.target.checked) {
-                var smiles = $(
-                    $(e.target).closest(".m2g-cell").children(`.data-${smilesCol}`)[0]
-                ).text()
+            if ((<HTMLInputElement>ev.target).checked) {
+                var smiles = $(<HTMLInputElement>ev.target).closest(".m2g-cell").find(`.data-${smilesCol}`).text
                 molgrid.addSelection(model, [identifier], [smiles])
             } else {
                 molgrid.delSelection(model, [identifier])

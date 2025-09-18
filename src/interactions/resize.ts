@@ -8,7 +8,7 @@ export function addResizeHandler(el: HTMLElement, css: CSSOptions) {
     //         flex-basis: calc(100% / 4);
     //     }
     // }
-    window.addEventListener("resize", () => {
+    function resize() {
         const width = window.innerWidth
         function fits(colsMin: number, colsMax: number | null = null): boolean {
             return colsMax
@@ -25,5 +25,8 @@ export function addResizeHandler(el: HTMLElement, css: CSSOptions) {
             basis = "calc(100% / 12)"
         }
         el.style.setProperty("--m2g-flex-basis", basis)
-    })
+    }
+    window.addEventListener("resize", resize)
+    // trigger auto sizing
+    resize()
 }
