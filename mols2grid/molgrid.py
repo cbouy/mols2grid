@@ -1056,10 +1056,13 @@ class MolGrid:
         -------
         view : IPython.core.display.HTML
         """
-        use_iframe = is_jupyter if use_iframe is None else use_iframe
         is_widget = kwargs.get("template", "interactive")
         obj = self.render(**kwargs, use_iframe=use_iframe)
-        if is_widget or not use_iframe:
+
+        if is_widget:
+            return obj
+
+        if not (is_jupyter if use_iframe is None else use_iframe):
             return HTML(obj)
 
         iframe = env.get_template("html/iframe.html").render(

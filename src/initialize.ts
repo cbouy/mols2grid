@@ -1,6 +1,6 @@
 import initRDKitModule from "@rdkit/rdkit"
 import type { RDKitModule } from "@rdkit/rdkit"
-import $ from "jquery"
+import { $ } from "./query"
 import { type AnyModel } from "@anywidget/types"
 import { type Placement } from "@floating-ui/dom"
 import { type CSSOptions, type WidgetModel } from "./widget"
@@ -77,9 +77,9 @@ export function initInteractions(
     )
 
     // Listen to action dropdown.
-    $(`#${identifier} .m2g-actions select`).on("change", function (e: JQuery.ChangeEvent) {
-        var val = e.target.value
-        switch (val) {
+    const actionSelect = <HTMLSelectElement>document.querySelector(`#${identifier} .m2g-actions select`)
+    $(actionSelect).on("change", _ => {
+        switch (actionSelect.value) {
             case "select-all":
                 selectAll(model, molgrid, smilesCol)
                 break
@@ -102,7 +102,7 @@ export function initInteractions(
                 saveCSV(molgrid)
                 break
         }
-        $(e.target).val("") // Reset dropdown
+        actionSelect.value = "" // Reset dropdown
     })
 }
 

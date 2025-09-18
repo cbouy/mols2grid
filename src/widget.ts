@@ -1,7 +1,6 @@
 import type { AnyModel, RenderProps } from "@anywidget/types"
 import "@rdkit/rdkit"
 import { type Placement } from "@floating-ui/dom"
-import $ from "jquery"
 import type List from "list.js-fixed"
 import "./widget.css"
 import { type ListConfig, MolGrid } from "./molgrid"
@@ -13,6 +12,7 @@ import { type MolOptions, type DrawOptions, initMolDrawing } from "./rdkit/draw"
 import { setupHTML } from "./html"
 import { addSortingHandler } from "./interactions/sort"
 import { type Callback } from "./interactions/callback"
+import { $ } from "./query"
 
 export interface WidgetModel {
     options: string
@@ -93,7 +93,18 @@ function render({ model, el }: RenderProps<WidgetModel>) {
         molOptions,
         gridConfig
     )
-    molgrid.listObj.update()
+    waitForElement(`#${identifier} .m2g-list`).then(molgrid.listObj.update)
+}
+
+function waitForElement(querySelector: string): Promise<void>{
+    return new Promise((resolve)=>{
+        const timer = setInterval(()=>{
+            if(document.querySelector(querySelector)){
+                clearInterval(timer);
+                resolve();
+            }
+        }, 100);
+    });
 }
 
 export function createGrid(
@@ -123,7 +134,9 @@ export function createGrid(
     if (gridConfig.cachedSelection) {
         molgrid.store.zipSet(...gridConfig.cachedSelection)
         molgrid.listObj.on("updated", (_: List) => {
-            $(`#${identifier} .m2g-cell input[checked="false"]`).prop("checked", false)
+            $<HTMLInputElement>(`#${identifier} .m2g-cell input[checked="false"]`).each(
+                el => el.checked = false
+            )
         })
     }
     // Sorting
@@ -132,11 +145,12 @@ export function createGrid(
     // Add style for whole cell
     if (gridConfig.wholeCellStyle) {
         molgrid.listObj.on("updated", (_: List) => {
-            $(`#${identifier} div.m2g-cell`).each(function (_: number, el: HTMLElement) {
-                var $t = $(el)
-                $t.attr({ style: $t.attr("data-cellstyle") }).removeAttr(
-                    "data-cellstyle"
-                )
+            $(`#${identifier} div.m2g-cell`).each(el => {
+                let cellstyle = el.getAttribute("data-cellstyle")
+                if (cellstyle) {
+                    el.setAttribute("style", cellstyle)
+                }
+                el.removeAttribute("data-cellstyle")
             })
         })
     }
