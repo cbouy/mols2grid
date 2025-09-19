@@ -13,6 +13,7 @@ import { setupHTML } from "./html"
 import { addSortingHandler } from "./interactions/sort"
 import { type Callback } from "./interactions/callback"
 import { $ } from "./query"
+import {waitForElement} from "./utils"
 
 export interface WidgetModel {
     options: string
@@ -61,7 +62,7 @@ export interface WidgetOptions {
 
 function render({ model, el }: RenderProps<WidgetModel>) {
     // Render the widget's view into the el HTMLElement.
-    let params: WidgetOptions = JSON.parse(model.get("options"))
+    const params: WidgetOptions = JSON.parse(model.get("options"))
     let {
         supportSelection,
         sortOptions,
@@ -71,12 +72,12 @@ function render({ model, el }: RenderProps<WidgetModel>) {
         customHeader,
     } = params
     RDKit?.prefer_coordgen(molOptions.preferCoordGen)
-    let uuid = crypto.randomUUID()
+    const uuid = crypto.randomUUID()
     el.id = `m2g-widget-${uuid}`
-    let identifier = `m2g-${uuid}`
+    const identifier = `m2g-${uuid}`
     model.set("identifier", identifier)
     model.save_changes()
-    let container = setupHTML(
+    const container = setupHTML(
         el,
         identifier,
         sortOptions.field,
@@ -85,7 +86,7 @@ function render({ model, el }: RenderProps<WidgetModel>) {
         css,
         customHeader
     )
-    let molgrid = createGrid(
+    const molgrid = createGrid(
         container,
         model,
         supportSelection,
@@ -96,17 +97,6 @@ function render({ model, el }: RenderProps<WidgetModel>) {
     waitForElement(`#${identifier} .m2g-list`).then(molgrid.listObj.update)
 }
 
-function waitForElement(querySelector: string): Promise<void>{
-    return new Promise((resolve)=>{
-        const timer = setInterval(()=>{
-            if(document.querySelector(querySelector)){
-                clearInterval(timer);
-                resolve();
-            }
-        }, 100);
-    });
-}
-
 export function createGrid(
     el: HTMLElement,
     model: AnyModel<WidgetModel>,
@@ -115,10 +105,10 @@ export function createGrid(
     molOptions: MolOptions,
     gridConfig: GridConfig
 ) {
-    let identifier = model.get("identifier")
-    let gridTarget = <HTMLElement>el.querySelector(`#${identifier}`)
-    let smartsMatches: SmartsMatches = new Map()
-    let molgrid = new MolGrid(
+    const identifier = model.get("identifier")
+    const gridTarget = <HTMLElement>el.querySelector(`#${identifier}`)
+    const smartsMatches: SmartsMatches = new Map()
+    const molgrid = new MolGrid(
         gridTarget,
         sortOptions,
         smartsMatches,
