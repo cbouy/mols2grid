@@ -1,4 +1,5 @@
 import type { CSSOptions } from "../widget"
+import { debounce } from "../utils"
 
 export function addResizeHandler(el: HTMLElement, css: CSSOptions) {
     // resize events
@@ -26,7 +27,7 @@ export function addResizeHandler(el: HTMLElement, css: CSSOptions) {
         }
         el.style.setProperty("--m2g-flex-basis", basis)
     }
-    window.addEventListener("resize", resize)
+    window.addEventListener("resize", debounce(resize, 100))
     // trigger auto sizing
     resize()
 }

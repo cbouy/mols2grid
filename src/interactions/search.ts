@@ -1,6 +1,7 @@
 import { $ } from "../query"
 import { type MolGrid } from "../molgrid"
 import { type SmartsMatches } from "../rdkit/smarts"
+import { debounce } from "../utils"
 
 export function initSearch(
     molgrid: MolGrid,
@@ -9,11 +10,10 @@ export function initSearch(
     smartsMatches: SmartsMatches
 ) {
     var searchType = "Text"
-    let identifier = molgrid.listObj.listContainer.id
+    const identifier = molgrid.listObj.listContainer.id
     // Switch search type (Text or SMARTS)
-    $(`#${identifier} .m2g-search-options .m2g-option`).on(
-        "click",
-        ev => {
+    $(`#${identifier} .m2g-search-options .m2g-option`)
+        .on("click", ev => {
             let $t = $(<HTMLElement>ev.target).closest(".m2g-option")
             searchType = $t.text
             $(`#${identifier} .m2g-search-options .m2g-option.sel`).removeClass("sel")
@@ -22,13 +22,18 @@ export function initSearch(
     )
 
     // Searchbar update event handler
-    $<HTMLInputElement>(`#${identifier} .m2g-searchbar`).on("keyup", ev => {
-        var query = (<HTMLInputElement>ev.target).value
-        if (searchType === "Text") {
-            smartsMatches.clear()
-            molgrid.textSearch(query, searchCols)
-        } else {
-            molgrid.smartsSearch(query, [`data-${smilesCol}`])
-        }
-    })
+    $<HTMLInputElement>(`#${identifier} .m2g-searchbar`)
+        .on("keyup", debounce(
+            (ev: Event) => {
+                let query = (<HTMLInputElement>ev.target).value
+                if (searchType === "Text") {
+                    smartsMatches.clear()
+                    molgrid.textSearch(query, searchCols)
+                } else {
+                    molgrid.smartsSearch(query, [`data-${smilesCol}`])
+                }
+            },
+            300,
+        )
+    )
 }
