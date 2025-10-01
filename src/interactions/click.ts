@@ -21,27 +21,28 @@ export function initCellClick(
     supportSelection: boolean,
     callback: Callback,
 ) {
-    $(`#${model.get("identifier")} .m2g-cell`)
-        .off("click")
-        .on("click", ev => {
-            let $t = $(<HTMLElement>ev.target)
-            if ($t.hasClass("m2g-info") || (<HTMLElement>ev.target).matches("[type=checkbox]")) {
-                // Info button / Checkbox --> do nothing.
-            } else if ((<HTMLElement>ev.target).matches("div") && $t.hasClass("data")) {
-                // Data string --> copy text.
-                copyOnClick(<HTMLElement>ev.target)
-            } else if ($t.hasClass("m2g-callback")) {
-                // Callback button.
-                onCallbackButtonClick(<HTMLElement>ev.target, model, callback)
-            } else {
-                // Outside checkbox --> toggle the checkbox.
-                if (supportSelection) {
-                    var chkbox = (<HTMLInputElement>$t
-                        .closest(".m2g-cell")
-                        .find("input[type=checkbox]").elements[0])
-                    chkbox.checked = !chkbox.checked
-                    $(chkbox).change()
-                }
+    const identifier = model.get("identifier")
+    $(`#${identifier} .m2g-cell`)
+    .off("click")
+    .on("click", ev => {
+        let $t = $(<HTMLElement>ev.target)
+        if ($t.hasClass("m2g-info") || (<HTMLElement>ev.target).matches("[type=checkbox]")) {
+            // Info button / Checkbox --> do nothing.
+        } else if ((<HTMLElement>ev.target).matches("div") && $t.hasClass("data")) {
+            // Data string --> copy text.
+            copyOnClick(<HTMLElement>ev.target)
+        } else if ($t.hasClass("m2g-callback")) {
+            // Callback button.
+            onCallbackButtonClick(<HTMLElement>ev.target, model, callback)
+        } else {
+            // Outside checkbox --> toggle the checkbox.
+            if (supportSelection) {
+                var chkbox = (<HTMLInputElement>$t
+                    .closest(".m2g-cell")
+                    .find("input[type=checkbox]").elements[0])
+                chkbox.checked = !chkbox.checked
+                $(chkbox).change()
             }
-        })
+        }
+    })
 }

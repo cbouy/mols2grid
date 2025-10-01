@@ -94,11 +94,11 @@ export class MolGrid {
         model.save_changes()
     }
 
-    public textSearch(query: any, searchCols: string[]) {
+    public textSearch(query: string, searchCols: string[]) {
         this.listObj.search(query, searchCols)
     }
 
-    public smartsSearch(query: any, searchCols: string[]) {
+    public smartsSearch(query: string, searchCols: string[]) {
         this.listObj.search(
             query,
             searchCols,

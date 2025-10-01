@@ -5,12 +5,11 @@ import type List from "list.js-fixed"
 import "./widget.css"
 import { type ListConfig, MolGrid } from "./molgrid"
 import { type SortOptions } from "./interactions/sort"
-import { initInteractions } from "./initialize"
+import { initOnce, initOnUpdate } from "./initialize"
 import { RDKit } from "./initialize"
 import { type SmartsMatches, type SmartsOptions } from "./rdkit/smarts"
 import { type MolOptions, type DrawOptions, initMolDrawing } from "./rdkit/draw"
 import { setupHTML } from "./html"
-import { addSortingHandler } from "./interactions/sort"
 import { type Callback } from "./interactions/callback"
 import { $ } from "./query"
 import {waitForElement} from "./utils"
@@ -116,10 +115,6 @@ export function createGrid(
         gridConfig.listConfig
     )
 
-    // Trigger filtering function on model value change
-    model.on("change:filter_mask", function () {
-        molgrid.filter(model)
-    })
     // Restore checkbox state
     if (gridConfig.cachedSelection) {
         molgrid.store.zipSet(...gridConfig.cachedSelection)
@@ -129,8 +124,6 @@ export function createGrid(
             )
         })
     }
-    // Sorting
-    addSortingHandler(molgrid, sortOptions)
 
     // Add style for whole cell
     if (gridConfig.wholeCellStyle) {
@@ -145,29 +138,39 @@ export function createGrid(
         })
     }
 
-    // (Re)initialize all grid interaction every time the grid changes.
-    molgrid.listObj.on("updated", function (_: List) {
-        initInteractions(
-            model,
-            molgrid,
-            supportSelection,
-            smartsMatches,
-            gridConfig.smilesCol,
-            gridConfig.searchCols,
-            gridConfig.callback,
-            gridConfig.tooltip,
-            gridConfig.tooltipPlacement
-        )
-        if (gridConfig.onTheFlyRendering) {
-            initMolDrawing(
-                identifier,
-                gridConfig.smilesCol,
-                gridConfig.drawOptions,
-                molOptions,
-                smartsMatches
-            )
-        }
+    // Trigger filtering function on model value change
+    model.on("change:filter_mask", function () {
+        molgrid.filter(model)
     })
+
+    waitForElement(`#${identifier} .m2g-cell`).then(_ => {
+        // Initialize constant interactions
+        initOnce(model, molgrid, smartsMatches, gridConfig.smilesCol, gridConfig.searchCols, sortOptions)
+    
+        // Initialize interactions that depend on the underlying data at every update
+        molgrid.listObj.on("updated", function (_: List) {
+            initOnUpdate(
+                model,
+                molgrid,
+                supportSelection,
+                gridConfig.smilesCol,
+                gridConfig.callback,
+                gridConfig.tooltip,
+                gridConfig.tooltipPlacement
+            )
+            if (gridConfig.onTheFlyRendering) {
+                initMolDrawing(
+                    identifier,
+                    gridConfig.smilesCol,
+                    gridConfig.drawOptions,
+                    molOptions,
+                    smartsMatches
+                )
+            }
+        })
+    })
+
+
     return molgrid
 }
 
