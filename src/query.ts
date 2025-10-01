@@ -1,5 +1,5 @@
 type Root = HTMLElement | string | null
-type Selector<T extends HTMLElement> = string | T | null | undefined | (T | null)[]
+type Selector<T extends HTMLElement> = string | T | undefined | (T | null)[]
 
 function findAll(selector: string, root: Root = null): HTMLElement[] {
     let src: Document | HTMLElement
@@ -14,25 +14,24 @@ function findAll(selector: string, root: Root = null): HTMLElement[] {
     return Array.from(src.querySelectorAll(selector))
 }
 
-class Events {
-    public static cache: Map<[HTMLElement, keyof GlobalEventHandlersEventMap], EventListener> = new Map()
-}
+const eventsCache: Map<[HTMLElement, keyof GlobalEventHandlersEventMap], EventListener> = new Map()
 
 export class Query<T extends HTMLElement = HTMLElement> {
+    public selector: Selector<T>
     public elements: T[]
 
     public constructor(
-        selector: Selector<T> = null, root: Root = null
+        selector: Selector<T>, root: Root = null
     ) {
-        if (!selector) {
-            this.elements = []
-        }
-        else if (typeof selector === "string") {
+        if (typeof selector === "string") {
             this.elements = <T[]>findAll(selector, root)
         } else if (Array.isArray(selector)) {
             this.elements = <T[]>selector.filter(x => x)
         } else {
-            this.elements = [selector]
+            this.elements = [<T>selector]
+        }
+        if (this.elements.length === 0) {
+            console.error("Empty selection for query", selector)
         }
     }
     
@@ -41,12 +40,12 @@ export class Query<T extends HTMLElement = HTMLElement> {
     }
     
     public get parent(): Query<HTMLElement> {
-        return new Query(this.elements[0].parentElement)
+        return new Query(<HTMLElement>this.elements[0].parentElement)
     }
     
     public closest(selector: string): Query<HTMLElement> {
         let v = this.elements[0]
-        return new Query(<HTMLElement | null>v.closest(selector))
+        return new Query(<HTMLElement>v.closest(selector))
     }
     
     public filter(filterFn: (e: T) => boolean) {
@@ -146,20 +145,24 @@ export class Query<T extends HTMLElement = HTMLElement> {
     }
 
     public off(event: keyof GlobalEventHandlersEventMap): Query<T> {
-        this.each(el => {
-            let callbackFn = Events.cache.get([el, event])
-            if (callbackFn) {
-                el.removeEventListener(event, callbackFn)
-                Events.cache.delete([el, event])
-            }
+        navigator.locks.request("eventsCache", (_) => {
+            this.each(el => {
+                let callbackFn = eventsCache.get([el, event])
+                if (callbackFn) {
+                    el.removeEventListener(event, callbackFn)
+                    eventsCache.delete([el, event])
+                }
+            })
         })
         return this
     }
 
     public on<K extends keyof GlobalEventHandlersEventMap, V = GlobalEventHandlersEventMap[K]>(event: K, callbackFn: (ev: V) => void): Query<T> {
-        this.each(el => {
-            el.addEventListener(event, <EventListener>callbackFn)
-            Events.cache.set([el, event], <EventListener>callbackFn)
+        navigator.locks.request("eventsCache", (_) => {
+            this.each(el => {
+                el.addEventListener(event, <EventListener>callbackFn)
+                eventsCache.set([el, event], <EventListener>callbackFn)
+            })
         })
         return this
     }
@@ -171,11 +174,11 @@ export class Query<T extends HTMLElement = HTMLElement> {
     }
 
     public previous(): Query<T> {
-        return new Query(<T | null>this.elements[0].previousElementSibling)
+        return new Query(<T>this.elements[0].previousElementSibling)
     }
 
     public next(): Query<T> {
-        return new Query(<T | null>this.elements[0].nextElementSibling)
+        return new Query(<T>this.elements[0].nextElementSibling)
     }
 
     public css<K extends keyof CSSStyleDeclaration>(name: K): CSSStyleDeclaration[K] {

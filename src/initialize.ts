@@ -12,15 +12,9 @@ import { initCheckbox } from "./interactions/select"
 import { initKeyboard } from "./interactions/keyboard"
 import { initSearch } from "./interactions/search"
 import { initToolTip } from "./interactions/tooltips"
-import {
-    selectAll,
-    selectMatching,
-    unselectAll,
-    invertSelection,
-} from "./interactions/select"
-import { clipboardCopy, saveCSV, saveSmiles } from "./export"
+import { initSorting, type SortOptions } from "./interactions/sort"
 import { addResizeHandler } from "./interactions/resize"
-
+import { initSelectActions } from "./interactions/select"
 export let RDKit: RDKitModule | null = null
 if (window) {
     // @ts-expect-error
@@ -38,34 +32,36 @@ if (window) {
     }
 }
 
-export function initInteractions(
+export function initOnce(
     model: AnyModel<WidgetModel>,
     molgrid: MolGrid,
-    supportSelection: boolean,
     smartsMatches: SmartsMatches,
     smilesCol: string,
     searchCols: string[],
+    sortOptions: SortOptions,
+) { 
+    initSearch(molgrid, smilesCol, searchCols, smartsMatches)
+    initSorting(molgrid, sortOptions)
+    initSelectActions(model, molgrid, smilesCol)
+}
+
+export function initOnUpdate(
+    model: AnyModel<WidgetModel>,
+    molgrid: MolGrid,
+    supportSelection: boolean,
+    smilesCol: string,
     callback: Callback,
     tooltip: boolean,
     tooltipPlacement: Placement | null
 ) {
-    let identifier = model.get("identifier")
+    const identifier = model.get("identifier")
     initCellClick(model, supportSelection, callback)
+    initKeyboard(identifier)
     if (tooltip) {
         initToolTip(identifier, {tooltipPlacement: tooltipPlacement})
     }
-    initKeyboard(identifier)
     if (supportSelection) {
         initCheckbox(model, molgrid, smilesCol)
-    }
-    initSearch(molgrid, smilesCol, searchCols, smartsMatches)
-
-    // Hide pagination if there is only one page.
-    // @ts-expect-error
-    if (molgrid.listObj.matchingItems.length <= molgrid.listObj.page) {
-        $(`#${identifier} .m2g-pagination`).hide()
-    } else {
-        $(`#${identifier} .m2g-pagination`).show()
     }
 
     // Add a bunch of phantom cells.
@@ -76,34 +72,13 @@ export function initInteractions(
         '<div class="m2g-cell m2g-phantom"></div>'.repeat(11)
     )
 
-    // Listen to action dropdown.
-    const actionSelect = <HTMLSelectElement>document.querySelector(`#${identifier} .m2g-actions select`)
-    $(actionSelect).on("change", _ => {
-        switch (actionSelect.value) {
-            case "select-all":
-                selectAll(model, molgrid, smilesCol)
-                break
-            case "select-matching":
-                selectMatching(model, molgrid, smilesCol)
-                break
-            case "unselect-all":
-                unselectAll(model, molgrid)
-                break
-            case "invert":
-                invertSelection(model, molgrid, smilesCol)
-                break
-            case "copy":
-                clipboardCopy(molgrid)
-                break
-            case "save-smiles":
-                saveSmiles(molgrid)
-                break
-            case "save-csv":
-                saveCSV(molgrid)
-                break
-        }
-        actionSelect.value = "" // Reset dropdown
-    })
+    // Hide pagination if there is only one page.
+    // @ts-expect-error
+    if (molgrid.listObj.matchingItems.length <= molgrid.listObj.page) {
+        $(`#${identifier} .m2g-pagination`).hide()
+    } else {
+        $(`#${identifier} .m2g-pagination`).show()
+    }
 }
 
 export function initStyling(el: HTMLElement, css: CSSOptions) {
@@ -121,7 +96,7 @@ export function initStyling(el: HTMLElement, css: CSSOptions) {
     el.style.setProperty("--m2g-truncate", css.truncate ? "initial" : " ")
     el.style.setProperty("--m2g-no-truncate", css.truncate ? " " : "initial")
     if (css.custom) {
-        let style = document.createElement("style")
+        const style = document.createElement("style")
         style.textContent = css.custom
         el.appendChild(style)
     }

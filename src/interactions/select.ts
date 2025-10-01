@@ -2,6 +2,39 @@ import type { AnyModel } from "@anywidget/types"
 import type { MolGrid } from "../molgrid"
 import type { WidgetModel } from "../widget"
 import { $ } from "../query"
+import { clipboardCopy, saveSmiles, saveCSV } from "../export"
+
+
+export function initSelectActions(model: AnyModel<WidgetModel>, molgrid: MolGrid, smilesCol: string) {
+    const identifier = model.get("identifier")
+    const actionSelect = <HTMLSelectElement>document.querySelector(`#${identifier} .m2g-actions select`)
+    $(actionSelect).on("change", _ => {
+        switch (actionSelect.value) {
+            case "select-all":
+                selectAll(model, molgrid, smilesCol)
+                break
+            case "select-matching":
+                selectMatching(model, molgrid, smilesCol)
+                break
+            case "unselect-all":
+                unselectAll(model, molgrid)
+                break
+            case "invert":
+                invertSelection(model, molgrid, smilesCol)
+                break
+            case "copy":
+                clipboardCopy(molgrid)
+                break
+            case "save-smiles":
+                saveSmiles(molgrid)
+                break
+            case "save-csv":
+                saveCSV(molgrid)
+                break
+        }
+        actionSelect.value = "" // Reset dropdown
+    })
+}
 
 // Check all.
 export function selectAll(

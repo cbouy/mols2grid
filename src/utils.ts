@@ -7,7 +7,7 @@ export function waitForElement<T = HTMLElement>(querySelector: string, timeout: 
             if (el = <T>document.querySelector(querySelector)) {
                 observer.disconnect()
                 if (timer !== null) clearTimeout(timer)
-                return resolve(el)
+                resolve(el)
             }
         })
         observer.observe(document.body, {
