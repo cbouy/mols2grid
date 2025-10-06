@@ -14,7 +14,31 @@ function findAll(selector: string, root: Root = null): HTMLElement[] {
     return Array.from(src.querySelectorAll(selector))
 }
 
-const eventsCache: Map<[HTMLElement, keyof GlobalEventHandlersEventMap], EventListener> = new Map()
+class EventHandler {
+    public cache: Map<keyof GlobalEventHandlersEventMap, Map<HTMLElement, EventListener>> = new Map()
+
+    public add(event: keyof GlobalEventHandlersEventMap, el: HTMLElement, cb: EventListener) {
+        navigator.locks.request("eventHandler", (_) => {
+            if (!this.cache.has(event)) {
+                this.cache.set(event, <Map<HTMLElement, EventListener>>new Map())
+            } else if (this.cache.get(event)?.has(el)) {
+                el.removeEventListener(event, <EventListener>this.cache.get(event)?.get(el))
+            }
+            this.cache.get(event)?.set(el, cb)
+            el.addEventListener(event, cb)
+        })
+    }
+
+    public delete(event: keyof GlobalEventHandlersEventMap, el: HTMLElement) {
+        navigator.locks.request("eventHandler", (_) => {
+            if (this.cache.get(event)?.has(el)) {
+                el.removeEventListener(event, <EventListener>this.cache.get(event)?.get(el))
+                this.cache.get(event)?.delete(el)
+            }
+        })
+    }
+}
+const eventHandler = new EventHandler()
 
 export class Query<T extends HTMLElement = HTMLElement> {
     public selector: Selector<T>
@@ -145,25 +169,12 @@ export class Query<T extends HTMLElement = HTMLElement> {
     }
 
     public off(event: keyof GlobalEventHandlersEventMap): Query<T> {
-        navigator.locks.request("eventsCache", (_) => {
-            this.each(el => {
-                let callbackFn = eventsCache.get([el, event])
-                if (callbackFn) {
-                    el.removeEventListener(event, callbackFn)
-                    eventsCache.delete([el, event])
-                }
-            })
-        })
+        this.each(el => eventHandler.delete(event, el))
         return this
     }
 
     public on<K extends keyof GlobalEventHandlersEventMap, V = GlobalEventHandlersEventMap[K]>(event: K, callbackFn: (ev: V) => void): Query<T> {
-        navigator.locks.request("eventsCache", (_) => {
-            this.each(el => {
-                el.addEventListener(event, <EventListener>callbackFn)
-                eventsCache.set([el, event], <EventListener>callbackFn)
-            })
-        })
+        this.each(el => eventHandler.add(event, el, <EventListener>callbackFn))
         return this
     }
 
