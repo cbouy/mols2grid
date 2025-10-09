@@ -3,7 +3,7 @@
 {{ js }}
 
 // HTML template for the popup.
-var html = `
+let html = `
 <div id="m2g-modal" tabindex="-1" style="{{ style }}">
 
     <div class="m2g-modal-header">
@@ -19,34 +19,36 @@ var html = `
 
 </div>
 `
+
 // Create container element where the popup will be inserted.
-if ($('#m2g-modal-container').length === 0) {
-    $('<span id="m2g-modal-container"></span>').insertAfter('#mols2grid')
+if ($("{{ identifier }} #m2g-modal-container").elements.length === 0) {
+    $("{{ identifier }}").append('<span id="m2g-modal-container"></span>')
 }
 
 // Insert the code inside the container element.
-$('#m2g-modal-container').html(html)
+let $modal = $("{{ identifier }} #m2g-modal-container")
+$modal.elements[0].innerHTML = html
 
 // Show modal.
-setTimeout(function () {
-    $('#m2g-modal-container').addClass('show')
+setTimeout(() => {
+    $modal.addClass("show")
 }, 0)
 
 // Hide modal on close / ESC key.
-$('#m2g-modal-container').click(function (e) {
-    if (e.target.id == 'm2g-modal-container' || e.target.className == 'close') {
+$modal.on("click", ev => {
+    if (ev.target.id == "m2g-modal-container" || ev.target.className === "close") {
         closeModal()
     }
 })
-$(document).keydown(function (e) {
-    if (e.key == 'Escape') {
+$(document).on("keydown", ev => {
+    if (ev.code === "Escape") {
         closeModal()
-        e.preventDefault()
+        ev.preventDefault()
     }
 })
 function closeModal() {
-    $('#m2g-modal-container').removeClass('show')
+    $modal.removeClass("show")
     setTimeout(function () {
-        $('#m2g-modal-container').remove()
-    }, 150 + 10)
+        $modal.elements[0].remove()
+    }, 160)
 }
