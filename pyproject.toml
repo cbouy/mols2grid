@@ -27,6 +27,7 @@ classifiers = [
 ]
 dependencies = [
     "anywidget",
+    "ipykernel>=6.0.0",
     "jinja2",
     "numpy",
     "pandas",
@@ -84,7 +85,8 @@ path = "mols2grid/_version.py"
 only-packages = true
 artifacts = [
     "mols2grid/static/*",
-    "mols2grid/data/*"
+    "mols2grid/data/*",
+    "mols2grid/templates/*"
 ]
 
 [tool.hatch.build.hooks.jupyter-builder]
