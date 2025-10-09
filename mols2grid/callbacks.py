@@ -2,7 +2,7 @@ from mols2grid.utils import env
 
 
 def make_popup_callback(
-    title=None, subtitle=None, svg=None, html=None, js=None, style=None
+    title=None, subtitle=None, svg=None, html=None, js=None, style=None, identifier=None
 ):
     """Creates a JavaScript callback that displays a popup window
 
@@ -23,19 +23,22 @@ def make_popup_callback(
         content of the popup, using the ``${my_variable}`` syntax
     style : str
         CSS style assigned to the popup window
+    identifier : str
+        Grid element identifier
 
     Returns
     -------
     js_callback : str
         JavaScript code that allows to display a popup window
     """
-    return env.get_template("js/popup.js").render(
+    return env.get_template("js/callbacks/popup.js.j2").render(
         title=title,
         subtitle=subtitle,
         html=html or "",
         svg=svg,
         js=js or "",
         style=style or "",
+        identifier=f"#{identifier}" or "",
     )
 
 
@@ -131,7 +134,7 @@ def show_3d(
     """
     if query is None:
         query = ["pubchem", "cactus"]
-    js_script = env.get_template("js/callbacks/show_3d.js").render(query=query)
+    js_script = env.get_template("js/callbacks/show_3d.js.j2").render(query=query)
     return make_popup_callback(
         title=_get_title_field(title),
         subtitle=_get_title_field(subtitle),
@@ -169,7 +172,7 @@ def external_link(
     """
     if url_encode and b64_encode:
         raise ValueError("Setting both URL and B64 encoding is not supported")
-    return env.get_template("js/callbacks/external_link.js").render(
+    return env.get_template("js/callbacks/external_link.js.j2").render(
         url=url,
         field=field,
         url_encode=url_encode,

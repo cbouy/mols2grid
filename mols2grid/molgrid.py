@@ -737,7 +737,7 @@ class MolGrid:
                         ),
                         "callback": callback_content,
                         "onTheFlyRendering": not self.prerender,
-                        "drawOptions": self.draw_opts,
+                        "drawOptions": getattr(self, "draw_opts", {}),
                         "smartsOptions": {
                             "removeHs": self.removeHs,
                             "onTheFlyRendering": not self.prerender,
@@ -827,7 +827,7 @@ class MolGrid:
         if isinstance(mask, (pd.Series, np.ndarray)):
             mask = mask.tolist()
         if is_running_within_streamlit():
-            filtering_script = env.get_template("js/filter.js").render(
+            filtering_script = env.get_template("js/filter.js.j2").render(
                 grid_id=self._grid_id, mask=json.dumps(mask)
             )
             return Javascript(filtering_script)
@@ -851,7 +851,7 @@ class MolGrid:
         tooltip_placement="auto",
         transform=None,
         sort_by=None,
-        use_iframe=False,
+        use_iframe=None,
         truncate=False,
         n_cols=5,
         # CSS Styling
@@ -903,7 +903,7 @@ class MolGrid:
         sort_by : str or None, default=None
             Sort the grid according to the following field (which must be
             present in ``subset`` or ``tooltip``).
-        use_iframe : bool, default=False
+        use_iframe : bool or None, default=None
             Whether to use an iframe to display the grid. When the grid is displayed
             inside a Jupyter Notebook or JupyterLab, this will default to ``True``.
         truncate: bool, default=False
@@ -1049,7 +1049,7 @@ class MolGrid:
                 data.append("\n".join(cell))
                 tr = []
 
-        template = env.get_template("static.html")
+        template = env.get_template("html/static.html.j2")
         template_kwargs = {
             "tooltip": tooltip,
             "tooltip_trigger": repr(tooltip_trigger),
@@ -1088,31 +1088,28 @@ class MolGrid:
         -------
         view : IPython.core.display.HTML
         """
-        is_widget = kwargs.get("template", "interactive")
+        is_widget = kwargs.get("template") == "interactive"
+        use_iframe = is_jupyter if use_iframe is None else use_iframe
         obj = self.render(**kwargs, use_iframe=use_iframe)
 
         if is_widget:
             return obj
 
-        if not (is_jupyter if use_iframe is None else use_iframe):
+        if not use_iframe:
             return HTML(obj)
 
-        if use_iframe:
-            # Render HTML in iframe.
-            iframe = env.get_template("html/iframe.html").render(
-                width=iframe_width,
-                height=iframe_height,
-                allow=iframe_allow,
-                sandbox=iframe_sandbox,
-                doc=escape(obj),
-            )
-            return HTML(iframe)
-        # Render HTML regularly.
-        return HTML(obj)
+        iframe = env.get_template("html/iframe.html.j2").render(
+            width=iframe_width,
+            height=iframe_height,
+            allow=iframe_allow,
+            sandbox=iframe_sandbox,
+            doc=escape(obj),
+        )
+        return HTML(iframe)
 
     def save(self, output, **kwargs):
         """Render and save the grid in an HTML document."""
-        is_widget = kwargs.get("template", "interactive")
+        is_widget = kwargs.get("template") == "interactive"
         obj = self.render(**kwargs)
         if is_widget:
             from ipywidgets.embed import embed_minimal_html
