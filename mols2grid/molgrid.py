@@ -3,10 +3,12 @@ import warnings
 from base64 import b64encode
 from functools import partial
 from html import escape
+from uuid import uuid4
 
 import numpy as np
 import pandas as pd
 
+from mols2grid.callbacks import JS_CALLBACK_ID_VARNAME
 from mols2grid.select import register
 from mols2grid.utils import (
     callback_handler,
@@ -186,6 +188,7 @@ class MolGrid:
 
         # Register instance.
         self._grid_id = name
+        self._identifier = f"m2g-{uuid4()}"
         if cache_selection:
             try:
                 self._cached_selection = register.get_selection(name)
@@ -680,7 +683,13 @@ class MolGrid:
 
         # Callback
         if callable(callback):
-            callback_content = {"callbackType": "python", "callbackFn": ""}
+            if getattr(callback, JS_CALLBACK_ID_VARNAME, False):
+                callback_content = {
+                    "callbackType": "js",
+                    "callbackFn": callback(identifier=f"#{self._identifier}"),
+                }
+            else:
+                callback_content = {"callbackType": "python", "callbackFn": ""}
         else:
             callback_content = {"callbackType": "js", "callbackFn": callback}
 
@@ -703,6 +712,7 @@ class MolGrid:
         df = df[final_columns].rename(columns=column_map).sort_values(sort_by)
 
         widget = MolGridWidget(
+            identifier=self._identifier,
             options=json.dumps(
                 {
                     "supportSelection": selection,
@@ -761,7 +771,7 @@ class MolGrid:
                 },
                 indent=None,
                 default=lambda _: "🤷‍♂️",
-            )
+            ),
         )
         selection_handler = partial(register.selection_updated, self._grid_id)
         widget.observe(selection_handler, names=["selection"])

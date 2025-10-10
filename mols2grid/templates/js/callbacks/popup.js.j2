@@ -1,5 +1,4 @@
 // Prerequisite JavaScript code.
-// prettier-ignore
 {{ js }}
 
 // HTML template for the popup.
@@ -21,7 +20,7 @@ let html = `
 `
 
 // Create container element where the popup will be inserted.
-if ($("{{ identifier }} #m2g-modal-container").elements.length === 0) {
+if (!document.querySelector("{{ identifier }} #m2g-modal-container")) {
     $("{{ identifier }}").append('<span id="m2g-modal-container"></span>')
 }
 
