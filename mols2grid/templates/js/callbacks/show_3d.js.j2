@@ -21,7 +21,7 @@ function get_url(resolver, data) {
     return resolver.url.replace("{}", value);
 }
 // fetch and display
-async function show_3d(data, apis_or_custom_resolver, viewer) {
+function show_3d(data, apis_or_custom_resolver, viewer) {
     let resolver, api;
     if (Array.isArray(apis_or_custom_resolver)) {
         // go through list of APIs available
@@ -37,38 +37,40 @@ async function show_3d(data, apis_or_custom_resolver, viewer) {
         resolver = apis_or_custom_resolver;
     }
     let sdf_url = get_url(resolver, data);
-    const response = await fetch(sdf_url);
-
-    if (!response.ok) {
-        console.error("Failed to load SDF with", api);
-        await show_3d(data, apis_or_custom_resolver, viewer);
-    } else {
-        const data = await response.text()
-        viewer.addModel(data, resolver.format);
-        viewer.setStyle({}, { stick: {} });
-        viewer.zoomTo();
-        viewer.setHoverable(
-            {}, 1,
-            function(atom, viewer, event, container) {
-                if (!atom.label) {
-                    atom.label = viewer.addLabel(
-                        atom.serial + ':' + atom.atom, {
-                            position: atom,
-                            backgroundColor: 'mintcream',
-                            fontColor:'black'
+    fetch(sdf_url).then((response) => {
+        if (!response.ok) {
+            console.error("Failed to load SDF with", api);
+            show_3d(data, apis_or_custom_resolver, viewer);
+        } else {
+            response.text().then((data) => {
+                viewer.addModel(data, resolver.format);
+                viewer.setStyle({}, { stick: {} });
+                viewer.zoomTo();
+                viewer.setHoverable(
+                    {}, 1,
+                    function(atom, viewer, event, container) {
+                        if (!atom.label) {
+                            atom.label = viewer.addLabel(
+                                atom.serial + ':' + atom.atom, {
+                                    position: atom,
+                                    backgroundColor: 'mintcream',
+                                    fontColor:'black'
+                                }
+                            );
                         }
-                    );
-                }
-            },
-            function(atom, viewer) { 
-                if (atom.label) {
-                    viewer.removeLabel(atom.label);
-                    delete atom.label;
-                }
-            }
-        );
-        viewer.render();
-    }
+                    },
+                    function(atom, viewer) { 
+                        if (atom.label) {
+                            viewer.removeLabel(atom.label);
+                            delete atom.label;
+                        }
+                    }
+                );
+                viewer.render();
+            });
+        }
+    });
+
 }
 import("https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.5.2/3Dmol.es6-min.js").then(($3Dmol) => {
     const element = document.querySelector("#molviewer")
@@ -76,5 +78,5 @@ import("https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.5.2/3Dmol.es6-min.js").th
     const viewer = $3Dmol.createViewer(element, config);
     // prepare query to fetch 3D SDF from SMILES
     let apis_or_custom_resolver = {{ query | tojson }};
-    await show_3d(data, apis_or_custom_resolver, viewer);
+    show_3d(data, apis_or_custom_resolver, viewer);
 })

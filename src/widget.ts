@@ -71,11 +71,8 @@ function render({ model, el }: RenderProps<WidgetModel>) {
         customHeader,
     } = params
     RDKit?.prefer_coordgen(molOptions.preferCoordGen)
-    const uuid = crypto.randomUUID()
-    el.id = `m2g-widget-${uuid}`
-    const identifier = `m2g-${uuid}`
-    model.set("identifier", identifier)
-    model.save_changes()
+    const identifier = model.get("identifier")
+    el.id = `widget-${identifier}`
     const container = setupHTML(
         el,
         identifier,

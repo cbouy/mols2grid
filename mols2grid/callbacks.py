@@ -1,6 +1,27 @@
+from functools import wraps
+
 from mols2grid.utils import env
 
+JS_CALLBACK_ID_VARNAME = "__mols2grid_js_id__"
 
+
+def inject_identifier(cb):
+    """Injects the identifier for the grid element to ensure the callback is only
+    triggered for this grid and not others.
+    """
+
+    @wraps(cb)
+    def wrapper(*args, **kwargs):
+        def inner(identifier=""):
+            return cb(*args, identifier=identifier, **kwargs)
+
+        setattr(inner, JS_CALLBACK_ID_VARNAME, True)
+        return inner
+
+    return wrapper
+
+
+@inject_identifier
 def make_popup_callback(
     title=None, subtitle=None, svg=None, html=None, js=None, style=None, identifier=None
 ):
@@ -38,7 +59,7 @@ def make_popup_callback(
         svg=svg,
         js=js or "",
         style=style or "",
-        identifier=f"#{identifier}" or "",
+        identifier=identifier or "",
     )
 
 
