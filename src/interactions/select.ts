@@ -4,10 +4,15 @@ import type { WidgetModel } from "../widget"
 import { $ } from "../query"
 import { clipboardCopy, saveSmiles, saveCSV } from "../export"
 
-
-export function initSelectActions(model: AnyModel<WidgetModel>, molgrid: MolGrid, smilesCol: string) {
+export function initSelectActions(
+    model: AnyModel<WidgetModel>,
+    molgrid: MolGrid,
+    smilesCol: string
+) {
     const identifier = model.get("identifier")
-    const actionSelect = <HTMLSelectElement>document.querySelector(`#${identifier} .m2g-actions select`)
+    const actionSelect = <HTMLSelectElement>(
+        document.querySelector(`#${identifier} .m2g-actions select`)
+    )
     $(actionSelect).on("change", _ => {
         switch (actionSelect.value) {
             case "select-all":
@@ -136,10 +141,14 @@ export function initCheckbox(
         .off("change")
         .on("change", ev => {
             var identifier = parseInt(
-                <string>$(<HTMLInputElement>ev.target).closest(".m2g-cell").getAttr("data-mols2grid-id")[0]
+                <string>$(<HTMLInputElement>ev.target)
+                    .closest(".m2g-cell")
+                    .getAttr("data-mols2grid-id")[0]
             )
             if ((<HTMLInputElement>ev.target).checked) {
-                var smiles = $(<HTMLInputElement>ev.target).closest(".m2g-cell").find(`.data-${smilesCol}`).text
+                var smiles = $(<HTMLInputElement>ev.target)
+                    .closest(".m2g-cell")
+                    .find(`.data-${smilesCol}`).text
                 molgrid.addSelection(model, [identifier], [smiles])
             } else {
                 molgrid.delSelection(model, [identifier])

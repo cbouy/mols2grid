@@ -2,13 +2,6 @@ import type { CSSOptions } from "../widget"
 import { debounce } from "../utils"
 
 export function addResizeHandler(el: HTMLElement, css: CSSOptions) {
-    // resize events
-    // need to be updated JS side as CSS doesn't allow using `calc` in container queries
-    // @container (min-width: {{ cell_width * 4 - 1 }}px) and (max-width: {{ cell_width * 6 - 1 }}px) {
-    //     #mols2grid .m2g-cell {
-    //         flex-basis: calc(100% / 4);
-    //     }
-    // }
     function resize() {
         const width = window.innerWidth
         function fits(colsMin: number, colsMax: number | null = null): boolean {

@@ -1,4 +1,4 @@
-let name = {{ grid_id | tojson }};
+var name = {{ grid_id | tojson }};
 if (typeof mols2grid_lists !== "undefined") {
     var listObj = mols2grid_lists[name];
 } else if (typeof window.parent.mols2grid_lists !== "undefined") {

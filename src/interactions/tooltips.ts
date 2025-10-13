@@ -10,7 +10,6 @@ import {
 import { copyOnClick } from "./click"
 import { $ } from "../query"
 
-
 export interface TooltipOptions {
     tooltipPlacement: Placement | null
 }
@@ -28,9 +27,13 @@ export function initToolTip(identifier: string, options: TooltipOptions) {
             const referenceEl = $t.elements[0]
             const contentEl = $t.find(".m2g-tooltip").elements[0]
             const tooltip = new Tooltip(
-                identifier, <HTMLElement>ev.target, referenceEl, contentEl, options
+                identifier,
+                <HTMLElement>ev.target,
+                referenceEl,
+                contentEl,
+                options
             )
-            $t.setAttr({"m2g-tooltip-active": "1"})
+            $t.setAttr({ "m2g-tooltip-active": "1" })
             tooltip.start()
             tooltip.show()
         })
@@ -88,7 +91,7 @@ class Tooltip {
         })
         $(this.floatingEl).find(".copy-me").off("click")
         this.floatingEl.remove()
-        $t.setAttr({"m2g-tooltip-active": "0"})
+        $t.setAttr({ "m2g-tooltip-active": "0" })
     }
 
     public click() {

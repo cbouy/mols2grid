@@ -31,7 +31,9 @@ export function checkboxSort(a: any, b: any, _?: any): number | undefined {
 
 export function initSorting(molgrid: MolGrid, sortOptions: SortOptions) {
     const identifier = molgrid.listObj.listContainer.id
-    const sortSelect = <HTMLSelectElement>document.querySelector(`#${identifier} .m2g-sort select`)
+    const sortSelect = <HTMLSelectElement>(
+        document.querySelector(`#${identifier} .m2g-sort select`)
+    )
     // listen to field change
     $(sortSelect).on("change", _ => {
         molgrid.sort(sortSelect, true)

@@ -179,6 +179,9 @@ ignore = [
     "UP037",
 ]
 
+[tool.ruff.lint.isort]
+known-third-party = ["rdkit"]
+
 [tool.isort]
 profile = "black"
 

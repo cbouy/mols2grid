@@ -12,7 +12,6 @@ export function initSearch(
     var searchType = "Text"
     const identifier = molgrid.listObj.listContainer.id
 
-
     // Switch search type (Text or SMARTS)
     $(`#${identifier} .m2g-search-options .m2g-option`).on("click", ev => {
         let $t = $(<HTMLElement>ev.target).closest(".m2g-option")
@@ -22,8 +21,9 @@ export function initSearch(
     })
 
     // Searchbar update event handler
-    $<HTMLInputElement>(`#${identifier} .m2g-searchbar`).on("keyup", debounce(
-        (ev: Event) => {
+    $<HTMLInputElement>(`#${identifier} .m2g-searchbar`).on(
+        "keyup",
+        debounce((ev: Event) => {
             let query = (<HTMLInputElement>ev.target).value
             smartsMatches.clear()
             if (searchType === "Text") {
@@ -31,7 +31,6 @@ export function initSearch(
             } else {
                 molgrid.smartsSearch(query, [`data-${smilesCol}`])
             }
-        },
-        300,
-    ))
+        }, 300)
+    )
 }

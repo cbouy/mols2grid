@@ -36,7 +36,7 @@ function show_3d(data, apis_or_custom_resolver, viewer) {
         api = "custom"
         resolver = apis_or_custom_resolver;
     }
-    let sdf_url = get_url(resolver, data);
+    const sdf_url = get_url(resolver, data);
     fetch(sdf_url).then((response) => {
         if (!response.ok) {
             console.error("Failed to load SDF with", api);
@@ -77,6 +77,6 @@ import("https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.5.2/3Dmol.es6-min.js").th
     const config = { backgroundColor: 'white' };
     const viewer = $3Dmol.createViewer(element, config);
     // prepare query to fetch 3D SDF from SMILES
-    let apis_or_custom_resolver = {{ query | tojson }};
+    const apis_or_custom_resolver = {{ query | tojson }};
     show_3d(data, apis_or_custom_resolver, viewer);
 })

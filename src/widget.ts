@@ -12,7 +12,7 @@ import { type MolOptions, type DrawOptions, initMolDrawing } from "./rdkit/draw"
 import { setupHTML } from "./html"
 import { type Callback } from "./interactions/callback"
 import { $ } from "./query"
-import {waitForElement} from "./utils"
+import { waitForElement } from "./utils"
 
 export interface WidgetModel {
     options: string
@@ -62,14 +62,8 @@ export interface WidgetOptions {
 function render({ model, el }: RenderProps<WidgetModel>) {
     // Render the widget's view into the el HTMLElement.
     const params: WidgetOptions = JSON.parse(model.get("options"))
-    let {
-        supportSelection,
-        sortOptions,
-        molOptions,
-        gridConfig,
-        css,
-        customHeader,
-    } = params
+    let { supportSelection, sortOptions, molOptions, gridConfig, css, customHeader } =
+        params
     RDKit?.prefer_coordgen(molOptions.preferCoordGen)
     const identifier = model.get("identifier")
     el.id = `widget-${identifier}`
@@ -117,7 +111,7 @@ export function createGrid(
         molgrid.store.zipSet(...gridConfig.cachedSelection)
         molgrid.listObj.on("updated", (_: List) => {
             $<HTMLInputElement>(`#${identifier} .m2g-cell input[checked="false"]`).each(
-                el => el.checked = false
+                el => (el.checked = false)
             )
         })
     }
@@ -142,8 +136,15 @@ export function createGrid(
 
     waitForElement(`#${identifier} .m2g-cell`).then(_ => {
         // Initialize constant interactions
-        initOnce(model, molgrid, smartsMatches, gridConfig.smilesCol, gridConfig.searchCols, sortOptions)
-    
+        initOnce(
+            model,
+            molgrid,
+            smartsMatches,
+            gridConfig.smilesCol,
+            gridConfig.searchCols,
+            sortOptions
+        )
+
         // Initialize interactions that depend on the underlying data at every update
         molgrid.listObj.on("updated", function (_: List) {
             initOnUpdate(
@@ -166,7 +167,6 @@ export function createGrid(
             }
         })
     })
-
 
     return molgrid
 }

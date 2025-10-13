@@ -7,6 +7,8 @@ from uuid import uuid4
 
 import numpy as np
 import pandas as pd
+from rdkit import Chem
+from rdkit.Chem import Draw
 
 from mols2grid.callbacks import JS_CALLBACK_ID_VARNAME
 from mols2grid.select import register
@@ -23,8 +25,6 @@ from mols2grid.utils import (
     tooltip_formatter,
 )
 from mols2grid.widget import MolGridWidget
-from rdkit import Chem
-from rdkit.Chem import Draw
 
 try:
     from IPython.core.display import HTML, Javascript

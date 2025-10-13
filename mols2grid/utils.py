@@ -7,7 +7,6 @@ from importlib.util import find_spec
 
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader
-
 from rdkit import Chem
 
 templates = resources.files("mols2grid").joinpath("templates")

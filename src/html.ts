@@ -8,7 +8,7 @@ export function setupHTML(
     sortCols: string[],
     supportSelection: boolean,
     css: CSSOptions,
-    customHeader: string,
+    customHeader: string
 ): HTMLElement {
     let defaultSort = sortBy.replace("data-", "")
     let sortDisplayValue = defaultSort == "mols2grid-id" ? "Index" : defaultSort
