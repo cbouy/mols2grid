@@ -4,7 +4,6 @@
     --m2g-black-soft: rgba(0, 0, 0, 0.35);
     --m2g-black-10: rgba(0, 0, 0, 0.1);
     --m2g-bg: #f6f6f6;
-    --m2g-border: solid 1px rgba(0, 0, 0, 0.2);
     --m2g-hl: #555; /* Highlight color */
     --m2g-hl-shadow: inset 0 0 0 1px var(--m2g-hl); /* Inset 1px shadow to make border thicker */
     --m2g-blue: #0f62fe;
@@ -34,13 +33,13 @@
     --m2g-font-family: "DejaVu", sans-serif;
     --m2g-font-size: 12px;
     --m2g-border: 1px solid #cccccc;
-    --m2g-cell-width: 130;
-    --m2g-gap: 0;
-    --m2g-cell-gap: -1px -1px 0 0;
-    --m2g-pad: 10;
+    --m2g-cell-width: 130px;
+    --m2g-pad: 10px;
     --m2g-textalign: center;
     --m2g-background-color: white;
     --m2g-hover-color: rgba(0, 0, 0, 0.05);
+    --m2g-gap: 0px;
+    --m2g-cell-gap: -1px -1px 0 0;
     --m2g-flex-basis: auto;
     /* https://stackoverflow.com/a/75217048 */
     --m2g-truncate: initial;
@@ -463,8 +462,8 @@ h4 {
     justify-content: flex-start;
     padding: 1px; /* Compensate for negative padding on cell */
     user-select: none;
-    margin: calc(var(--m2g-gap) * 1px);
-    margin-top: calc(var(--m2g-gap) * 1px + 20px);
+    margin: var(--m2g-gap);
+    margin-top: calc(var(--m2g-gap) + 20px);
     font-family: var(--m2g-font-family);
 }
 
@@ -474,10 +473,10 @@ h4 {
     text-align: var(--m2g-textalign);
     vertical-align: top;
     font-family: var(--m2g-font-family);
-    padding: calc(var(--m2g-pad) * 1px);
-    padding-top: max(calc(var(--m2g-pad) * 1px), 20px);
+    padding: var(--m2g-pad);
+    padding-top: max(var(--m2g-pad), 20px);
     margin: var(--m2g-cell-gap);
-    flex: 1 0 calc(var(--m2g-cell-width) * 1px);
+    flex: 1 0 var(--m2g-cell-width);
     flex-basis: var(--m2g-flex-basis);
     position: relative;
     font-size: var(--m2g-fs-cell);

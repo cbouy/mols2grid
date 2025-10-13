@@ -536,12 +536,6 @@ class MolGrid:
         if "img" not in subset:
             subset.insert(0, "img")
 
-        # Always make sure the image comes first.
-        # subset = [subset.pop(subset.index("img"))] + subset
-        #
-        # This was removed at Cedric's request, so you can choose
-        # to have certain properties displayed above the image.
-
         # Define fields that are searchable and sortable.
         search_cols = [f"data-{col}" for col in subset if col != "img"]
         if tooltip:
