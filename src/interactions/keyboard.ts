@@ -36,7 +36,10 @@ export function initKeyboard(identifier: string) {
                     let columns = Math.round(containerWidth / cellWidth)
                     let $cells = $t.parent.children
                     let index = $cells.elements.indexOf(el)
-                    let targetIndex = ev.code === "ArrowUp" ? Math.max(index - columns, 0): Math.min(index + columns, $cells.elements.length)
+                    let targetIndex =
+                        ev.code === "ArrowUp"
+                            ? Math.max(index - columns, 0)
+                            : Math.min(index + columns, $cells.elements.length)
                     $cells.elements[targetIndex].focus()
                     break
                 case "Escape":

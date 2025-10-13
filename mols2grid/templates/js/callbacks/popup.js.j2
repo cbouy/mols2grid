@@ -2,7 +2,7 @@
 {{ js }}
 
 // HTML template for the popup.
-let html = `
+const html = `
 <div id="m2g-modal" tabindex="-1" style="{{ style }}">
 
     <div class="m2g-modal-header">
@@ -25,7 +25,7 @@ if (!document.querySelector("{{ identifier }} #m2g-modal-container")) {
 }
 
 // Insert the code inside the container element.
-let $modal = $("{{ identifier }} #m2g-modal-container")
+const $modal = $("{{ identifier }} #m2g-modal-container")
 $modal.elements[0].innerHTML = html
 
 // Show modal.

@@ -1,5 +1,5 @@
 import type { AnyModel } from "@anywidget/types"
-import {$} from "../query"
+import { $ } from "../query"
 import type { WidgetModel } from "../widget"
 import { RDKit } from "../initialize"
 
@@ -10,7 +10,7 @@ export interface Callback {
 
 interface Data {
     "mols2grid-id": Number
-    "img": string
+    img: string
 }
 
 export function onCallbackButtonClick(
@@ -24,8 +24,7 @@ export function onCallbackButtonClick(
     )
     data["img"] = $(target).parent.siblings(".data-img").elements[0].innerHTML
     $(target)
-        .parent
-        .siblings(".data")
+        .parent.siblings(".data")
         .filter(e => !e.classList.contains(".data-img"))
         .each(el => {
             let name = el.className

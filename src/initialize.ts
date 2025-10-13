@@ -38,8 +38,8 @@ export function initOnce(
     smartsMatches: SmartsMatches,
     smilesCol: string,
     searchCols: string[],
-    sortOptions: SortOptions,
-) { 
+    sortOptions: SortOptions
+) {
     initSearch(molgrid, smilesCol, searchCols, smartsMatches)
     initSorting(molgrid, sortOptions)
     initSelectActions(model, molgrid, smilesCol)
@@ -58,7 +58,7 @@ export function initOnUpdate(
     initCellClick(model, supportSelection, callback)
     initKeyboard(identifier)
     if (tooltip) {
-        initToolTip(identifier, {tooltipPlacement: tooltipPlacement})
+        initToolTip(identifier, { tooltipPlacement: tooltipPlacement })
     }
     if (supportSelection) {
         initCheckbox(model, molgrid, smilesCol)

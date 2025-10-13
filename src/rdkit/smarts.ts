@@ -24,7 +24,9 @@ export function smartsSearchFactory(
 ) {
     return (_: string, columns: Array<any>) => {
         var smilesCol: string = columns[0]
-        var query = $<HTMLInputElement>(`#${molgrid.listObj.listContainer.id} .m2g-searchbar`).elements[0].value
+        var query = $<HTMLInputElement>(
+            `#${molgrid.listObj.listContainer.id} .m2g-searchbar`
+        ).elements[0].value
         if (typeof query !== "string") {
             return
         }

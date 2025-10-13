@@ -8,7 +8,7 @@ import {
     type SmartsOptions,
     type SmartsMatches,
 } from "./rdkit/smarts.ts"
-import {$} from "./query.ts"
+import { $ } from "./query.ts"
 
 export interface ListConfig {
     valueNames: string[]
@@ -28,7 +28,7 @@ export class MolGrid {
         sortOptions: SortOptions,
         smartsMatches: SmartsMatches,
         smartsOptions: SmartsOptions,
-        config: ListConfig,
+        config: ListConfig
     ) {
         this.listObj = new List(
             el,

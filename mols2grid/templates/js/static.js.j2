@@ -14,13 +14,13 @@ function fitIframe(iframe) {
     })
     // Fit iframe height to content height.
     function _fit() {
-        var height = iframe.contentDocument.body.scrollHeight + {{ iframe_padding }} + 'px';
+        const height = iframe.contentDocument.body.scrollHeight + {{ iframe_padding }} + 'px';
         iframe.style.height = height;
     }
 }
 
 function copyOnClick(target) {
-    let $t = $(target);
+    const $t = $(target);
     navigator.clipboard.writeText($t.text());
     // Blink the cell to indicate that the text was copied.
     $(target).addClass("m2g-copy-blink")
