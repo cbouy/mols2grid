@@ -86,19 +86,19 @@ export function initStyling(el: HTMLElement, css: CSSOptions) {
     // update CSS styles
     el.style.setProperty("--m2g-font-family", css.fontFamily)
     el.style.setProperty("--m2g-font-size", css.fontsize)
-    el.style.setProperty("--m2g-gap", css.gap === 0 ? "0" : "-" + css.gap)
+    el.style.setProperty("--m2g-border", css.border)
+    el.style.setProperty("--m2g-cell-width", `${css.cellWidth}px`)
+    el.style.setProperty("--m2g-pad", `${css.pad}px`)
+    el.style.setProperty("--m2g-textalign", css.textalign)
+    el.style.setProperty("--m2g-background-color", css.backgroundColor)
+    el.style.setProperty("--m2g-hover-color", css.hoverColor)
+    el.style.setProperty("--m2g-gap", css.gap === 0 ? "0px" : `-${css.gap}px`)
     el.style.setProperty(
         "--m2g-cell-gap",
         css.gap === 0 ? "-1px -1px 0 0" : `${css.gap}px`
     )
-    el.style.setProperty("--m2g-textalign", css.textalign)
     // https://stackoverflow.com/a/75217048
     el.style.setProperty("--m2g-truncate", css.truncate ? "initial" : " ")
     el.style.setProperty("--m2g-no-truncate", css.truncate ? " " : "initial")
-    if (css.custom) {
-        const style = document.createElement("style")
-        style.textContent = css.custom
-        el.appendChild(style)
-    }
     addResizeHandler(el, css)
 }

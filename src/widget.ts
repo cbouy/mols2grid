@@ -25,13 +25,13 @@ export interface WidgetModel {
 export interface CSSOptions {
     fontFamily: string
     fontsize: string
-    cellWidth: number
-    gap: number
     border: string
+    cellWidth: number
     pad: number
     textalign: string
     backgroundColor: string
     hoverColor: string
+    gap: number
     truncate: boolean
     custom: string
 }

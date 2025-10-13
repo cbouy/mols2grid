@@ -85,7 +85,14 @@ export function setupHTML(
     <div class="m2g-list"></div>
 </div>`)
     initStyling(container, css)
-    let content = chunks.join("\n")
-    container.innerHTML = customHeader ? customHeader + content : content
+    const content = chunks.join("\n")
+    let header = ""
+    if (css.custom) {
+        header += `<style>${css.custom}</style>`
+    }
+    if (customHeader) {
+        header += customHeader
+    }
+    container.innerHTML = header + content
     return container
 }
