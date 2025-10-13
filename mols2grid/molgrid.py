@@ -1066,11 +1066,10 @@ class MolGrid:
         -------
         view : IPython.core.display.HTML
         """
-        is_widget = kwargs.get("template") == "interactive"
         use_iframe = is_jupyter if use_iframe is None else use_iframe
         obj = self.render(**kwargs, use_iframe=use_iframe)
 
-        if is_widget:
+        if not isinstance(obj, str):
             return obj
 
         if not use_iframe:
@@ -1087,12 +1086,13 @@ class MolGrid:
 
     def save(self, output, **kwargs):
         """Render and save the grid in an HTML document."""
-        is_widget = kwargs.get("template") == "interactive"
         obj = self.render(**kwargs)
-        if is_widget:
-            from ipywidgets.embed import embed_minimal_html
-
-            embed_minimal_html(output, views=[obj], drop_defaults=False)
-        else:
+        if isinstance(obj, str):
             with open(output, "w", encoding="utf-8") as f:
                 f.write(obj)
+        else:
+            from ipywidgets.embed import embed_minimal_html
+
+            embed_minimal_html(
+                output, views=[obj], title="mols2grid", drop_defaults=False
+            )
