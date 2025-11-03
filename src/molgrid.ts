@@ -28,7 +28,9 @@ export class MolGrid {
         sortOptions: SortOptions,
         smartsMatches: SmartsMatches,
         smartsOptions: SmartsOptions,
-        config: ListConfig
+        config: ListConfig,
+        name: string,
+        debug: boolean
     ) {
         this.listObj = new List(
             el,
@@ -47,6 +49,15 @@ export class MolGrid {
             config.data
         )
         this.store = new MolStore()
+        if (debug) {
+            // @ts-expect-error
+            if (!window.__mols2grid__) {
+                // @ts-expect-error
+                window.__mols2grid__ = {}
+            }
+            // @ts-expect-error
+            window.__mols2grid__[name] = { "store": this.store, "listObj": this.listObj }
+        }
         this.sortOptions = sortOptions
         this.smartsSearchFunc = smartsSearchFactory(this, smartsOptions, smartsMatches)
     }

@@ -1,4 +1,20 @@
 :root {
+    /* Updated JS side */
+    --m2g-font-family: "DejaVu", sans-serif;
+    --m2g-font-size: 12px;
+    --m2g-border: 1px solid #cccccc;
+    --m2g-cell-width: 130px;
+    --m2g-pad: 10px;
+    --m2g-textalign: center;
+    --m2g-background-color: white;
+    --m2g-hover-color: rgba(0, 0, 0, 0.05);
+    --m2g-gap: 0px;
+    --m2g-cell-gap: -1px -1px 0 0;
+    --m2g-flex-basis: auto;
+    /* https://stackoverflow.com/a/75217048 */
+    --m2g-truncate: initial;
+    --m2g-no-truncate: ;
+
     /* Colors */
     --m2g-black: rgba(0, 0, 0, 0.75);
     --m2g-black-soft: rgba(0, 0, 0, 0.35);
@@ -19,31 +35,11 @@
     --m2g-br-l: var(--m2g-br) 0 0 var(--m2g-br); /* Left-only */
     --m2g-br-r: 0 var(--m2g-br) var(--m2g-br) 0; /* Right-only */
 
-    /* Text */
-    --m2g-fs: 14px; /* UI font-size */
-    --m2g-fs-cell: var(--m2g-font-size); /* Cell font-size */
-
     /* Transition speeds */
     --m2g-trans: 150ms;
 
     /* Layout */
     --m2g-h: 40px; /* Form element height */
-
-    /* Updated JS side */
-    --m2g-font-family: "DejaVu", sans-serif;
-    --m2g-font-size: 12px;
-    --m2g-border: 1px solid #cccccc;
-    --m2g-cell-width: 130px;
-    --m2g-pad: 10px;
-    --m2g-textalign: center;
-    --m2g-background-color: white;
-    --m2g-hover-color: rgba(0, 0, 0, 0.05);
-    --m2g-gap: 0px;
-    --m2g-cell-gap: -1px -1px 0 0;
-    --m2g-flex-basis: auto;
-    /* https://stackoverflow.com/a/75217048 */
-    --m2g-truncate: initial;
-    --m2g-no-truncate: ;
 }
 
 /* ignore parent styles */
@@ -83,8 +79,8 @@ h4 {
 
 /* In-cell text */
 .mols2grid-anywidget .data:not(.data-img) {
-    height: 16px;
-    line-height: 16px;
+    height: max(16px, var(--m2g-font-size));
+    line-height: max(16px, var(--m2g-font-size));
 }
 /*
  * Text truncation
@@ -102,7 +98,7 @@ h4 {
  */
 .mols2grid-anywidget {
     font-family: var(--m2g-font-family);
-    font-size: var(--m2g-fs);
+    font-size: calc(var(--m2g-font-size) + 2px);
 }
 
 /* Fixes */
@@ -131,6 +127,10 @@ h4 {
     left: 0;
     display: none;
     z-index: 1;
+}
+.mols2grid-anywidget .m2g-popover div::after {
+    content: "";
+    display: block;
 }
 .mols2grid-anywidget .m2g-popover .arrow {
     width: 10px;
@@ -479,7 +479,7 @@ h4 {
     flex: 1 0 var(--m2g-cell-width);
     flex-basis: var(--m2g-flex-basis);
     position: relative;
-    font-size: var(--m2g-fs-cell);
+    font-size: var(--m2g-font-size);
     cursor: pointer;
     color: var(--m2g-black);
     overflow: hidden;
@@ -533,15 +533,15 @@ h4 {
     background: #ffd !important; /* Overrides user-set background color */
 }
 .mols2grid-anywidget .data-mols2grid-id-display {
-    font-size: var(--m2g-fs-cell);
-    line-height: 16px;
+    font-size: var(--m2g-font-size);
+    line-height: calc(var(--m2g-font-size) + 4px);
 }
 .mols2grid-anywidget .m2g-cb-wrap input[type="checkbox"] + .data-mols2grid-id-display {
     padding: 0 5px 0 5px;
 }
 .mols2grid-anywidget .m2g-cb-wrap .data-name-display {
-    font-size: var(--m2g-fs);
-    line-height: 16px;
+    font-size: calc(var(--m2g-font-size) + 2px);
+    line-height: calc(var(--m2g-font-size) + 4px);
 }
 
 /* Info + callback button wrap (28px high) */
@@ -875,7 +875,7 @@ h4 {
     }
     .mols2grid-anywidget .m2g-functions .m2g-sort .m2g-display::before {
         content: "Sort";
-        font-size: var(--m2g-fs);
+        font-size: calc(var(--m2g-font-size) + 2px);
         line-height: var(--m2g-h);
     }
 }

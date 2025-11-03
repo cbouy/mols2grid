@@ -59,7 +59,7 @@ def tooltip_formatter(s, subset, fmt, style, transform):
         )
         items.append(fmt.format(key=k, value=value))
     items.append("<div class='arrow'></div>")
-    return "<br>".join(items)
+    return "".join(items)
 
 
 def mol_to_smiles(mol):

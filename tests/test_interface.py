@@ -1,7 +1,7 @@
-import json
+import atexit
 import os
 import sys
-from base64 import b64encode
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -17,7 +17,6 @@ from selenium.webdriver.support import expected_conditions as EC
 
 import mols2grid
 from mols2grid.select import register
-from mols2grid.utils import env
 
 from .webdriver_utils import CustomDriver
 
@@ -30,6 +29,7 @@ else:
 
 
 GITHUB_ACTIONS = bool(os.environ.get("GITHUB_ACTIONS"))
+# Run headless on GitHub CI and locally, unless using VSCode debugger
 HEADLESS = GITHUB_ACTIONS or ("debugpy" not in sys.modules)
 pytestmark = pytest.mark.webdriver
 skip_no_coordgen = pytest.mark.skipif(
@@ -44,16 +44,17 @@ def get_grid(df, **kwargs):
 
 
 def get_doc(grid, kwargs):
-    html = grid.render(**kwargs)
-    html = b64encode(html.encode()).decode()
-    return f"data:text/html;base64,{html}"
+    fd, name = tempfile.mkstemp(".html")
+    os.close(fd)
+    grid.save(**kwargs, output=name)
+    atexit.register(lambda: Path(name).unlink())
+    return f"file://{name}"
 
 
 @pytest.fixture(scope="module")
 def driver():
-    # note: change `browser-path` in se-config.toml if not using Brave browser
+    # note: change se-config.toml if not using Chrome
     options = webdriver.ChromeOptions()
-    # Run headless on GitHub CI, and locally unless using VSCode debugger
     if HEADLESS:
         options.add_argument("--headless=new")
     options.add_argument("--enable-automation")
@@ -62,6 +63,7 @@ def driver():
     options.add_argument("--start-maximized")
     driver = CustomDriver(options=options)
     driver.set_page_load_timeout(10)
+    driver.set_window_size(1920, 1080)
     yield driver
     driver.quit()
 
@@ -81,7 +83,7 @@ def test_no_subset_all_visible(driver: CustomDriver, grid):
     doc = get_doc(grid, {"tooltip": [], "selection": False})
     driver.get(doc)
     columns = set(grid.dataframe.columns.drop(["mol", "mols2grid-id"]).to_list())
-    cell = driver.find_by_css_selector("#mols2grid .m2g-cell")
+    cell = driver.find_by_css_selector(".m2g-cell")
     data_el = cell.find_elements(By.CLASS_NAME, "data")
     classes = [
         c.replace("data-", "").replace("-display", "")
@@ -95,7 +97,7 @@ def test_no_subset_all_visible(driver: CustomDriver, grid):
 
 def test_smiles_hidden(driver: CustomDriver, html_doc):
     driver.get(html_doc)
-    el = driver.find_by_css_selector("#mols2grid .m2g-cell .data-SMILES")
+    el = driver.find_by_css_selector(".m2g-cell .data-SMILES")
     assert not el.is_displayed()
 
 
@@ -121,23 +123,24 @@ def test_page_click(driver: CustomDriver, grid, page):
         ("border", "border-top-width", "3px solid", "3px"),
         ("border", "border-top-style", "1px dashed", "dashed"),
         ("border", "border-top-color", "1px solid blue", "rgb(0, 0, 255)"),
-        ("fontsize", "font-size", "16pt", "21.3333px"),
+        ("fontsize", "font-size", "20px", "20px"),
         ("fontfamily", "font-family", "Consolas", "Consolas"),
         ("textalign", "text-align", "right", "right"),
         (
             "custom_css",
             "background-color",
-            "#mols2grid .m2g-cell { background-color: black; }",
+            ".m2g-cell { --m2g-background-color: black; }",
             "rgb(0, 0, 0)",
         ),
     ],
 )
 def test_css_properties(driver: CustomDriver, grid, name, css_prop, value, expected):
-    doc = get_doc(grid, {name: value})
+    doc = get_doc(grid, {name: value, "subset": ["_Name"]})
     driver.get(doc)
+    driver.wait_for_img_load()
     computed = driver.execute_script(
         f"""return getComputedStyle(
-            document.querySelector('#mols2grid .m2g-cell')
+            document.querySelector('.m2g-cell')
         ).getPropertyValue({css_prop!r});
         """
     )
@@ -148,7 +151,7 @@ def test_text_search(driver: CustomDriver, html_doc):
     driver.get(html_doc)
     driver.wait_for_img_load()
     driver.text_search("iodopropane")
-    el = driver.find_by_css_selector("#mols2grid .m2g-cell .data-SMILES")
+    el = driver.find_by_css_selector(".m2g-cell .data-SMILES")
     assert el.get_attribute("innerHTML") == "CC(I)C"
 
 
@@ -156,7 +159,7 @@ def test_text_search_regex_chars(driver: CustomDriver, html_doc):
     driver.get(html_doc)
     driver.wait_for_img_load()
     driver.text_search("1-pentene")
-    el = driver.find_by_css_selector("#mols2grid .m2g-cell .data-SMILES")
+    el = driver.find_by_css_selector(".m2g-cell .data-SMILES")
     assert el.get_attribute("innerHTML") == "CCCC=C"
 
 
@@ -164,7 +167,7 @@ def test_smarts_search(driver: CustomDriver, html_doc):
     driver.get(html_doc)
     driver.wait_for_img_load()
     driver.substructure_query("CC(I)C")
-    el = driver.find_by_css_selector("#mols2grid .m2g-cell .data-_Name")
+    el = driver.find_by_css_selector(".m2g-cell .data-_Name")
     assert el.text == "2-iodopropane"
 
 
@@ -245,7 +248,7 @@ def test_selection_check_uncheck_invert(driver: CustomDriver, html_doc):
 
 @pytest.mark.parametrize("prerender", [True, False])
 def test_image_size(driver: CustomDriver, df, prerender):
-    size = (200, 300)
+    size = expected_size = (200, 300)
     grid = get_grid(df, size=size, prerender=prerender)
     doc = get_doc(
         grid,
@@ -259,8 +262,8 @@ def test_image_size(driver: CustomDriver, df, prerender):
     driver.get(doc)
     if not prerender:
         driver.wait_for_img_load()
-    img = driver.find_by_css_selector("#mols2grid .m2g-cell .data-img *")
-    assert img.size == {"width": size[0], "height": size[1]}
+    img = driver.find_by_css_selector(".m2g-cell .data-img *")
+    assert img.size == {"width": expected_size[0], "height": expected_size[1]}
 
 
 def test_image_use_coords(driver: CustomDriver, df):
@@ -294,7 +297,7 @@ def test_image_use_coords(driver: CustomDriver, df):
         (
             True,
             False,
-            "fffffffffffffe7ffe7ffe7ffe7ffe7ffe7f3e7c8811c183e7e7ffffffffffff",
+            "fffffffffffffffffe7ffe7ffe7ffe7ffe7f3c3c8811c183f7efffffffffffff",
         ),
         (
             False,
@@ -344,12 +347,12 @@ def test_coordgen(driver: CustomDriver, mols, coordGen, prerender, expected):
         (
             True,
             False,
-            "fffffffffffffe7ffe7ffe7ffe7ffe7ffe7f3e7c8811c183e7e7ffffffffffff",
+            "fffffffffffffffffe7ffe7ffe7ffe7ffe7f3c3c8811c183f7efffffffffffff",
         ),
         (
             False,
             False,
-            "ff7ffe1ff91ffd3ff00ff0cffcbff0bff00ffd3fe1bff887f29ff30fff6fff7f",
+            "fffffe1ff91ffd3ff01ff0cffcbff0bff00ff53fe1bff887f29ff30fff6fffff",
         ),
     ],
 )
@@ -380,21 +383,25 @@ def test_removeHs(driver: CustomDriver, df, removeHs, prerender, expected):
 @pytest.mark.parametrize(
     ("kwargs", "expected"),
     [
-        (
+        pytest.param(
             {"addAtomIndices": True},
             "ffffffffff7ffe3ffe7ffefffeff3e7f3e791830c184e7cfe7cff7cfffffffff",
+            id="addAtomIndices",
         ),
-        (
+        pytest.param(
             {"fixedBondLength": 10},
             "fffffffffffffffffffffffffe7ffe7ff81ffc3fffffffffffffffffffffffff",
+            id="fixedBondLength",
         ),
-        (
+        pytest.param(
             {"atomColourPalette": {6: (0, 0.8, 0.8)}},
-            "fffffffffffffffffe7ffe7ffe7ffe7ffe7f3e7c8819c183e7e7ffffffffffff",
+            "fffffffffffffffffe7ffe7ffe7ffe7ffe7f3e7c8811c183f7efffffffffffff",
+            id="atomColourPalette",
         ),
-        (
+        pytest.param(
             {"legend": "foo"},
-            "fffffffffffffe7ffe7ffe7ffe7ffe7f3e7c1818c183e7e7fffffffffe7ffe7f",
+            "fffffffffffffe7ffe7ffe7ffe7ffe7f3e7c1c38c183e3c7fffffefffe7ffe7f",
+            id="legend",
         ),
     ],
 )
@@ -413,14 +420,14 @@ def test_hover_color(driver: CustomDriver, grid):
     driver.get(doc)
     (
         ActionChains(driver)
-        .move_to_element(driver.find_by_css_selector("#mols2grid .m2g-cell"))
+        .move_to_element(driver.find_by_css_selector(".m2g-cell"))
         .pause(0.2)
         .perform()
     )
     color = driver.execute_script(
         """
         return getComputedStyle(
-            document.querySelector('#mols2grid .m2g-cell:hover'), ":after"
+            document.querySelector('.m2g-cell:hover'), ":after"
         ).getPropertyValue('background-color');
         """
     )
@@ -431,30 +438,32 @@ def test_tooltip(driver: CustomDriver, grid):
     doc = get_doc(grid, {"tooltip": ["_Name"]})
     driver.get(doc)
     driver.wait_for_img_load()
-    tooltip = driver.get_tooltip_content()
-    assert (
-        tooltip
-        == '<strong>_Name</strong>: <span class="copy-me">3-methylpentane</span>'
-    )
+    tooltip = driver.get_tooltip_content()[:-1]
+    assert tooltip == [
+        ["strong", ["_Name"]],
+        ": ",
+        ["span", ("class", "copy-me"), ["3-methylpentane"]],
+    ]
 
 
 def test_tooltip_fmt(driver: CustomDriver, grid):
     doc = get_doc(grid, {"tooltip": ["_Name"], "tooltip_fmt": "<em>{value}</em>"})
     driver.get(doc)
     driver.wait_for_img_load()
-    tooltip = driver.get_tooltip_content()
-    assert tooltip == '<em><span class="copy-me">3-methylpentane</span></em>'
+    tooltip = driver.get_tooltip_content()[:-1]
+    assert tooltip == [["em", [["span", ("class", "copy-me"), ["3-methylpentane"]]]]]
 
 
 def test_tooltip_not_in_subset(driver: CustomDriver, grid):
     doc = get_doc(grid, {"tooltip": ["_Name"], "subset": ["ID", "img"]})
     driver.get(doc)
     driver.wait_for_img_load()
-    tooltip = driver.get_tooltip_content()
-    assert (
-        tooltip
-        == '<strong>_Name</strong>: <span class="copy-me">3-methylpentane</span>'
-    )
+    tooltip = driver.get_tooltip_content()[:-1]
+    assert tooltip == [
+        ["strong", ["_Name"]],
+        ": ",
+        ["span", ("class", "copy-me"), ["3-methylpentane"]],
+    ]
 
 
 def test_style(driver: CustomDriver, grid):
@@ -470,15 +479,13 @@ def test_style(driver: CustomDriver, grid):
     )
     driver.get(doc)
     driver.wait_for_img_load()
-    el = driver.find_by_css_selector("#mols2grid .m2g-cell")
+    el = driver.find_by_css_selector(".m2g-cell")
     assert el.value_of_css_property("color") == "rgba(255, 0, 0, 1)"
-    el = driver.find_by_css_selector("#mols2grid .m2g-cell .data-_Name")
+    el = driver.find_by_css_selector(".m2g-cell .data-_Name")
     assert el.value_of_css_property("color") == "rgba(0, 0, 255, 1)"
-    tooltip = driver.get_tooltip_content()
-    assert (
-        tooltip == '<strong>_Name</strong>: <span class="copy-me" '
-        'style="color: blue">3-methylpentane</span>'
-    )
+    ActionChains(driver).click(driver.find_by_css_selector(".m2g-info")).perform()
+    el = driver.find_by_css_selector("div.m2g-popover span")
+    assert el.value_of_css_property("color") == "rgba(0, 0, 255, 1)"
 
 
 def test_transform(driver: CustomDriver, grid):
@@ -486,14 +493,15 @@ def test_transform(driver: CustomDriver, grid):
         grid, {"tooltip": ["_Name"], "transform": {"_Name": lambda x: x.upper()}}
     )
     driver.get(doc)
-    name = driver.find_by_css_selector("#mols2grid .m2g-cell .data-_Name")
+    name = driver.find_by_css_selector(".m2g-cell .data-_Name")
     assert name.text == "3-METHYLPENTANE"
     driver.wait_for_img_load()
-    tooltip = driver.get_tooltip_content(pause=0.5)
-    assert (
-        tooltip
-        == '<strong>_Name</strong>: <span class="copy-me">3-METHYLPENTANE</span>'
-    )
+    tooltip = driver.get_tooltip_content()[:-1]
+    assert tooltip == [
+        ["strong", ["_Name"]],
+        ": ",
+        ["span", ("class", "copy-me"), ["3-METHYLPENTANE"]],
+    ]
 
 
 def test_transform_style_tooltip(driver: CustomDriver, grid):
@@ -510,15 +518,16 @@ def test_transform_style_tooltip(driver: CustomDriver, grid):
     )
     driver.get(doc)
     driver.wait_for_img_load()
-    cell = driver.find_by_css_selector("#mols2grid .m2g-cell")
+    cell = driver.find_by_css_selector(".m2g-cell")
     assert cell.value_of_css_property("background-color") == "rgba(255, 0, 0, 1)"
     name = cell.find_element(By.CLASS_NAME, "data-_Name")
     assert name.text == "foo"
-    tooltip = driver.get_tooltip_content(pause=0.5)
-    assert (
-        tooltip == '<strong>_Name</strong>: <span class="copy-me" style="color: blue">'
-        "foo</span>"
-    )
+    tooltip = driver.get_tooltip_content()[:-1]
+    assert tooltip == [
+        ["strong", ["_Name"]],
+        ": ",
+        ["span", ("class", "copy-me"), ("style", "color: blue"), ["foo"]],
+    ]
 
 
 @pytest.mark.parametrize("selection", [True, False])
@@ -527,21 +536,21 @@ def test_callback_js(driver: CustomDriver, grid, selection):
         grid,
         {
             "subset": ["img", "_Name"],
-            "callback": "$('#mols2grid .m2g-cell .data-_Name').html('foo')",
+            "callback": "$('.m2g-cell .data-_Name').elements[0].innerHTML = 'foo'",
             "selection": selection,
         },
     )
     driver.get(doc)
     driver.wait_for_img_load()
     driver.trigger_callback()
-    el = driver.find_by_css_selector("#mols2grid .m2g-cell .data-_Name")
+    el = driver.find_by_css_selector(".m2g-cell .data-_Name")
     assert el.text == "foo"
 
 
 def test_sort_by(driver: CustomDriver, grid):
     doc = get_doc(grid, {"subset": ["img", "_Name"], "sort_by": "_Name"})
     driver.get(doc)
-    el = driver.find_by_css_selector("#mols2grid .m2g-cell .data-_Name")
+    el = driver.find_by_css_selector(".m2g-cell .data-_Name")
     assert el.text == "1,1,2,2-tetrachloroethane"
 
 
@@ -549,18 +558,18 @@ def test_sort_button(driver: CustomDriver, html_doc):
     driver.get(html_doc)
     driver.wait_for_img_load()
     driver.sort_grid("_Name")
-    el = driver.find_by_css_selector("#mols2grid .m2g-cell .data-_Name")
+    el = driver.find_by_css_selector(".m2g-cell .data-_Name")
     assert el.text == "1,1,2,2-tetrachloroethane"
     driver.invert_sort()
-    el = driver.find_by_css_selector("#mols2grid .m2g-cell .data-_Name")
+    el = driver.find_by_css_selector(".m2g-cell .data-_Name")
     assert el.text == "tetrachloromethane"
 
 
 @pytest.mark.parametrize(
     ("substruct_highlight", "expected"),
     [
-        (True, "fffffe7ffc3ffc3ffe7ffe7ffe7ffe7ffe7ffc3ff81fc003c3c3c7e3c7e3eff7"),
-        (False, "fe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffc3ff99fe3c7c7e3cff3"),
+        (True, "fffffe7ffc3ffc3ffe7ffe7ffe7ffe7ffe7ffc3ff81fc003c3c3c7e3c7e3fff7"),
+        (False, "fe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffc3ff99fe3c7c7e3dff3"),
     ],
 )
 def test_substruct_highlight(driver: CustomDriver, grid, substruct_highlight, expected):
@@ -590,7 +599,7 @@ def test_substruct_clear_removes_highlight(driver: CustomDriver, grid):
     hash_ = driver.get_svg_hash()
     assert hash_ != hash_hl
     assert (
-        str(hash_) == "fffffffffffffe7ffe7ffe7ffe7ffe7ffe7f3e7c8811c183e7e7ffffffffffff"
+        str(hash_) == "fffffffffffffffffe7ffe7ffe7ffe7ffe7f3c3c8811c183f7efffffffffffff"
     )
 
 
@@ -610,11 +619,12 @@ def test_smarts_to_text_search_removes_highlight(driver: CustomDriver, grid):
     hash_ = driver.get_svg_hash()
     assert hash_ != hash_hl
     assert (
-        str(hash_) == "fe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffc3ff99fe3c7c7e3cff3"
+        str(hash_) == "fe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffe7ffc3ff99fe3c7c7e3dff3"
     )
 
 
-def test_filter(driver: CustomDriver, grid):
+def test_filter(driver: CustomDriver, grid, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr("mols2grid.molgrid.is_running_within_streamlit", lambda: True)
     doc = get_doc(
         grid,
         {
@@ -623,12 +633,10 @@ def test_filter(driver: CustomDriver, grid):
     )
     driver.get(doc)
     mask = grid.dataframe["_Name"].str.contains("iodopropane")
-    filter_code = env.get_template("js/filter.js").render(
-        grid_id=grid._grid_id, mask=json.dumps(mask.tolist())
-    )
+    filter_code = grid.filter(mask).data
     driver.wait_for_img_load()
     driver.execute_script(filter_code)
-    el = driver.find_by_css_selector("#mols2grid .m2g-cell .data-_Name")
+    el = driver.find_by_css_selector(".m2g-cell .data-_Name")
     assert el.text == "2-iodopropane"
 
 
@@ -637,7 +645,7 @@ def test_subset_gives_rows_order(driver: CustomDriver, grid):
     doc = get_doc(grid, {"subset": subset, "n_items_per_page": 5})
     driver.get(doc)
     driver.wait_for_img_load()
-    cell = driver.find_by_css_selector("#mols2grid .m2g-cell")
+    cell = driver.find_by_css_selector(".m2g-cell")
     elements = cell.find_elements(By.CLASS_NAME, "data")
     i = 0
     for el in elements:
@@ -667,7 +675,7 @@ def test_colname_with_spaces(driver: CustomDriver, df):
     )
     driver.get(doc)
     driver.wait_for_img_load()
-    el = driver.find_by_css_selector("#mols2grid .m2g-cell .data-Molecule-name")
+    el = driver.find_by_css_selector(".m2g-cell .data-Molecule-name")
     assert el.text == "3-methylpentane"
 
 
@@ -676,14 +684,16 @@ def test_custom_header(driver: CustomDriver, grid):
         grid,
         {
             "subset": ["img"],
-            "custom_header": '<script src="https://unpkg.com/@rdkit/rdkit@2021.9.2/Code/MinimalLib/dist/RDKit_minimal.js"></script>',
+            "custom_header": """<div id="dummyHeader">1.2.3</div>""",
             "n_items_per_page": 5,
         },
     )
     driver.get(doc)
     driver.wait_for_img_load()
-    val = driver.execute_script("return RDKit.version();")
-    assert val == "2021.09.2"
+    val = driver.execute_script(
+        """return document.getElementById("dummyHeader").innerHTML;"""
+    )
+    assert val == "1.2.3"
 
 
 def test_static_template(driver: CustomDriver, sdf_path):
@@ -696,19 +706,22 @@ def test_static_template(driver: CustomDriver, sdf_path):
             "subset": ["mols2grid-id", "img"],
             "tooltip": ["_Name"],
             "sort_by": "_Name",
-            "tooltip_trigger": "hover",
+            "tooltip_trigger": "click",
         },
     )
     driver.get(doc)
-    el = driver.find_by_css_selector("#mols2grid td.col-0")
+    el = driver.find_by_css_selector("td.col-0")
     assert el.find_element(By.CLASS_NAME, "data-mols2grid-id").text == "8"
-    tooltip = driver.get_tooltip_content(selector=".m2g-cell-0")
-    assert (
-        tooltip
-        == '<strong>_Name</strong>: <span class="copy-me">1,3,5-trimethylbenzene</span>'
-    )
+    tooltip = driver.get_tooltip_content(
+        selector=".m2g-cell-0", content_selector="div.popover-body"
+    )[:-1]
+    assert tooltip == [
+        ["strong", ["_Name"]],
+        ": ",
+        ["span", ("class", "copy-me"), ["1,3,5-trimethylbenzene"]],
+    ]
     if COORDGEN_SUPPORT:
-        hash_ = driver.get_svg_hash("#mols2grid td .data-img")
+        hash_ = driver.get_svg_hash("td .data-img")
         diff = hash_ - imagehash.hex_to_hash(
             "fffffe7ffe7ffe7ffe7ffe7ffc3ff10ff3cff3cff3cff3cff38fe1078c319e79"
         )
@@ -725,7 +738,7 @@ def test_default_subset_tooltip(driver: CustomDriver, grid):
         for x in grid.dataframe.columns.drop(["mol", "mols2grid-id"]).to_list()
         if x not in expected_subset
     ]
-    cell = driver.find_by_css_selector("#mols2grid .m2g-cell")
+    cell = driver.find_by_css_selector(".m2g-cell")
     data_elements = cell.find_elements(By.CLASS_NAME, "data")
     subset = [
         c.replace("data-", "").replace("-display", "")
@@ -749,7 +762,7 @@ def test_multi_highlight(driver: CustomDriver, html_doc):
     driver.substructure_query("Br")
     hash_ = driver.get_svg_hash()
     assert (
-        str(hash_) == "ffffffff8fff87ff003f079f8fdfffcfffefffe1ffe1ffe0ffe1fff1ffffffff"
+        str(hash_) == "ffffffff8fff87ff803f879f87dfffcfffefffe1ffe1ffe0ffe1fff3ffffffff"
     )
 
 
@@ -760,7 +773,7 @@ def test_single_highlight(driver: CustomDriver, grid):
     driver.substructure_query("Br")
     hash_ = driver.get_svg_hash()
     assert (
-        str(hash_) == "ffffffff8fff87ff003f001f87cfcfcfffefffe7fff3fff0fff1fff1ffffffff"
+        str(hash_) == "ffffffffcfff87ff003f001f87dfcfcfffefffe7fff3fff1fff1fff1ffffffff"
     )
 
 
@@ -772,8 +785,8 @@ def test_mol_depiction_aligned_to_query(driver: CustomDriver, html_doc):
     for img, expected in zip(
         images,
         [
-            "fffffffffcf9f8f8f0708001070f0f8f9f9fffdfffdfff9fff8fff8fffffffff",
-            "fffffffffffffff9fff9fff9fff9f8f9f8f0d0018003078f8f8fffffffffffff",
+            "fffffffffcf9f8f9f0718001070f8f8f9f9fffdfffdfff9fff8fff8fffffffff",
+            "fffffffffffffff9fff9fff9fff9f8f9f8f0d0018207078f8f8fffffffffffff",
         ],
         strict=False,
     ):
@@ -798,7 +811,7 @@ def test_highlight_with_hydrogens(driver: CustomDriver, df):
     driver.substructure_query("Cl")
     hash_ = driver.get_svg_hash()
     assert (
-        str(hash_) == "fdfffcfff8fffcfffdc7cdc780cf885bd901fb81f3b3f3bfff9fff1fff9fffbf"
+        str(hash_) == "fffffcfff8fffcfffdcfcdc780cf805bd901fb81f3b3f3bfff9fff1fff9fffff"
     )
 
 
@@ -822,6 +835,7 @@ def test_callbacks_info(driver: CustomDriver, grid):
 def test_callbacks_3D(driver: CustomDriver, grid):
     doc = get_doc(grid, {"callback": mols2grid.callbacks.show_3d()})
     driver.get(doc)
+    driver.wait_for_img_load()
     driver.trigger_callback(pause=2.0)
     modal = driver.find_by_css_selector("#m2g-modal")
     assert (
@@ -830,19 +844,20 @@ def test_callbacks_3D(driver: CustomDriver, grid):
         )
         == "CCC(C)CC"
     )
+    driver.wait(
+        EC.presence_of_element_located((By.CSS_SELECTOR, "#molviewer canvas")), 15
+    )
     content = modal.find_element(By.CSS_SELECTOR, ".m2g-modal-body").get_attribute(
         "innerHTML"
     )
     assert '<div id="molviewer' in content
-    # only works when testing locally...
     assert "<canvas" in content
-    # cannot test for actual rendering as there's no GL available
-    assert driver.execute_script("return typeof($3Dmol)") != "undefined"
 
 
 def test_callbacks_external_link(driver: CustomDriver, grid):
     doc = get_doc(grid, {"callback": mols2grid.callbacks.external_link()})
     driver.get(doc)
+    driver.wait_for_img_load()
     driver.trigger_callback()
     # check if new tab was opened
     assert len(driver.window_handles) > 1

@@ -20,6 +20,7 @@ export interface WidgetModel {
     callback_kwargs: string
     filter_mask: boolean[]
     identifier: string
+    name: string
 }
 
 export interface CSSOptions {
@@ -57,13 +58,21 @@ export interface WidgetOptions {
     gridConfig: GridConfig
     css: CSSOptions
     customHeader: string
+    debug: boolean
 }
 
 function render({ model, el }: RenderProps<WidgetModel>) {
     // Render the widget's view into the el HTMLElement.
     const params: WidgetOptions = JSON.parse(model.get("options"))
-    let { supportSelection, sortOptions, molOptions, gridConfig, css, customHeader } =
-        params
+    let {
+        supportSelection,
+        sortOptions,
+        molOptions,
+        gridConfig,
+        css,
+        customHeader,
+        debug,
+    } = params
     RDKit?.prefer_coordgen(molOptions.preferCoordGen)
     const identifier = model.get("identifier")
     el.id = `widget-${identifier}`
@@ -82,7 +91,8 @@ function render({ model, el }: RenderProps<WidgetModel>) {
         supportSelection,
         sortOptions,
         molOptions,
-        gridConfig
+        gridConfig,
+        debug
     )
     waitForElement(`#${identifier} .m2g-list`).then(molgrid.listObj.update)
 }
@@ -93,9 +103,11 @@ export function createGrid(
     supportSelection: boolean,
     sortOptions: SortOptions,
     molOptions: MolOptions,
-    gridConfig: GridConfig
+    gridConfig: GridConfig,
+    debug: boolean
 ) {
     const identifier = model.get("identifier")
+    const name = model.get("name")
     const gridTarget = <HTMLElement>el.querySelector(`#${identifier}`)
     const smartsMatches: SmartsMatches = new Map()
     const molgrid = new MolGrid(
@@ -103,7 +115,9 @@ export function createGrid(
         sortOptions,
         smartsMatches,
         gridConfig.smartsOptions,
-        gridConfig.listConfig
+        gridConfig.listConfig,
+        name,
+        debug
     )
 
     // Restore checkbox state
