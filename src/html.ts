@@ -88,7 +88,7 @@ export function setupHTML(
     const content = chunks.join("\n")
     let header = ""
     if (css.custom) {
-        header += `<style>${css.custom}</style>`
+        header += `<style type="text/css">${css.custom}</style>`
     }
     if (customHeader) {
         header += customHeader

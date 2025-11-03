@@ -23,7 +23,9 @@ class MolGridWidget(anywidget.AnyWidget):
         List stating wether a molecule should be kept (True) or filtered out
         (False)
     identifier : str
-        ID of the widget's HTML element
+        Unique ID of the widget's HTML element
+    name : str
+        Name of the grid
     """
 
     _esm = BUNDLER_OUTPUT_DIR / "widget.js"
@@ -34,3 +36,4 @@ class MolGridWidget(anywidget.AnyWidget):
     callback_kwargs = Unicode("{}").tag(sync=True)
     filter_mask = List(Bool(), []).tag(sync=True)
     identifier = Unicode("").tag(sync=True)
+    name = Unicode("default").tag(sync=True)

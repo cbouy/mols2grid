@@ -1,3 +1,4 @@
+import json
 from types import SimpleNamespace
 
 import pytest
@@ -270,12 +271,6 @@ def test_integration_static(grid_prerendered, kwargs):
     grid_prerendered.to_static(**kwargs)
 
 
-def test_python_callback(grid):
-    html = grid.to_interactive(subset=["img"], callback=lambda data: None)  # noqa: ARG005
-    assert "// Trigger custom python callback" in html
-    assert "// No kernel detected for callback" in html
-
-
 def test_cache_selection(small_df):
     grid = get_grid(small_df, name="cache")
     event = SimpleNamespace(new='{0: "CCO"}')
@@ -340,5 +335,9 @@ def test_static_no_prerender_error(grid):
 def test_replace_non_serializable_from_default_output(small_df):
     grid = get_grid(small_df)
     grid.dataframe["non-serializable"] = grid.dataframe[grid.mol_col]
-    html = grid.render()
-    assert "\\ud83e\\udd37\\u200d\\u2642\\ufe0f" in html  # 🤷‍♂️
+    grid._json_default = "__foobar__"
+    widget = grid.render()
+    options = json.loads(widget.options)
+    data = options["gridConfig"]["listConfig"]["data"]
+    # column is prefixed with `data-`
+    assert any("__foobar__" in row["data-non-serializable"] for row in data)

@@ -1,4 +1,5 @@
 import json
+import os
 import warnings
 from base64 import b64encode
 from functools import partial
@@ -7,6 +8,7 @@ from uuid import uuid4
 
 import numpy as np
 import pandas as pd
+from ipywidgets.embed import embed_minimal_html
 from rdkit import Chem
 from rdkit.Chem import Draw
 
@@ -189,6 +191,7 @@ class MolGrid:
         # Register instance.
         self._grid_id = name
         self._identifier = f"m2g-{uuid4()}"
+        self._json_default = "🤷‍♂️"
         if cache_selection:
             try:
                 self._cached_selection = register.get_selection(name)
@@ -661,9 +664,7 @@ class MolGrid:
 
         # Generate cell HTML.
         tooltip_html = (
-            ("<div class='m2g-tooltip' role='tooltip' data-content='.'></div>")
-            if tooltip
-            else ""
+            ("<div class='m2g-tooltip' data-content='.'></div>") if tooltip else ""
         )
         item = (
             "<div class='m2g-cell' data-mols2grid-id='0' tabindex='0'>"
@@ -762,9 +763,11 @@ class MolGrid:
                         "custom": custom_css,
                     },
                     "customHeader": custom_header,
+                    # for testing purposes
+                    "debug": bool(int(os.environ.get("M2G_DEBUG", "0"))),
                 },
                 indent=None,
-                default=lambda _: "🤷‍♂️",
+                default=lambda _: self._json_default,
             ),
         )
         selection_handler = partial(register.selection_updated, self._grid_id)
@@ -1085,8 +1088,10 @@ class MolGrid:
             with open(output, "w", encoding="utf-8") as f:
                 f.write(obj)
         else:
-            from ipywidgets.embed import embed_minimal_html
+            self._widget_to_html(output)
 
-            embed_minimal_html(
-                output, views=[obj], title="mols2grid", drop_defaults=False
-            )
+    def _widget_to_html(self, output):
+        """Write the widget to the provided output (path or file-like)."""
+        embed_minimal_html(
+            output, views=[self.widget], title="mols2grid", drop_defaults=False
+        )

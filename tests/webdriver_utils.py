@@ -1,6 +1,8 @@
 from ast import literal_eval
 from base64 import b64decode
 from io import BytesIO
+from xml.dom import minidom
+from xml.dom.minicompat import NodeList
 
 import imagehash
 from cairosvg import svg2png
@@ -13,13 +15,15 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
+DEBOUNCE_DELAY = 0.3
+
 
 class selection_available:
     def __init__(self, is_empty=False):
         self.empty = is_empty
 
     def __call__(self, driver):
-        sel = driver.execute_script("return SELECTION.to_dict();")
+        sel = driver.execute_script("return window.__mols2grid__.store.toDict();")
         sel = literal_eval(sel)
         if sel == {} and self.empty:
             return True
@@ -29,9 +33,7 @@ class selection_available:
 
 
 class CustomDriver(webdriver.Chrome):
-    def wait_for_img_load(
-        self, max_delay=5, selector="#mols2grid .m2g-cell .data-img svg"
-    ):
+    def wait_for_img_load(self, max_delay=30, selector=".m2g-cell .data-img svg"):
         return WebDriverWait(self, max_delay).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, selector))
         )
@@ -68,65 +70,81 @@ class CustomDriver(webdriver.Chrome):
         im = next(self.get_imgs_from_svgs(*args, **kwargs))
         return imagehash.average_hash(im, hash_size=16)
 
-    def get_imgs_from_svgs(self, selector="#mols2grid .m2g-cell .data-img"):
+    def get_imgs_from_svgs(self, selector=".m2g-cell .data-img"):
         condition = EC.presence_of_all_elements_located((By.CSS_SELECTOR, selector))
         svgs = self.wait(condition)
         for svg in svgs:
             im = svg2png(bytestring=(svg.get_attribute("innerHTML")))
             yield Image.open(BytesIO(im))
 
-    def get_png_hash(self, selector="#mols2grid .m2g-cell .data-img *"):
+    def get_png_hash(self, selector=".m2g-cell .data-img *"):
         img = self.find_by_css_selector(selector)
         im = Image.open(BytesIO(b64decode(img.get_attribute("src")[22:])))
         return imagehash.average_hash(im, hash_size=16)
 
     def substructure_query(self, smarts):
-        self.find_clickable(By.CSS_SELECTOR, "#mols2grid .m2g-search-smarts").click()
-        self.find_by_css_selector("#mols2grid .m2g-searchbar").send_keys(smarts)
+        self.find_clickable(By.CSS_SELECTOR, ".m2g-search-smarts").click()
+        self.find_by_css_selector(".m2g-searchbar").send_keys(smarts)
+        ActionChains(self).pause(DEBOUNCE_DELAY).perform()
         self.wait_for_img_load()
 
     def text_search(self, txt):
-        self.find_clickable(By.CSS_SELECTOR, "#mols2grid .m2g-search-text").click()
-        self.find_by_css_selector("#mols2grid .m2g-searchbar").send_keys(txt)
+        self.find_clickable(By.CSS_SELECTOR, ".m2g-search-text").click()
+        self.find_by_css_selector(".m2g-searchbar").send_keys(txt)
+        ActionChains(self).pause(DEBOUNCE_DELAY).perform()
         self.wait_for_img_load()
 
     def clear_search(self):
-        self.find_by_css_selector("#mols2grid .m2g-searchbar").clear()
-        self.find_by_css_selector("#mols2grid .m2g-searchbar").send_keys(Keys.BACKSPACE)
+        self.find_by_css_selector(".m2g-searchbar").clear()
+        self.find_by_css_selector(".m2g-searchbar").send_keys(Keys.BACKSPACE)
+        ActionChains(self).pause(DEBOUNCE_DELAY).perform()
         self.wait_for_img_load()
 
     def sort_grid(self, field):
-        self.find_clickable(By.CSS_SELECTOR, "#mols2grid .m2g-sort").click()
+        self.find_clickable(By.CSS_SELECTOR, ".m2g-sort").click()
         self.find_clickable(
-            By.CSS_SELECTOR, f'#mols2grid .m2g-sort option[value="data-{field}"]'
+            By.CSS_SELECTOR, f'.m2g-sort option[value="data-{field}"]'
         ).click()
         self.wait_for_img_load()
 
     def invert_sort(self):
-        self.find_clickable(By.CSS_SELECTOR, "#mols2grid .m2g-sort .m2g-order").click()
+        self.find_clickable(By.CSS_SELECTOR, ".m2g-sort .m2g-order").click()
         self.wait_for_img_load()
 
     def grid_action(self, action, pause=0):
-        self.find_clickable(By.CSS_SELECTOR, "#mols2grid .m2g-actions").click()
+        self.find_clickable(By.CSS_SELECTOR, ".m2g-actions").click()
         self.find_clickable(
-            By.CSS_SELECTOR, f'#mols2grid .m2g-actions option[value="{action}"]'
+            By.CSS_SELECTOR, f'.m2g-actions option[value="{action}"]'
         ).click()
         ActionChains(self).pause(pause).perform()
 
-    def get_tooltip_content(self, pause=0, selector=".m2g-cell .m2g-info"):
-        (
-            ActionChains(self)
-            .move_to_element(self.find_by_css_selector(f"#mols2grid {selector}"))
-            .pause(pause)
-            .perform()
-        )
-        tooltip = self.find_by_css_selector('div.popover[role="tooltip"]')
-        el = tooltip.find_element(By.CLASS_NAME, "popover-body")
-        return el.get_attribute("innerHTML")
+    @classmethod
+    def _tree_to_list(cls, nodes: NodeList[minidom.Node | minidom.Text], data: list):
+        """Recursively go through a tree of HTML elements and put them in a
+        list of lists."""
+        for node in nodes:
+            if isinstance(node, minidom.Text):
+                data.append(node.data)
+            else:
+                branch = [node.nodeName, *node.attributes.items()]
+                data.append(branch)
+                if node.childNodes:
+                    subbranch = []
+                    branch.append(subbranch)
+                    cls._tree_to_list(node.childNodes, subbranch)
 
-    def trigger_callback(
-        self, selector="#mols2grid .m2g-cell .m2g-callback", pause=0.2
+    def get_tooltip_content(
+        self, selector=".m2g-cell .m2g-info", content_selector="div.m2g-popover"
     ):
+        ActionChains(self).click(self.find_by_css_selector(selector)).perform()
+        tooltip = self.find_by_css_selector(content_selector)
+        content = tooltip.get_attribute("innerHTML")
+        doc = minidom.parseString(f"<body>{content}</body>")
+        data = []
+        self._tree_to_list(doc.childNodes[0].childNodes, data)
+        return data
+
+    def trigger_callback(self, selector=".m2g-cell .m2g-callback", pause=0.2):
         self.wait_for_img_load()
         el = self.find_clickable(By.CSS_SELECTOR, selector)
         (ActionChains(self).move_to_element(el).pause(pause).click().perform())
