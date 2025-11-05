@@ -1,15 +1,18 @@
 import json
+import os
 import warnings
 from base64 import b64encode
 from functools import partial
 from html import escape
+from uuid import uuid4
 
 import numpy as np
 import pandas as pd
+from ipywidgets.embed import embed_minimal_html
 from rdkit import Chem
 from rdkit.Chem import Draw
 
-from mols2grid.callbacks import _JSCallback
+from mols2grid.callbacks import JS_CALLBACK_ID_VARNAME
 from mols2grid.select import register
 from mols2grid.utils import (
     callback_handler,
@@ -26,7 +29,7 @@ from mols2grid.utils import (
 from mols2grid.widget import MolGridWidget
 
 try:
-    from IPython.display import HTML, Javascript, display
+    from IPython.core.display import HTML, Javascript
 except ModuleNotFoundError:
     pass
 else:
@@ -180,13 +183,15 @@ class MolGrid:
                         opts[key] = value
             opts.update(kwargs)
             opts.update({"width": self.img_size[0], "height": self.img_size[1]})
-            self.json_draw_opts = json.dumps(opts)
+            self.draw_opts = opts
 
         # Prepare smiles and images.
         self.dataframe = self._prepare_dataframe(dataframe)
 
         # Register instance.
         self._grid_id = name
+        self._identifier = f"m2g-{uuid4()}"
+        self._json_default = "🤷‍♂️"
         if cache_selection:
             try:
                 self._cached_selection = register.get_selection(name)
@@ -198,15 +203,6 @@ class MolGrid:
         else:
             self._cached_selection = {}
             register._init_grid(name)
-
-        # Create widget.
-        widget = MolGridWidget(grid_id=name, selection=str(self._cached_selection))
-        selection_handler = partial(register.selection_updated, name)
-        widget.observe(selection_handler, names=["selection"])
-
-        # Register widget JS-side.
-        display(widget)
-        self.widget = widget
 
     @classmethod
     def from_mols(cls, mols, **kwargs):
@@ -346,7 +342,6 @@ class MolGrid:
         tooltip_placement="auto",
         transform=None,
         sort_by=None,
-        use_iframe=False,
         truncate=True,
         n_items_per_page=24,
         selection=True,
@@ -367,6 +362,8 @@ class MolGrid:
         # Customization
         custom_header=None,
         callback=None,
+        # Deprecated
+        use_iframe=None,  # noqa: ARG002
     ):
         """Returns the HTML document for the "interactive" template.
 
@@ -403,9 +400,6 @@ class MolGrid:
         sort_by : str or None, default=None
             Sort the grid according to the following field (which must be
             present in ``subset`` or ``tooltip``).
-        use_iframe : bool, default=False
-            Whether to use an iframe to display the grid. When the grid is displayed
-            inside a Jupyter Notebook or JupyterLab, this will default to ``True``.
         truncate: bool, default=True/False
             Whether to truncate the text in each cell if it's too long.
             Defaults to ``True`` for interactive grids, ``False`` for static grid.
@@ -480,6 +474,9 @@ class MolGrid:
             Note that fields containing spaces in their name will be replaced by
             hyphens, i.e. "mol weight" becomes available as ``data["mol-weight"]``.
 
+        use_iframe : bool, default=False
+            Deprecated.
+
         Returns
         -------
         html_document : str
@@ -542,12 +539,6 @@ class MolGrid:
         if "img" not in subset:
             subset.insert(0, "img")
 
-        # Always make sure the image comes first.
-        # subset = [subset.pop(subset.index("img"))] + subset
-        #
-        # This was removed at Cedric's request, so you can choose
-        # to have certain properties displayed above the image.
-
         # Define fields that are searchable and sortable.
         search_cols = [f"data-{col}" for col in subset if col != "img"]
         if tooltip:
@@ -555,8 +546,8 @@ class MolGrid:
             for col in tooltip:
                 if col not in subset:
                     s = (
-                        f'<div class="data data-{slugify(col)}" '
-                        'style="display: none;"></div>'
+                        f"<div class='data data-{slugify(col)}' "
+                        "style='display: none;'></div>"
                     )
                     content.append(s)
                     column_map[col] = f"data-{col}"
@@ -587,7 +578,7 @@ class MolGrid:
         value_names.append(f"data-{id_name}")
         final_columns.append(id_name)
         subset = [id_name if x == "mols2grid-id" else x for x in subset]
-        id_display_html = f'<div class="data-{id_name}"></div>'
+        id_display_html = f"<div class='data-{id_name}'></div>"
 
         # Organize data.
         temp = []
@@ -595,14 +586,14 @@ class MolGrid:
             if col == "mols2grid-id-display":
                 s = ""  # Avoid an empty div to be created for the display id.
             elif col == "img" and tooltip:
-                s = f'<a class="data data-{col}"></a>'
+                s = f"<a class='data data-{col}'></a>"
             elif style.get(col):
                 s = (
-                    f'<div class="data data-{slugify(col)} '
-                    f'copy-me style-{slugify(col)}" style=""></div>'
+                    f"<div class='data data-{slugify(col)} "
+                    f"copy-me style-{slugify(col)}' style=''></div>"
                 )
             else:
-                s = f'<div class="data data-{slugify(col)} copy-me"></div>'
+                s = f"<div class='data data-{slugify(col)} copy-me'></div>"
             temp.append(s)
             column_map[col] = f"data-{col}"
         content = temp + content
@@ -610,8 +601,8 @@ class MolGrid:
         # Add but hide SMILES div if not present.
         if smiles not in (subset + tooltip):
             s = (
-                f'<div class="data data-{slugify(smiles)} copy-me" '
-                'style="display: none;"></div>'
+                f"<div class='data data-{slugify(smiles)} copy-me' "
+                "style='display: none;'></div>"
             )
             content.append(s)
             column_map[smiles] = f"data-{smiles}"
@@ -619,12 +610,11 @@ class MolGrid:
         # Set mapping for list.js.
         if "__all__" in style:
             whole_cell_style = True
-            x = "[{data: ['mols2grid-id', 'cellstyle']}, "
+            x = {"data": ["mols2grid-id", "cellstyle"]}
         else:
             whole_cell_style = False
-            x = "[{data: ['mols2grid-id']}, "
-        value_names = [slugify(c) for c in value_names]
-        value_names = x + str(value_names)[1:]
+            x = {"data": ["mols2grid-id"]}
+        value_names = [x, *[slugify(c) for c in value_names]]
 
         # Apply CSS styles.
         for col, func in style.items():
@@ -635,7 +625,7 @@ class MolGrid:
                 name = f"style-{slugify(col)}"
                 df[name] = df[col].apply(func)
             final_columns.append(name)
-            value_names = value_names[:-1] + f", {{ attr: 'style', name: {name!r} }}]"
+            value_names.append({"attr": "style", "name": name})
 
         # Create tooltip.
         if tooltip:
@@ -643,10 +633,8 @@ class MolGrid:
                 tooltip_formatter, axis=1, args=(tooltip, tooltip_fmt, style, transform)
             )
             final_columns += ["m2g-tooltip"]
-            value_names = (
-                value_names[:-1] + ", {attr: 'data-content', name: 'm2g-tooltip'}]"
-            )
-            info_btn_html = '<div class="m2g-info">i</div>'
+            value_names.append({"attr": "data-content", "name": "m2g-tooltip"})
+            info_btn_html = "<div class='m2g-info'>i</div>"
         else:
             info_btn_html = ""
 
@@ -663,56 +651,42 @@ class MolGrid:
                     "cached_checkbox",
                 ] = True
                 final_columns += ["cached_checkbox"]
-                value_names = (
-                    value_names[:-1] + ", {attr: 'checked', name: 'cached_checkbox'}]"
-                )
+                value_names.append({"attr": "checked", "name": "cached_checkbox"})
             checkbox_html = (
-                '<input type="checkbox" tabindex="-1" '
-                'class="position-relative float-left cached_checkbox">'
+                "<input type='checkbox' tabindex='-1' "
+                "class='position-relative float-left cached_checkbox'>"
             )
         else:
             checkbox_html = ""
 
         # Add callback button.
-        callback_btn_html = '<div class="m2g-callback"></div>' if callback else ""
+        callback_btn_html = "<div class='m2g-callback'></div>" if callback else ""
 
         # Generate cell HTML.
+        tooltip_html = (
+            ("<div class='m2g-tooltip' data-content='.'></div>") if tooltip else ""
+        )
         item = (
-            '<div class="m2g-cell" data-mols2grid-id="0" tabindex="0">'
-            '<div class="m2g-cb-wrap">{checkbox_html}<div class="m2g-cb"></div>'
-            "{id_display_html}</div>"
-            '<div class="m2g-cell-actions">{info_btn_html}{callback_btn_html}</div>'
-            "{content}"
-            "{tooltip_html}"
+            "<div class='m2g-cell' data-mols2grid-id='0' tabindex='0'>"
+            f"<div class='m2g-cb-wrap'>{checkbox_html}<div class='m2g-cb'></div>"
+            f"{id_display_html}</div>"
+            f"<div class='m2g-cell-actions'>{info_btn_html}{callback_btn_html}</div>"
+            f"{''.join(content)}"
+            f"{tooltip_html}"
             "</div>"
         )
 
-        item = item.format(
-            checkbox_html=checkbox_html,
-            id_display_html=id_display_html,
-            info_btn_html=info_btn_html,
-            callback_btn_html=callback_btn_html,
-            content="".join(content),
-            tooltip_html=(
-                '<div class="m2g-tooltip" data-toggle="popover" data-content="."></div>'
-            )
-            if tooltip
-            else "",
-        )
-
         # Callback
-        if isinstance(callback, _JSCallback):
-            if custom_header and callback.library_src:
-                custom_header = callback.library_src + custom_header
-            else:
-                custom_header = callback.library_src
-            callback = callback.code
         if callable(callback):
-            callback_type = "python"
-            cb_handler = partial(callback_handler, callback)
-            self.widget.observe(cb_handler, names=["callback_kwargs"])
+            if getattr(callback, JS_CALLBACK_ID_VARNAME, False):
+                callback_content = {
+                    "callbackType": "js",
+                    "callbackFn": callback(identifier=f"#{self._identifier}"),
+                }
+            else:
+                callback_content = {"callbackType": "python", "callbackFn": ""}
         else:
-            callback_type = "js"
+            callback_content = {"callbackType": "js", "callbackFn": callback}
 
         # Sort
         if sort_by and sort_by != "mols2grid-id":
@@ -732,61 +706,77 @@ class MolGrid:
         smiles = slugify(smiles)
         df = df[final_columns].rename(columns=column_map).sort_values(sort_by)
 
-        template = env.get_template("interactive.html")
-        template_kwargs = {
-            "tooltip": tooltip,
-            "tooltip_placement": repr(tooltip_placement),
-            "n_items_per_page": n_items_per_page,
-            "selection": selection,
-            "truncate": truncate,
-            "sort_by": sort_by,
-            "use_iframe": use_iframe,
-            "border": border,
-            "gap": gap,
-            "gap_px": "-1px -1px 0 0" if gap == 0 else f"{gap}px",
-            "pad": pad,
-            "fontsize": fontsize,
-            "fontfamily": fontfamily,
-            "textalign": textalign,
-            "background_color": background_color,
-            "hover_color": hover_color,
-            "iframe_padding": 18,
-            "cell_width": self.img_size[0],
-            "image_width": self.img_size[0],
-            "image_height": self.img_size[1],
-            "item": item,
-            "item_repr": repr(item),
-            "value_names": value_names,
-            "search_cols": search_cols,
-            "data": json.dumps(
-                df.to_dict("records"),
+        widget = MolGridWidget(
+            identifier=self._identifier,
+            options=json.dumps(
+                {
+                    "supportSelection": selection,
+                    "sortOptions": {
+                        "field": sort_by,
+                        "order": "asc",
+                        "columns": sort_cols,
+                    },
+                    "molOptions": {
+                        "removeHs": self.removeHs,
+                        "preferCoordGen": self.prefer_coordGen,
+                    },
+                    "gridConfig": {
+                        "listConfig": {
+                            "valueNames": value_names,
+                            "item": item,
+                            "page": n_items_per_page,
+                            "data": df.to_dict("records"),
+                        },
+                        "smilesCol": smiles,
+                        "cachedSelection": (
+                            list(zip(*self._cached_selection.items(), strict=True))
+                            if self._cached_selection
+                            else False
+                        ),
+                        "wholeCellStyle": whole_cell_style,
+                        "tooltip": tooltip,
+                        "tooltipPlacement": (
+                            None if tooltip_placement == "auto" else tooltip_placement
+                        ),
+                        "callback": callback_content,
+                        "onTheFlyRendering": not self.prerender,
+                        "drawOptions": getattr(self, "draw_opts", {}),
+                        "smartsOptions": {
+                            "removeHs": self.removeHs,
+                            "onTheFlyRendering": not self.prerender,
+                            "substructHighlight": substruct_highlight,
+                            "singleHighlight": single_highlight,
+                        },
+                        "searchCols": search_cols,
+                    },
+                    "css": {
+                        "fontFamily": fontfamily,
+                        "fontsize": fontsize,
+                        "cellWidth": self.img_size[0],
+                        "gap": gap,
+                        "border": border,
+                        "pad": pad,
+                        "textalign": textalign,
+                        "backgroundColor": background_color,
+                        "hoverColor": hover_color,
+                        "truncate": truncate,
+                        "custom": custom_css,
+                    },
+                    "customHeader": custom_header,
+                    # for testing purposes
+                    "debug": bool(int(os.environ.get("M2G_DEBUG", "0"))),
+                },
                 indent=None,
-                default=lambda x: "🤷‍♂️",  # noqa: ARG005
+                default=lambda _: self._json_default,
             ),
-            "cached_selection": (
-                [
-                    list(self._cached_selection.keys()),
-                    list(self._cached_selection.values()),
-                ]
-                if self._cached_selection
-                else False
-            ),
-            "smiles_col": smiles,
-            "sort_cols": sort_cols,
-            "grid_id": self._grid_id,
-            "whole_cell_style": whole_cell_style,
-            "custom_css": custom_css or "",
-            "custom_header": custom_header or "",
-            "callback": callback,
-            "callback_type": callback_type,
-            "removeHs": self.removeHs,
-            "prefer_coordGen": self.prefer_coordGen,
-            "onthefly": not self.prerender,
-            "substruct_highlight": substruct_highlight,
-            "json_draw_opts": getattr(self, "json_draw_opts", ""),
-            "single_highlight": single_highlight,
-        }
-        return template.render(**template_kwargs)
+        )
+        selection_handler = partial(register.selection_updated, self._grid_id)
+        widget.observe(selection_handler, names=["selection"])
+        if callable(callback):
+            cb_handler = partial(callback_handler, callback)
+            widget.observe(cb_handler, names=["callback_kwargs"])
+        self.widget = widget
+        return widget
 
     def get_selection(self):
         """Retrieve the dataframe subset corresponding to your selection.
@@ -795,7 +785,7 @@ class MolGrid:
         -------
         pandas.DataFrame
         """
-        sel = list(register.get_selection(self._grid_id).keys())
+        sel = list(register.get_selection(self._grid_id))
         return self.dataframe.loc[self.dataframe["mols2grid-id"].isin(sel)].drop(
             columns=self._extra_columns
         )
@@ -812,7 +802,7 @@ class MolGrid:
         if isinstance(mask, (pd.Series, np.ndarray)):
             mask = mask.tolist()
         if is_running_within_streamlit():
-            filtering_script = env.get_template("js/filter.js").render(
+            filtering_script = env.get_template("js/filter.js.j2").render(
                 grid_id=self._grid_id, mask=json.dumps(mask)
             )
             return Javascript(filtering_script)
@@ -836,7 +826,7 @@ class MolGrid:
         tooltip_placement="auto",
         transform=None,
         sort_by=None,
-        use_iframe=False,
+        use_iframe=None,
         truncate=False,
         n_cols=5,
         # CSS Styling
@@ -888,7 +878,7 @@ class MolGrid:
         sort_by : str or None, default=None
             Sort the grid according to the following field (which must be
             present in ``subset`` or ``tooltip``).
-        use_iframe : bool, default=False
+        use_iframe : bool or None, default=None
             Whether to use an iframe to display the grid. When the grid is displayed
             inside a Jupyter Notebook or JupyterLab, this will default to ``True``.
         truncate: bool, default=False
@@ -1034,7 +1024,7 @@ class MolGrid:
                 data.append("\n".join(cell))
                 tr = []
 
-        template = env.get_template("static.html")
+        template = env.get_template("html/static.html.j2")
         template_kwargs = {
             "tooltip": tooltip,
             "tooltip_trigger": repr(tooltip_trigger),
@@ -1058,7 +1048,7 @@ class MolGrid:
     @requires("IPython.display")
     def display(
         self,
-        use_iframe=False,
+        use_iframe=None,
         iframe_width="100%",
         iframe_height=None,
         iframe_allow="clipboard-write",
@@ -1073,22 +1063,35 @@ class MolGrid:
         -------
         view : IPython.core.display.HTML
         """
-        use_iframe = is_jupyter or use_iframe
-        doc = self.render(**kwargs, use_iframe=use_iframe)
-        if use_iframe:
-            # Render HTML in iframe.
-            iframe = env.get_template("html/iframe.html").render(
-                width=iframe_width,
-                height=iframe_height,
-                allow=iframe_allow,
-                sandbox=iframe_sandbox,
-                doc=escape(doc),
-            )
-            return HTML(iframe)
-        # Render HTML regularly.
-        return HTML(doc)
+        use_iframe = is_jupyter if use_iframe is None else use_iframe
+        obj = self.render(**kwargs, use_iframe=use_iframe)
+
+        if not isinstance(obj, str):
+            return obj
+
+        if not use_iframe:
+            return HTML(obj)
+
+        iframe = env.get_template("html/iframe.html.j2").render(
+            width=iframe_width,
+            height=iframe_height,
+            allow=iframe_allow,
+            sandbox=iframe_sandbox,
+            doc=escape(obj),
+        )
+        return HTML(iframe)
 
     def save(self, output, **kwargs):
         """Render and save the grid in an HTML document."""
-        with open(output, "w", encoding="utf-8") as f:
-            f.write(self.render(**kwargs))
+        obj = self.render(**kwargs)
+        if isinstance(obj, str):
+            with open(output, "w", encoding="utf-8") as f:
+                f.write(obj)
+        else:
+            self._widget_to_html(output)
+
+    def _widget_to_html(self, output):
+        """Write the widget to the provided output (path or file-like)."""
+        embed_minimal_html(
+            output, views=[self.widget], title="mols2grid", drop_defaults=False
+        )

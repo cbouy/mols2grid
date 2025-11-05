@@ -1,40 +1,188 @@
-import type { AnyModel, RenderProps } from "@anywidget/types";
-import "./widget.css";
+import type { AnyModel, RenderProps } from "@anywidget/types"
+import "@rdkit/rdkit"
+import { type Placement } from "@floating-ui/dom"
+import type List from "list.js-fixed"
+import "./widget.css"
+import { type ListConfig, MolGrid } from "./molgrid"
+import { type SortOptions } from "./interactions/sort"
+import { initOnce, initOnUpdate } from "./initialize"
+import { RDKit } from "./initialize"
+import { type SmartsMatches, type SmartsOptions } from "./rdkit/smarts"
+import { type MolOptions, type DrawOptions, initMolDrawing } from "./rdkit/draw"
+import { setupHTML } from "./html"
+import { type Callback } from "./interactions/callback"
+import { $ } from "./query"
+import { waitForElement } from "./utils"
 
-/* Specifies attributes defined with traitlets in widget.py */
-interface WidgetModel {
-	grid_id: string,
-	selection: string,
-	callback_kwargs: string,
-	filter_mask: boolean[],
+export interface WidgetModel {
+    options: string
+    selection: string
+    callback_kwargs: string
+    filter_mask: boolean[]
+    identifier: string
+    name: string
+}
+
+export interface CSSOptions {
+    fontFamily: string
+    fontsize: string
+    border: string
+    cellWidth: number
+    pad: number
+    textalign: string
+    backgroundColor: string
+    hoverColor: string
+    gap: number
+    truncate: boolean
+    custom: string
+}
+
+export interface GridConfig {
+    listConfig: ListConfig
+    smilesCol: string
+    cachedSelection: [number[], string[]]
+    wholeCellStyle: boolean
+    tooltip: boolean
+    tooltipPlacement: Placement | null
+    callback: Callback
+    onTheFlyRendering: boolean
+    drawOptions: DrawOptions
+    smartsOptions: SmartsOptions
+    searchCols: string[]
+}
+
+export interface WidgetOptions {
+    supportSelection: boolean
+    sortOptions: SortOptions
+    molOptions: MolOptions
+    gridConfig: GridConfig
+    css: CSSOptions
+    customHeader: string
+    debug: boolean
 }
 
 function render({ model, el }: RenderProps<WidgetModel>) {
-	let grid_id: string = model.get("grid_id");
-    let name: string = "_MOLS2GRID_" + grid_id;
-    (<any>window)[name] = model;
-    model.on("change:filter_mask", () => {
-        trigger_filtering(model)
-    });
-	el.classList.add("mols2grid-anywidget");
+    // Render the widget's view into the el HTMLElement.
+    const params: WidgetOptions = JSON.parse(model.get("options"))
+    let {
+        supportSelection,
+        sortOptions,
+        molOptions,
+        gridConfig,
+        css,
+        customHeader,
+        debug,
+    } = params
+    RDKit?.prefer_coordgen(molOptions.preferCoordGen)
+    const identifier = model.get("identifier")
+    el.id = `widget-${identifier}`
+    const container = setupHTML(
+        el,
+        identifier,
+        sortOptions.field,
+        sortOptions.columns,
+        supportSelection,
+        css,
+        customHeader
+    )
+    const molgrid = createGrid(
+        container,
+        model,
+        supportSelection,
+        sortOptions,
+        molOptions,
+        gridConfig,
+        debug
+    )
+    waitForElement(`#${identifier} .m2g-list`).then(molgrid.listObj.update)
 }
 
-function trigger_filtering(model: AnyModel<WidgetModel>) {
-	let grid_id: string = model.get("grid_id");
-    let listObj: any = undefined;
-    if (typeof (<any>window).mols2grid_lists !== "undefined") {
-      	listObj = (<any>window).mols2grid_lists[grid_id];
-    } else if (typeof (<any>window).parent.mols2grid_lists !== "undefined") {
-      	listObj = (<any>window).parent.mols2grid_lists[grid_id];
-    } else {
-      	return;
+export function createGrid(
+    el: HTMLElement,
+    model: AnyModel<WidgetModel>,
+    supportSelection: boolean,
+    sortOptions: SortOptions,
+    molOptions: MolOptions,
+    gridConfig: GridConfig,
+    debug: boolean
+) {
+    const identifier = model.get("identifier")
+    const name = model.get("name")
+    const gridTarget = <HTMLElement>el.querySelector(`#${identifier}`)
+    const smartsMatches: SmartsMatches = new Map()
+    const molgrid = new MolGrid(
+        gridTarget,
+        sortOptions,
+        smartsMatches,
+        gridConfig.smartsOptions,
+        gridConfig.listConfig,
+        name,
+        debug
+    )
+
+    // Restore checkbox state
+    if (gridConfig.cachedSelection) {
+        molgrid.store.zipSet(...gridConfig.cachedSelection)
+        molgrid.listObj.on("updated", (_: List) => {
+            $<HTMLInputElement>(`#${identifier} .m2g-cell input[checked="false"]`).each(
+                el => (el.checked = false)
+            )
+        })
     }
-    let filter_mask = model.get("filter_mask");
-    if (filter_mask) {
-		listObj.filter(function (item: any) {
-			return filter_mask[item.values()["mols2grid-id"]];
-		});
+
+    // Add style for whole cell
+    if (gridConfig.wholeCellStyle) {
+        molgrid.listObj.on("updated", (_: List) => {
+            $(`#${identifier} div.m2g-cell`).each(el => {
+                let cellstyle = el.getAttribute("data-cellstyle")
+                if (cellstyle) {
+                    el.setAttribute("style", cellstyle)
+                }
+                el.removeAttribute("data-cellstyle")
+            })
+        })
     }
+
+    // Trigger filtering function on model value change
+    model.on("change:filter_mask", function () {
+        molgrid.filter(model)
+    })
+
+    waitForElement(`#${identifier} .m2g-cell`).then(_ => {
+        // Initialize constant interactions
+        initOnce(
+            model,
+            molgrid,
+            smartsMatches,
+            gridConfig.smilesCol,
+            gridConfig.searchCols,
+            sortOptions
+        )
+
+        // Initialize interactions that depend on the underlying data at every update
+        molgrid.listObj.on("updated", function (_: List) {
+            initOnUpdate(
+                model,
+                molgrid,
+                supportSelection,
+                gridConfig.smilesCol,
+                gridConfig.callback,
+                gridConfig.tooltip,
+                gridConfig.tooltipPlacement
+            )
+            if (gridConfig.onTheFlyRendering) {
+                initMolDrawing(
+                    identifier,
+                    gridConfig.smilesCol,
+                    gridConfig.drawOptions,
+                    molOptions,
+                    smartsMatches
+                )
+            }
+        })
+    })
+
+    return molgrid
 }
 
-export default { render };
+export default { render }

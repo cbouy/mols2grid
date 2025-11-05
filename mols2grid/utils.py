@@ -2,15 +2,18 @@ import gzip
 import re
 from ast import literal_eval
 from functools import partial, wraps
+from importlib import resources
 from importlib.util import find_spec
-from pathlib import Path
 
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader
 from rdkit import Chem
 
+templates = resources.files("mols2grid").joinpath("templates")
 env = Environment(
-    loader=FileSystemLoader(Path(__file__).parent / "templates"), autoescape=False
+    loader=FileSystemLoader(str(templates)),
+    trim_blocks=True,
+    lstrip_blocks=True,
 )
 
 
@@ -55,7 +58,8 @@ def tooltip_formatter(s, subset, fmt, style, transform):
             else f'<span class="copy-me">{displayed}</span>'
         )
         items.append(fmt.format(key=k, value=value))
-    return "<br>".join(items)
+    items.append("<div class='arrow'></div>")
+    return "".join(items)
 
 
 def mol_to_smiles(mol):

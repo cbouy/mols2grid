@@ -1,3 +1,4 @@
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
@@ -43,3 +44,11 @@ def grid(df):
 @pytest.fixture(scope="module")
 def mols(small_df):  # noqa: FURB118, RUF100
     return small_df["mol"]
+
+
+@pytest.fixture(scope="session", autouse=True)
+def m2g_setenv() -> Iterator[None]:
+    sessionpatch = pytest.MonkeyPatch()
+    sessionpatch.setenv("M2G_DEBUG", "1")
+    yield
+    sessionpatch.undo()

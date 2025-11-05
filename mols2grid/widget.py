@@ -13,8 +13,6 @@ class MolGridWidget(anywidget.AnyWidget):
 
     Attributes
     ----------
-    grid_id : str
-        Name of the grid controlling the widget
     selection : str
         JSON string containing the molecule selection as a dictionnary. Index
         are keys and SMILES string are values.
@@ -24,12 +22,18 @@ class MolGridWidget(anywidget.AnyWidget):
     filter_mask : List[bool]
         List stating wether a molecule should be kept (True) or filtered out
         (False)
+    identifier : str
+        Unique ID of the widget's HTML element
+    name : str
+        Name of the grid
     """
 
     _esm = BUNDLER_OUTPUT_DIR / "widget.js"
     _css = BUNDLER_OUTPUT_DIR / "widget.css"
 
-    grid_id = Unicode("default").tag(sync=True)
+    options = Unicode().tag(sync=True)
     selection = Unicode("{}").tag(sync=True)
     callback_kwargs = Unicode("{}").tag(sync=True)
     filter_mask = List(Bool(), []).tag(sync=True)
+    identifier = Unicode("").tag(sync=True)
+    name = Unicode("default").tag(sync=True)

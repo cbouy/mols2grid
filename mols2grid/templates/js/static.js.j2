@@ -1,0 +1,30 @@
+// Set iframe height to fit content.
+function fitIframe(iframe) {
+    // Ignore when there's no iframe
+    if (!iframe) return
+    // Only fit height when no specific height was given.
+    if (iframe.getAttribute('height')) return;
+    // Initial fit + refit whenever the window width changes.
+    _fit()
+    window.addEventListener("resize", () => {
+        if (window.innerWidth != window.prevInnerWidth) {
+            window.prevInnerWidth = window.innerWidth
+            _fit();
+        }
+    })
+    // Fit iframe height to content height.
+    function _fit() {
+        const height = iframe.contentDocument.body.scrollHeight + {{ iframe_padding }} + 'px';
+        iframe.style.height = height;
+    }
+}
+
+function copyOnClick(target) {
+    const $t = $(target);
+    navigator.clipboard.writeText($t.text());
+    // Blink the cell to indicate that the text was copied.
+    $(target).addClass("m2g-copy-blink")
+    setTimeout(() => {
+        $(target).removeClass("m2g-copy-blink")
+    }, 450);
+}
