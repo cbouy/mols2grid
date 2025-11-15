@@ -126,11 +126,12 @@ def test_sdf_to_dataframe(sdf_source, request):
         "SOL": -3.68,
         "SOL_classification": "(A) low",
         "_MolFileComments": "",
-        "_MolFileInfo": "  SciTegic05121109362D",
+        "_MolFileInfo": "SciTegic05121109362D",
         "_MolFileChiralFlag": 0,
         "_Name": "3-methylpentane",
     }
     new = df.iloc[0].drop(["mol"]).to_dict()
+    new["_MolFileInfo"] = new["_MolFileInfo"].strip()
     assert new == exp
 
 

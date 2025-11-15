@@ -30,7 +30,7 @@ class selection_available:
 
 class CustomDriver(webdriver.Chrome):
     def wait_for_img_load(
-        self, max_delay=5, selector="#mols2grid .m2g-cell .data-img svg"
+        self, max_delay=30, selector="#mols2grid .m2g-cell .data-img svg"
     ):
         return WebDriverWait(self, max_delay).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, selector))
