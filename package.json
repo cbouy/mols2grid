@@ -1,6 +1,6 @@
 {
 	"name": "mols2grid",
-	"version": "2.1.0-a3",
+	"version": "2.1.0",
 	"description": "Custom widget for the mols2grid package",
 	"keywords": [
 		"rdkit",
