@@ -83,6 +83,7 @@ path = "mols2grid/_version.py"
 [tool.hatch.build]
 only-packages = true
 artifacts = [
+    "mols2grid/templates/*",
     "mols2grid/static/*",
     "mols2grid/data/*"
 ]
