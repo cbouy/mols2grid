@@ -1,8 +1,6 @@
-import initRDKitModule from "@rdkit/rdkit"
-import type { RDKitModule } from "@rdkit/rdkit"
-import { $ } from "./query"
 import { type AnyModel } from "@anywidget/types"
 import { type Placement } from "@floating-ui/dom"
+import { $ } from "./query"
 import { type CSSOptions, type WidgetModel } from "./widget"
 import { type MolGrid } from "./molgrid"
 import { type SmartsMatches } from "./rdkit/smarts"
@@ -15,37 +13,28 @@ import { initToolTip } from "./interactions/tooltips"
 import { initSorting, type SortOptions } from "./interactions/sort"
 import { addResizeHandler } from "./interactions/resize"
 import { initSelectActions } from "./interactions/select"
-export let RDKit: RDKitModule | null = null
-if (window) {
-    // @ts-expect-error
-    if (window.RDKitModule) {
-        // @ts-expect-error
-        RDKit = window.RDKitModule
-    } else {
-        console.log("Initializing RDKit")
-        // @ts-expect-error
-        window.RDKitModule = RDKit = await initRDKitModule({
-            locateFile: () =>
-                "https://unpkg.com/@rdkit/rdkit@2025.3.4-1.0.0/dist/RDKit_minimal.wasm",
-        })
-        console.log("RDKit version:", RDKit?.version())
-    }
-}
+import { loadRDKit } from "./rdkit/loader"
 
 export function initOnce(
+    el: HTMLElement,
     model: AnyModel<WidgetModel>,
     molgrid: MolGrid,
     smartsMatches: SmartsMatches,
     smilesCol: string,
     searchCols: string[],
-    sortOptions: SortOptions
+    sortOptions: SortOptions,
+    preferCoordGen: boolean
 ) {
-    initSearch(molgrid, smilesCol, searchCols, smartsMatches)
-    initSorting(molgrid, sortOptions)
-    initSelectActions(model, molgrid, smilesCol)
+    loadRDKit(true).then(RDKit => {
+        RDKit.prefer_coordgen(preferCoordGen)
+    })
+    initSearch(el, molgrid, smilesCol, searchCols, smartsMatches)
+    initSorting(el, molgrid, sortOptions)
+    initSelectActions(el, model, molgrid, smilesCol)
 }
 
 export function initOnUpdate(
+    el: HTMLElement,
     model: AnyModel<WidgetModel>,
     molgrid: MolGrid,
     supportSelection: boolean,
@@ -54,30 +43,29 @@ export function initOnUpdate(
     tooltip: boolean,
     tooltipPlacement: Placement | null
 ) {
-    const identifier = model.get("identifier")
-    initCellClick(model, supportSelection, callback)
-    initKeyboard(identifier)
+    initCellClick(el, model, supportSelection, callback)
+    initKeyboard(el)
     if (tooltip) {
-        initToolTip(identifier, { tooltipPlacement: tooltipPlacement })
+        initToolTip(el, { tooltipPlacement: tooltipPlacement })
     }
     if (supportSelection) {
-        initCheckbox(model, molgrid, smilesCol)
+        initCheckbox(el, model, molgrid, smilesCol)
     }
 
     // Add a bunch of phantom cells.
     // These are used as filler to make sure that
     // no grid cells need to be resized when there's
     // not enough results to fill the row.
-    $(`#${identifier} .m2g-list`).append(
+    $(".m2g-list", el).append(
         '<div class="m2g-cell m2g-phantom"></div>'.repeat(11)
     )
 
     // Hide pagination if there is only one page.
     // @ts-expect-error
     if (molgrid.listObj.matchingItems.length <= molgrid.listObj.page) {
-        $(`#${identifier} .m2g-pagination`).hide()
+        $(".m2g-pagination", el).hide()
     } else {
-        $(`#${identifier} .m2g-pagination`).show()
+        $(".m2g-pagination", el).show()
     }
 }
 

@@ -212,7 +212,7 @@ export class Query<T extends HTMLElement = HTMLElement> {
 }
 
 export function $<T extends HTMLElement = HTMLElement>(
-    selector: Selector<T>
+    selector: Selector<T>, root?: HTMLElement
 ): Query<T> {
-    return new Query(selector)
+    return new Query(selector, root)
 }

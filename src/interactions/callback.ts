@@ -1,7 +1,7 @@
 import type { AnyModel } from "@anywidget/types"
 import { $ } from "../query"
 import type { WidgetModel } from "../widget"
-import { RDKit } from "../initialize"
+import { loadRDKit } from "../rdkit/loader"
 
 export interface Callback {
     callbackFn: string
@@ -41,7 +41,14 @@ export function onCallbackButtonClick(
         model.save_changes()
     } else {
         // Call custom js callback.
-        const callbackFunction = new Function("data", "RDKit", "$", callback.callbackFn)
-        callbackFunction(data, RDKit, $)
+        loadRDKit().then(RDKit => {
+            const callbackFunction = new Function(
+                "data",
+                "RDKit",
+                "$",
+                callback.callbackFn
+            )
+            callbackFunction(data, RDKit, $)
+        })
     }
 }

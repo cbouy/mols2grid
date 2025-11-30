@@ -17,12 +17,12 @@ export function copyOnClick(target: HTMLElement) {
 
 // Cell click handler.
 export function initCellClick(
+    el: HTMLElement,
     model: AnyModel<WidgetModel>,
     supportSelection: boolean,
     callback: Callback
 ) {
-    const identifier = model.get("identifier")
-    $(`#${identifier} .m2g-cell`)
+    $(".m2g-cell", el)
         .off("click")
         .on("click", ev => {
             let $t = $(<HTMLElement>ev.target)

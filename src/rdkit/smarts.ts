@@ -1,6 +1,5 @@
-import { RDKit } from "../initialize"
+import { JSMol, RDKitModule } from "@rdkit/rdkit"
 import { MolGrid } from "../molgrid"
-import { JSMol } from "@rdkit/rdkit"
 import { $ } from "../query"
 
 export interface SmartsOptions {
@@ -18,26 +17,28 @@ export interface QueryResult {
 export type SmartsMatches = Map<number, QueryResult>
 
 export function smartsSearchFactory(
+    el: HTMLElement,
     molgrid: MolGrid,
     options: SmartsOptions,
     smartsMatches: SmartsMatches
 ) {
-    return (_: string, columns: Array<any>) => {
-        var smilesCol: string = columns[0]
-        var query = $<HTMLInputElement>(
-            `#${molgrid.listObj.listContainer.id} .m2g-searchbar`
-        ).elements[0].value
+    function search(smilesCol: string): void {
+        var query = $<HTMLInputElement>(".m2g-searchbar", el).elements[0].value
         if (typeof query !== "string") {
             return
         }
-        var qmol = RDKit?.get_qmol(query)
+        // a bit dodgy but we can't use the async loader here
+        // @ts-expect-error
+        const RDKit: RDKitModule = window.__mol2gridRDKitModule__
+
+        const qmol = RDKit.get_qmol(query)
         if (!qmol) {
             return
         }
         if (qmol.is_valid()) {
             molgrid.listObj.items.forEach((item: any) => {
-                var smiles = item.values()[smilesCol]
-                var mol = RDKit?.get_mol(smiles, `{"removeHs": ${options.removeHs}}`)
+                const smiles = item.values()[smilesCol]
+                const mol = RDKit.get_mol(smiles, `{"removeHs": ${options.removeHs}}`)
                 if (!mol) {
                     item.found = false
                     return
@@ -53,13 +54,16 @@ export function smartsSearchFactory(
                             if (options.singleHighlight) {
                                 var highlights = results[0]
                             } else {
-                                var highlights = <QueryResult>{ atoms: [], bonds: [] }
+                                var highlights = <QueryResult>{
+                                    atoms: [],
+                                    bonds: [],
+                                }
                                 results.forEach(function (match) {
                                     highlights["atoms"].push(...match.atoms)
                                     highlights["bonds"].push(...match.bonds)
                                 })
                             }
-                            var index: number = item.values()["mols2grid-id"]
+                            const index: number = item.values()["mols2grid-id"]
                             smartsMatches.set(index, highlights)
                         }
                     }
@@ -70,5 +74,10 @@ export function smartsSearchFactory(
             })
         }
         qmol.delete()
+    }
+
+    // wrapper for list.js
+    return (_: string, columns: Array<any>) => {
+        search(columns[0])
     }
 }

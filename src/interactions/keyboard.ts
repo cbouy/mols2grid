@@ -1,9 +1,9 @@
 import { $ } from "../query"
 
 // Keyboard actions.
-export function initKeyboard(identifier: string) {
+export function initKeyboard(el: HTMLElement) {
     // Disable scroll when pressing UP/DOWN arrows
-    $(`#${identifier} .m2g-cell`)
+    $(".m2g-cell", el)
         .off("keydown")
         .on("keydown", ev => {
             if (ev.code === "ArrowUp" || ev.code === "ArrowDown") {
@@ -11,7 +11,7 @@ export function initKeyboard(identifier: string) {
             }
         })
 
-    $(`#${identifier} .m2g-cell`)
+    $(".m2g-cell", el)
         .off("keyup")
         .on("keyup", ev => {
             let $t = $(<HTMLElement>ev.target).closest(".m2g-cell")
@@ -31,11 +31,11 @@ export function initKeyboard(identifier: string) {
                 case "ArrowUp":
                 case "ArrowDown":
                     let containerWidth = $t.parent.elements[0].offsetWidth
-                    let el = $t.elements[0]
-                    let cellWidth = el.offsetWidth + parseInt($t.css("marginLeft")) * 2
+                    let other = $t.elements[0]
+                    let cellWidth = other.offsetWidth + parseInt($t.css("marginLeft")) * 2
                     let columns = Math.round(containerWidth / cellWidth)
                     let $cells = $t.parent.children
-                    let index = $cells.elements.indexOf(el)
+                    let index = $cells.elements.indexOf(other)
                     let targetIndex =
                         ev.code === "ArrowUp"
                             ? Math.max(index - columns, 0)

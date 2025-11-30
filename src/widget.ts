@@ -6,9 +6,13 @@ import "./widget.css"
 import { type ListConfig, MolGrid } from "./molgrid"
 import { type SortOptions } from "./interactions/sort"
 import { initOnce, initOnUpdate } from "./initialize"
-import { RDKit } from "./initialize"
 import { type SmartsMatches, type SmartsOptions } from "./rdkit/smarts"
-import { type MolOptions, type DrawOptions, initMolDrawing } from "./rdkit/draw"
+import {
+    type MolOptions,
+    type DrawOptions,
+    initMolDrawing,
+    getEmptySvg,
+} from "./rdkit/draw"
 import { setupHTML } from "./html"
 import { type Callback } from "./interactions/callback"
 import { $ } from "./query"
@@ -61,7 +65,7 @@ export interface WidgetOptions {
     debug: boolean
 }
 
-function render({ model, el }: RenderProps<WidgetModel>) {
+async function render({ model, el }: RenderProps<WidgetModel>) {
     // Render the widget's view into the el HTMLElement.
     const params: WidgetOptions = JSON.parse(model.get("options"))
     let {
@@ -73,7 +77,6 @@ function render({ model, el }: RenderProps<WidgetModel>) {
         customHeader,
         debug,
     } = params
-    RDKit?.prefer_coordgen(molOptions.preferCoordGen)
     const identifier = model.get("identifier")
     el.id = `widget-${identifier}`
     const container = setupHTML(
@@ -85,7 +88,7 @@ function render({ model, el }: RenderProps<WidgetModel>) {
         css,
         customHeader
     )
-    const molgrid = createGrid(
+    const molgrid = await createGrid(
         container,
         model,
         supportSelection,
@@ -94,10 +97,10 @@ function render({ model, el }: RenderProps<WidgetModel>) {
         gridConfig,
         debug
     )
-    waitForElement(`#${identifier} .m2g-list`).then(molgrid.listObj.update)
+    molgrid.listObj.update()
 }
 
-export function createGrid(
+async function createGrid(
     el: HTMLElement,
     model: AnyModel<WidgetModel>,
     supportSelection: boolean,
@@ -105,13 +108,11 @@ export function createGrid(
     molOptions: MolOptions,
     gridConfig: GridConfig,
     debug: boolean
-) {
-    const identifier = model.get("identifier")
+): Promise<MolGrid> {
     const name = model.get("name")
-    const gridTarget = <HTMLElement>el.querySelector(`#${identifier}`)
     const smartsMatches: SmartsMatches = new Map()
     const molgrid = new MolGrid(
-        gridTarget,
+        el,
         sortOptions,
         smartsMatches,
         gridConfig.smartsOptions,
@@ -124,7 +125,7 @@ export function createGrid(
     if (gridConfig.cachedSelection) {
         molgrid.store.zipSet(...gridConfig.cachedSelection)
         molgrid.listObj.on("updated", (_: List) => {
-            $<HTMLInputElement>(`#${identifier} .m2g-cell input[checked="false"]`).each(
+            $<HTMLInputElement>('.m2g-cell input[checked="false"]', el).each(
                 el => (el.checked = false)
             )
         })
@@ -133,7 +134,7 @@ export function createGrid(
     // Add style for whole cell
     if (gridConfig.wholeCellStyle) {
         molgrid.listObj.on("updated", (_: List) => {
-            $(`#${identifier} div.m2g-cell`).each(el => {
+            $("div.m2g-cell", el).each(el => {
                 let cellstyle = el.getAttribute("data-cellstyle")
                 if (cellstyle) {
                     el.setAttribute("style", cellstyle)
@@ -148,40 +149,46 @@ export function createGrid(
         molgrid.filter(model)
     })
 
-    waitForElement(`#${identifier} .m2g-cell`).then(_ => {
-        // Initialize constant interactions
-        initOnce(
+    await waitForElement(el, ".m2g-cell")
+    // Initialize constant interactions
+    initOnce(
+        el,
+        model,
+        molgrid,
+        smartsMatches,
+        gridConfig.smilesCol,
+        gridConfig.searchCols,
+        sortOptions,
+        molOptions.preferCoordGen
+    )
+
+    // Initialize interactions that depend on the underlying data at every update
+    const placeholder = gridConfig.onTheFlyRendering
+        ? getEmptySvg(gridConfig.drawOptions)
+        : ""
+
+    molgrid.listObj.on("updated", function (_: List) {
+        initOnUpdate(
+            el,
             model,
             molgrid,
-            smartsMatches,
+            supportSelection,
             gridConfig.smilesCol,
-            gridConfig.searchCols,
-            sortOptions
+            gridConfig.callback,
+            gridConfig.tooltip,
+            gridConfig.tooltipPlacement
         )
-
-        // Initialize interactions that depend on the underlying data at every update
-        molgrid.listObj.on("updated", function (_: List) {
-            initOnUpdate(
-                model,
-                molgrid,
-                supportSelection,
+        if (gridConfig.onTheFlyRendering) {
+            initMolDrawing(
+                el,
                 gridConfig.smilesCol,
-                gridConfig.callback,
-                gridConfig.tooltip,
-                gridConfig.tooltipPlacement
+                gridConfig.drawOptions,
+                molOptions,
+                smartsMatches,
+                placeholder
             )
-            if (gridConfig.onTheFlyRendering) {
-                initMolDrawing(
-                    identifier,
-                    gridConfig.smilesCol,
-                    gridConfig.drawOptions,
-                    molOptions,
-                    smartsMatches
-                )
-            }
-        })
+        }
     })
-
     return molgrid
 }
 

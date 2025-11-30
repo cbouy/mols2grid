@@ -59,7 +59,7 @@ export class MolGrid {
             window.__mols2grid__[name] = { "store": this.store, "listObj": this.listObj }
         }
         this.sortOptions = sortOptions
-        this.smartsSearchFunc = smartsSearchFactory(this, smartsOptions, smartsMatches)
+        this.smartsSearchFunc = smartsSearchFactory(el, this, smartsOptions, smartsMatches)
     }
 
     public sort(el: HTMLSelectElement, updateOptions: boolean) {

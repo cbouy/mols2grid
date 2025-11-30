@@ -29,17 +29,18 @@ export function checkboxSort(a: any, b: any, _?: any): number | undefined {
     }
 }
 
-export function initSorting(molgrid: MolGrid, sortOptions: SortOptions) {
-    const identifier = molgrid.listObj.listContainer.id
-    const sortSelect = <HTMLSelectElement>(
-        document.querySelector(`#${identifier} .m2g-sort select`)
-    )
+export function initSorting(
+    el: HTMLElement,
+    molgrid: MolGrid,
+    sortOptions: SortOptions
+) {
+    const sortSelect = <HTMLSelectElement>el.querySelector(".m2g-sort select")
     // listen to field change
     $(sortSelect).on("change", _ => {
         molgrid.sort(sortSelect, true)
     })
     // listen to order change
-    $(`#${identifier} .m2g-order`).on("click", ev => {
+    $(".m2g-order", el).on("click", ev => {
         let $t = $(<HTMLElement>ev.target).closest(".m2g-sort")
         $t.removeClass(`m2g-arrow-${sortOptions.order}`)
         sortOptions.order = sortOptions.order === "desc" ? "asc" : "desc"

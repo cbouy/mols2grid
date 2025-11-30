@@ -15,8 +15,8 @@ export interface TooltipOptions {
 }
 
 // Show tooltip when hovering the info icon.
-export function initToolTip(identifier: string, options: TooltipOptions) {
-    $(`#${identifier} .m2g-info`)
+export function initToolTip(el: HTMLElement, options: TooltipOptions) {
+    $(".m2g-info", el)
         .off("mouseenter")
         .on("mouseenter", ev => {
             const $t = $(<HTMLElement>ev.target).closest(".m2g-cell")
@@ -27,7 +27,7 @@ export function initToolTip(identifier: string, options: TooltipOptions) {
             const referenceEl = $t.elements[0]
             const contentEl = $t.find(".m2g-tooltip").elements[0]
             const tooltip = new Tooltip(
-                identifier,
+                el,
                 <HTMLElement>ev.target,
                 referenceEl,
                 contentEl,
@@ -47,7 +47,7 @@ const placementMap = new Map([
 ])
 
 class Tooltip {
-    private identifier: string
+    private root: HTMLElement
     private triggerEl: HTMLElement
     private referenceEl: HTMLElement
     private floatingEl: HTMLElement
@@ -56,13 +56,13 @@ class Tooltip {
     private listeners: [string, () => void][]
 
     public constructor(
-        identifier: string,
+        root: HTMLElement,
         triggerEl: HTMLElement,
         referenceEl: HTMLElement,
         contentEl: HTMLElement,
         options: TooltipOptions
     ) {
-        this.identifier = identifier
+        this.root = root
         this.triggerEl = triggerEl
         this.referenceEl = referenceEl
         this.options = options || {}
@@ -70,7 +70,7 @@ class Tooltip {
         this.floatingEl = document.createElement("div")
         this.floatingEl.classList.add("m2g-popover")
         this.floatingEl.innerHTML = <string>contentEl.getAttribute("data-content")
-        $(this.referenceEl).closest(`#${identifier}`).append(this.floatingEl)
+        $(root).append(this.floatingEl)
         this.arrowEl = $(this.floatingEl).find(".arrow").elements[0]
     }
 
@@ -162,7 +162,7 @@ class Tooltip {
             this.triggerEl.addEventListener(...eventListener)
             this.listeners.push(eventListener)
         })
-        $(`#${this.identifier} .m2g-functions`).on("click", _ => {
+        $(".m2g-functions", this.root).on("click", _ => {
             this.hide(true)
         })
     }

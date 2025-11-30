@@ -5,14 +5,12 @@ import { $ } from "../query"
 import { clipboardCopy, saveSmiles, saveCSV } from "../export"
 
 export function initSelectActions(
+    el: HTMLElement,
     model: AnyModel<WidgetModel>,
     molgrid: MolGrid,
     smilesCol: string
 ) {
-    const identifier = model.get("identifier")
-    const actionSelect = <HTMLSelectElement>(
-        document.querySelector(`#${identifier} .m2g-actions select`)
-    )
+    const actionSelect = <HTMLSelectElement>el.querySelector(".m2g-actions select")
     $(actionSelect).on("change", _ => {
         switch (actionSelect.value) {
             case "select-all":
@@ -133,11 +131,12 @@ export function invertSelection(
 
 // Update selection on checkbox click.
 export function initCheckbox(
+    el: HTMLElement,
     model: AnyModel<WidgetModel>,
     molgrid: MolGrid,
     smilesCol: string
 ) {
-    $<HTMLInputElement>("input[type=checkbox]")
+    $<HTMLInputElement>("input[type=checkbox]", el)
         .off("change")
         .on("change", ev => {
             var identifier = parseInt(
