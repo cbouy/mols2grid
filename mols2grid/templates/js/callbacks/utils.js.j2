@@ -1,0 +1,18 @@
+// Marimo inserts the widget within a shadow DOM so we can't directly
+// rely on document.querySelector(identifier)
+function findWidget(identifier) {
+    const marimoWidgets = Array.from(document.querySelectorAll("marimo-anywidget"));
+    let root = document;
+    if (marimoWidgets.length) {
+        var widgetsMatchingId = marimoWidgets.filter(
+            el => el.shadowRoot.querySelector(identifier)
+        )
+        if (widgetsMatchingId.length) {
+            root = widgetsMatchingId[0].shadowRoot;
+        } else {
+            console.error(`No root found for id ${identifier}`)
+        }
+    }
+    return root.querySelector(identifier)
+}
+var mols2gridWidget = findWidget("{{ identifier }}");

@@ -1,3 +1,6 @@
+// define mols2gridWidget root
+{% include "js/callbacks/utils.js.j2" %}
+
 // Prerequisite JavaScript code.
 {{ js }}
 
@@ -20,12 +23,12 @@ const html = `
 `
 
 // Create container element where the popup will be inserted.
-if (!document.querySelector("{{ identifier }} #m2g-modal-container")) {
-    $("{{ identifier }}").append('<span id="m2g-modal-container"></span>')
+if (!mols2gridWidget.querySelector("#m2g-modal-container")) {
+    $(mols2gridWidget).append('<span id="m2g-modal-container"></span>')
 }
 
 // Insert the code inside the container element.
-const $modal = $("{{ identifier }} #m2g-modal-container")
+const $modal = $("#m2g-modal-container", mols2gridWidget)
 $modal.elements[0].innerHTML = html
 
 // Show modal.
