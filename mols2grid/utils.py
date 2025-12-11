@@ -129,3 +129,17 @@ def is_running_within_streamlit():
         return False
     else:
         return ctx is not None
+
+
+def is_running_within_marimo():
+    """
+    Function to check whether python code is run within marimo
+
+    Returns
+    -------
+    use_marimo : boolean
+        True if code is run within marimo, else False
+    """
+    import sys
+
+    return "marimo" in sys.modules

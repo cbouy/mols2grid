@@ -14,6 +14,7 @@ from mols2grid.select import register
 from mols2grid.utils import (
     callback_handler,
     env,
+    is_running_within_marimo,
     is_running_within_streamlit,
     mol_to_record,
     mol_to_smiles,
@@ -1073,8 +1074,27 @@ class MolGrid:
         -------
         view : IPython.core.display.HTML
         """
+        if is_running_within_marimo():
+            use_iframe = True
+
         use_iframe = is_jupyter or use_iframe
         doc = self.render(**kwargs, use_iframe=use_iframe)
+
+        if is_running_within_marimo():
+            import marimo as mo
+
+            if use_iframe:
+                # Render HTML in iframe.
+                iframe = env.get_template("html/iframe.html").render(
+                    width=iframe_width,
+                    height=iframe_height,
+                    allow=iframe_allow,
+                    sandbox=iframe_sandbox,
+                    doc=escape(doc),
+                )
+                return mo.Html(iframe)
+            return mo.Html(doc)
+
         if use_iframe:
             # Render HTML in iframe.
             iframe = env.get_template("html/iframe.html").render(

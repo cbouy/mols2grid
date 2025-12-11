@@ -28,6 +28,7 @@ classifiers = [
 dependencies = [
     "anywidget",
     "jinja2",
+    "marimo>=0.18.4",
     "numpy",
     "pandas",
     "rdkit",
