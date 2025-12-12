@@ -10,12 +10,13 @@ def _():
     from rdkit import Chem
     import mols2grid
     import pandas as pd
-    return Chem, mols2grid, pd
+    from io import StringIO
+    return StringIO, mols2grid, pd
 
 
 @app.cell
 def _():
-    smiles = """
+    smiles = """SMILES	NAME
     CCO	Ethanol
     CC(=O)O	Acetic_acid
     CCC	Propane
@@ -31,28 +32,21 @@ def _():
 
 
 @app.cell
-def _(Chem, pd, smiles):
-    sup = Chem.SmilesMolSupplierFromText(smiles , titleLine=False, delimiter="\t")
-    mols = [mol for mol in sup if mol]
-
-    df = pd.DataFrame(
-        {
-            "mol": mols,
-            "name": [mol.GetProp('_Name') for mol in mols]
-        }
-    )
+def _(StringIO, pd, smiles):
+    df = pd.read_csv(StringIO(smiles), delimiter="\t")
     df
     return (df,)
 
 
 @app.cell
 def _(df, mols2grid):
-    mols2grid.display(df, mol_col="mol")
+    mols2grid.display(df)
     return
 
 
 @app.cell
-def _():
+def _(mols2grid):
+    mols2grid.get_selection()
     return
 
 

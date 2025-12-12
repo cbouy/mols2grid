@@ -206,7 +206,8 @@ class MolGrid:
         widget.observe(selection_handler, names=["selection"])
 
         # Register widget JS-side.
-        display(widget)
+        if not is_running_within_marimo():
+            display(widget)
         self.widget = widget
 
     @classmethod
@@ -1092,8 +1093,8 @@ class MolGrid:
                     sandbox=iframe_sandbox,
                     doc=escape(doc),
                 )
-                return mo.Html(iframe)
-            return mo.Html(doc)
+                return mo.vstack([self.widget, mo.Html(iframe)])
+            return mo.vstack([self.widget, mo.Html(doc)])
 
         if use_iframe:
             # Render HTML in iframe.
