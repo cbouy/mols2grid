@@ -1317,11 +1317,15 @@ source = { editable = "." }
 dependencies = [
     { name = "anywidget" },
     { name = "jinja2" },
-    { name = "marimo" },
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.3.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "pandas" },
     { name = "rdkit" },
+]
+
+[package.optional-dependencies]
+marimo = [
+    { name = "marimo" },
 ]
 
 [package.dev-dependencies]
@@ -1375,11 +1379,12 @@ tests = [
 requires-dist = [
     { name = "anywidget" },
     { name = "jinja2" },
-    { name = "marimo", specifier = ">=0.18.4" },
+    { name = "marimo", marker = "extra == 'marimo'", specifier = ">=0.18.4" },
     { name = "numpy" },
     { name = "pandas" },
     { name = "rdkit" },
 ]
+provides-extras = ["marimo"]
 
 [package.metadata.requires-dev]
 build = [

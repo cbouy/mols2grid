@@ -28,7 +28,6 @@ classifiers = [
 dependencies = [
     "anywidget",
     "jinja2",
-    "marimo>=0.18.4",
     "numpy",
     "pandas",
     "rdkit",
@@ -37,6 +36,9 @@ dynamic = ["version"]
 
 [project.license]
 file = "LICENSE"
+
+[project.optional-dependencies]
+marimo = ["marimo>=0.18.4"]
 
 [dependency-groups]
 build = ["build", "watchfiles", "jupyterlab"]
