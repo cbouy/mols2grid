@@ -23,7 +23,9 @@ class selection_available:
         self.empty = is_empty
 
     def __call__(self, driver):
-        sel = driver.execute_script("return window.__mols2grid__.store.toDict();")
+        sel = driver.execute_script(
+            "return window.__mols2grid__['default'].store.toDict();"
+        )
         sel = literal_eval(sel)
         if sel == {} and self.empty:
             return True
