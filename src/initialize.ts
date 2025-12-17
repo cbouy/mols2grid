@@ -13,7 +13,7 @@ import { initToolTip } from "./interactions/tooltips"
 import { initSorting, type SortOptions } from "./interactions/sort"
 import { addResizeHandler } from "./interactions/resize"
 import { initSelectActions } from "./interactions/select"
-import { loadRDKit } from "./rdkit/loader"
+import { RDKit } from "./rdkit/loader"
 
 export function initOnce(
     el: HTMLElement,
@@ -25,9 +25,7 @@ export function initOnce(
     sortOptions: SortOptions,
     preferCoordGen: boolean
 ) {
-    loadRDKit(true).then(RDKit => {
-        RDKit.prefer_coordgen(preferCoordGen)
-    })
+    RDKit.prefer_coordgen(preferCoordGen)
     initSearch(el, molgrid, smilesCol, searchCols, smartsMatches)
     initSorting(el, molgrid, sortOptions)
     initSelectActions(el, model, molgrid, smilesCol)

@@ -1,7 +1,7 @@
 import type { JSMol } from "@rdkit/rdkit"
 import type { SmartsMatches } from "./smarts"
 import { $ } from "../query"
-import { loadRDKit } from "./loader"
+import { RDKit } from "./loader"
 
 export interface DrawOptions {
     width: number
@@ -31,7 +31,6 @@ export async function drawMol(
         return placeholder
     }
     var mol: JSMol | null
-    const RDKit = await loadRDKit()
     mol = RDKit.get_mol(smiles, `{"removeHs": ${molOptions.removeHs}}`)
     if (!mol || !mol.is_valid()) {
         return placeholder
@@ -66,20 +65,20 @@ export function initMolDrawing(
     if (!query || typeof query !== "string") {
         smartsMatches.clear()
     } else {
-        loadRDKit().then(RDKit => {
-            templateMol = RDKit.get_qmol(query)
-            if (templateMol && templateMol.is_valid()) {
-                templateMol.set_new_coords(molOptions.preferCoordGen)
-            } else {
-                templateMol = null
-                smartsMatches.clear()
-            }
-        })
+        templateMol = RDKit.get_qmol(query)
+        if (templateMol && templateMol.is_valid()) {
+            templateMol.set_new_coords(molOptions.preferCoordGen)
+        } else {
+            templateMol = null
+            smartsMatches.clear()
+        }
     }
     $(".m2g-cell:not(.m2g-phantom)", el).each(cell => {
-        var $t = $(cell)
-        var smiles = $t.find(`.data-${smilesCol}`).index(0).text
-        var index = parseInt(<string>el.getAttribute("data-mols2grid-id"))
+        const $t = $(cell)
+        const imgEl = $t.find(".data-img").elements[0]
+        imgEl.innerHTML = placeholder
+        const smiles = $t.find(`.data-${smilesCol}`).index(0).text
+        const index = parseInt(<string>cell.getAttribute("data-mols2grid-id"))
         drawMol(
             smiles,
             index,
@@ -89,7 +88,7 @@ export function initMolDrawing(
             smartsMatches,
             placeholder
         ).then(svg => {
-            $t.find(".data-img").elements[0].innerHTML = svg
+            imgEl.innerHTML = svg
         })
     })
     if (templateMol) {

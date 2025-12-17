@@ -1,4 +1,5 @@
-import { JSMol, RDKitModule } from "@rdkit/rdkit"
+import { JSMol } from "@rdkit/rdkit"
+import { RDKit } from "./loader"
 import { MolGrid } from "../molgrid"
 import { $ } from "../query"
 
@@ -27,10 +28,6 @@ export function smartsSearchFactory(
         if (typeof query !== "string") {
             return
         }
-        // a bit dodgy but we can't use the async loader here
-        // @ts-expect-error
-        const RDKit: RDKitModule = window.__mol2gridRDKitModule__
-
         const qmol = RDKit.get_qmol(query)
         if (!qmol) {
             return

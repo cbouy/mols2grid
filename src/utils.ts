@@ -24,7 +24,3 @@ export function debounce<F extends (...args: Parameters<F>) => void>(
         timeout = setTimeout(() => func(...args), waitFor)
     }
 }
-
-export function sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
-}

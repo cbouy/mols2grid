@@ -13,7 +13,6 @@ export function initSearch(
 
     // Switch search type (Text or SMARTS)
     $(".m2g-search-options .m2g-option", el).on("click", ev => {
-        console.log(ev.target)
         let $t = $(<HTMLElement>ev.target).closest(".m2g-option")
         searchType = $t.text
         $(".m2g-search-options .m2g-option.sel", el).removeClass("sel")
