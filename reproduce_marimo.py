@@ -6,11 +6,12 @@ app = marimo.App(width="medium")
 
 @app.cell
 def _():
-    import marimo as mo
-    from rdkit import Chem
-    import mols2grid
-    import pandas as pd
     from io import StringIO
+
+    import pandas as pd
+
+    import mols2grid
+
     return StringIO, mols2grid, pd
 
 
@@ -34,20 +35,18 @@ def _():
 @app.cell
 def _(StringIO, pd, smiles):
     df = pd.read_csv(StringIO(smiles), delimiter="\t")
-    df
+    df  # noqa: B018
     return (df,)
 
 
 @app.cell
 def _(df, mols2grid):
     mols2grid.display(df)
-    return
 
 
 @app.cell
 def _(mols2grid):
     mols2grid.get_selection()
-    return
 
 
 if __name__ == "__main__":

@@ -1323,11 +1323,6 @@ dependencies = [
     { name = "rdkit" },
 ]
 
-[package.optional-dependencies]
-marimo = [
-    { name = "marimo" },
-]
-
 [package.dev-dependencies]
 build = [
     { name = "build" },
@@ -1342,6 +1337,7 @@ dev = [
     { name = "ipython" },
     { name = "ipywidgets" },
     { name = "jupyterlab" },
+    { name = "marimo" },
     { name = "myst-nb" },
     { name = "poethepoet" },
     { name = "py3dmol" },
@@ -1370,6 +1366,7 @@ tests = [
     { name = "cairosvg" },
     { name = "imagehash" },
     { name = "ipython" },
+    { name = "marimo" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "selenium" },
@@ -1379,12 +1376,10 @@ tests = [
 requires-dist = [
     { name = "anywidget" },
     { name = "jinja2" },
-    { name = "marimo", marker = "extra == 'marimo'", specifier = ">=0.18.4" },
     { name = "numpy" },
     { name = "pandas" },
     { name = "rdkit" },
 ]
-provides-extras = ["marimo"]
 
 [package.metadata.requires-dev]
 build = [
@@ -1400,6 +1395,7 @@ dev = [
     { name = "ipython" },
     { name = "ipywidgets" },
     { name = "jupyterlab" },
+    { name = "marimo", specifier = ">=0.18.4" },
     { name = "myst-nb", specifier = "<1.0" },
     { name = "poethepoet", specifier = ">=0.33.0" },
     { name = "py3dmol" },
@@ -1428,6 +1424,7 @@ tests = [
     { name = "cairosvg", specifier = "~=2.5" },
     { name = "imagehash", specifier = "~=4.3" },
     { name = "ipython" },
+    { name = "marimo", specifier = ">=0.18.4" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "selenium", specifier = "~=4.11" },

@@ -681,10 +681,10 @@ class MolGrid:
         # Generate cell HTML.
         item = (
             '<div class="m2g-cell" data-mols2grid-id="0" tabindex="0">'
-            '<div class="m2g-cb-wrap">{checkbox_html}<div class="m2g-cb"></div>'
-            "{id_display_html}</div>"
-            '<div class="m2g-cell-actions">{info_btn_html}{callback_btn_html}</div>'
-            "{content}"
+            '<div class="m2g-cb-wrap">{checkbox_html}<div class="m2g-cb"></div>'  # noqa: RUF027
+            "{id_display_html}</div>"  # noqa: RUF027
+            '<div class="m2g-cell-actions">{info_btn_html}{callback_btn_html}</div>'  # noqa: RUF027
+            "{content}"  # noqa: RUF027
             "{tooltip_html}"
             "</div>"
         )
@@ -1075,26 +1075,12 @@ class MolGrid:
         -------
         view : IPython.core.display.HTML
         """
-        if is_running_within_marimo():
+        requires_marimo = is_running_within_marimo()
+        if requires_marimo:
             use_iframe = True
 
         use_iframe = is_jupyter or use_iframe
         doc = self.render(**kwargs, use_iframe=use_iframe)
-
-        if is_running_within_marimo():
-            import marimo as mo
-
-            if use_iframe:
-                # Render HTML in iframe.
-                iframe = env.get_template("html/iframe.html").render(
-                    width=iframe_width,
-                    height=iframe_height,
-                    allow=iframe_allow,
-                    sandbox=iframe_sandbox,
-                    doc=escape(doc),
-                )
-                return mo.vstack([self.widget, mo.Html(iframe)])
-            return mo.vstack([self.widget, mo.Html(doc)])
 
         if use_iframe:
             # Render HTML in iframe.
@@ -1105,6 +1091,10 @@ class MolGrid:
                 sandbox=iframe_sandbox,
                 doc=escape(doc),
             )
+            if requires_marimo:
+                import marimo as mo
+
+                return mo.vstack([self.widget, mo.Html(iframe)])
             return HTML(iframe)
         # Render HTML regularly.
         return HTML(doc)

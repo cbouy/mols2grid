@@ -37,8 +37,7 @@ dynamic = ["version"]
 [project.license]
 file = "LICENSE"
 
-[project.optional-dependencies]
-marimo = ["marimo>=0.18.4"]
+
 
 [dependency-groups]
 build = ["build", "watchfiles", "jupyterlab"]
@@ -49,6 +48,7 @@ tests = [
     "cairosvg~=2.5",
     "imagehash~=4.3",
     "selenium~=4.11",
+    "marimo>=0.18.4",
 ]
 docs = [
     "py3dmol",
