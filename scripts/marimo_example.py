@@ -5,7 +5,7 @@ app = marimo.App(width="medium")
 
 
 @app.cell
-def import_cell():
+def import_libraries():
     import mols2grid
     from mols2grid import datafiles
     from rdkit.Chem import Descriptors
@@ -14,7 +14,7 @@ def import_cell():
 
 
 @app.cell
-def make_slider(mo):
+def create_sliders(mo):
     solubility_range = mo.ui.range_slider(
         -10, 2, 0.5,
         debounce=True,show_value=True,full_width=True,
@@ -48,7 +48,13 @@ def make_slider(mo):
 
 
 @app.cell
-def make_view(Descriptors, datafiles, mols2grid):
+def load_data_and_grid(Descriptors, datafiles, mols2grid):
+    # NOTE:
+    # This cell is intentionally kept independent from the sliders.
+    # In marimo, cells are re-executed whenever any of their dependencies change.
+    # Keeping grid creation here prevents MolGrid.from_sdf(...) from being
+    # re-run on every slider update, which would reset the widget state.
+
     grid = mols2grid.MolGrid.from_sdf(datafiles.SOLUBILITY_SDF, size=(120, 100))
     df = grid.dataframe
     df["MolWt"] = df["mol"].apply(Descriptors.ExactMolWt)
@@ -60,7 +66,7 @@ def make_view(Descriptors, datafiles, mols2grid):
 
 
 @app.cell
-def display_grid_slider(df, grid, mo, molwt_range, solubility_range, view):
+def apply_filters_and_layout(df, grid, mo, molwt_range, solubility_range, view):
     filters = {
         "SOL": solubility_range.value,
         "MolWt": molwt_range.value,
