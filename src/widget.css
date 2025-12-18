@@ -1,4 +1,5 @@
-:root {
+/* :host for marimo (shadowDOM), :root for others */
+:root, :host {
     /* Updated JS side */
     --m2g-font-family: "DejaVu", sans-serif;
     --m2g-font-size: 12px;
