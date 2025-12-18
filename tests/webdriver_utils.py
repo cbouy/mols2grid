@@ -35,7 +35,7 @@ class selection_available:
 
 
 class CustomDriver(webdriver.Chrome):
-    def wait_for_img_load(self, max_delay=30, selector=".m2g-cell .data-img svg"):
+    def wait_for_img_load(self, max_delay=30, selector=".m2g-cell .data-img svg rect"):
         return WebDriverWait(self, max_delay).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, selector))
         )
@@ -135,21 +135,34 @@ class CustomDriver(webdriver.Chrome):
                     branch.append(subbranch)
                     cls._tree_to_list(node.childNodes, subbranch)
 
-    def get_tooltip_content(
-        self, selector=".m2g-cell .m2g-info", content_selector="div.m2g-popover"
-    ):
-        ActionChains(self).click(self.find_by_css_selector(selector)).perform()
-        tooltip = self.find_by_css_selector(content_selector)
+    def get_tooltip_content(self, **kwargs):
+        tooltip = self.find_tooltip(**kwargs)
         content = tooltip.get_attribute("innerHTML")
         doc = minidom.parseString(f"<body>{content}</body>")
         data = []
         self._tree_to_list(doc.childNodes[0].childNodes, data)
         return data
 
+    def find_tooltip(
+        self,
+        trigger_selector=".m2g-cell .m2g-info",
+        tooltip_selector="div.m2g-popover",
+        pause=0.2,
+    ):
+        el = self.find_clickable(By.CSS_SELECTOR, trigger_selector)
+        ActionChains(self).move_to_element(el).pause(pause).click().perform()
+        # selenium is a bit flaky with move_to_element,
+        # best to trigger through JS as well
+        self.execute_script(
+            'var hover = new Event("mouseenter"); '
+            f'document.querySelector("{trigger_selector}").dispatchEvent(hover);'
+        )
+        return self.find_by_css_selector(tooltip_selector)
+
     def trigger_callback(self, selector=".m2g-cell .m2g-callback", pause=0.2):
         self.wait_for_img_load()
         el = self.find_clickable(By.CSS_SELECTOR, selector)
-        (ActionChains(self).move_to_element(el).pause(pause).click().perform())
+        ActionChains(self).move_to_element(el).pause(pause).click().perform()
 
     def click_checkbox(self, is_empty=False):
         self.find_clickable(By.CSS_SELECTOR, ".m2g-cb").click()

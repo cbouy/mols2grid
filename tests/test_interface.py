@@ -60,10 +60,10 @@ def driver():
     options.add_argument("--enable-automation")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--start-maximized")
     driver = CustomDriver(options=options)
     driver.set_page_load_timeout(10)
     driver.set_window_size(1920, 1080)
+    driver.maximize_window()
     yield driver
     driver.quit()
 
@@ -248,7 +248,7 @@ def test_selection_check_uncheck_invert(driver: CustomDriver, html_doc):
 
 @pytest.mark.parametrize("prerender", [True, False])
 def test_image_size(driver: CustomDriver, df, prerender):
-    size = expected_size = (200, 300)
+    size = expected_size = (220, 200)
     grid = get_grid(df, size=size, prerender=prerender)
     doc = get_doc(
         grid,
@@ -483,8 +483,8 @@ def test_style(driver: CustomDriver, grid):
     assert el.value_of_css_property("color") == "rgba(255, 0, 0, 1)"
     el = driver.find_by_css_selector(".m2g-cell .data-_Name")
     assert el.value_of_css_property("color") == "rgba(0, 0, 255, 1)"
-    ActionChains(driver).click(driver.find_by_css_selector(".m2g-info")).perform()
-    el = driver.find_by_css_selector("div.m2g-popover span")
+    tooltip = driver.find_tooltip()
+    el = tooltip.find_element(By.TAG_NAME, "span")
     assert el.value_of_css_property("color") == "rgba(0, 0, 255, 1)"
 
 
@@ -713,7 +713,7 @@ def test_static_template(driver: CustomDriver, sdf_path):
     el = driver.find_by_css_selector("td.col-0")
     assert el.find_element(By.CLASS_NAME, "data-mols2grid-id").text == "8"
     tooltip = driver.get_tooltip_content(
-        selector=".m2g-cell-0", content_selector="div.popover-body"
+        trigger_selector=".m2g-cell-0", tooltip_selector="div.popover-body"
     )[:-1]
     assert tooltip == [
         ["strong", ["_Name"]],
