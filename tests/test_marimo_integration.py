@@ -63,3 +63,68 @@ def test_display_in_marimo():
 
         # Ensure the result is the return value of marimo.vstack
         assert result == mock_vstack.return_value
+
+
+@pytest.mark.usefixtures("mock_marimo_module")
+def test_get_selection_state_inside_marimo():
+    df = pd.DataFrame({"SMILES": ["C"]})
+    mg = MolGrid(df, smiles_col="SMILES")
+
+    # Mock marimo.state
+    mock_get_state = MagicMock()
+    mock_set_state = MagicMock()
+    with patch("marimo.state", return_value=(mock_get_state, mock_set_state)) as mock_state:
+        # Call get_selection_state
+        state_getter = mg.get_selection_state()
+
+        # Check if marimo.state was called with empty list
+        mock_state.assert_called_once_with([])
+
+        # Check if _marimo_hooked is set
+        assert getattr(mg.widget, "_marimo_hooked", False) is True
+
+        # Verify return value
+        assert state_getter == mock_get_state
+
+
+def test_get_selection_state_outside_marimo():
+    df = pd.DataFrame({"SMILES": ["C"]})
+    mg = MolGrid(df, smiles_col="SMILES")
+
+    # Ensure marimo is not in sys.modules
+    with patch.dict(sys.modules):
+        if "marimo" in sys.modules:
+            del sys.modules["marimo"]
+
+        with pytest.raises(RuntimeError, match="only available in a marimo notebook"):
+            mg.get_selection_state()
+
+
+@pytest.mark.usefixtures("mock_marimo_module")
+def test_selection_state_update_logic():
+    df = pd.DataFrame({"SMILES": ["C"]})
+    mg = MolGrid(df, smiles_col="SMILES")
+
+    mock_set_state = MagicMock()
+    with patch("marimo.state", return_value=(MagicMock(), mock_set_state)):
+        # Inspect the observe call to capture the callback
+        with patch.object(mg.widget, "observe") as mock_observe:
+            mg.get_selection_state()
+
+            # Verify observe was called
+            assert mock_observe.called
+            args, _ = mock_observe.call_args
+            callback = args[0]
+
+            # Simulate event with valid selection
+            # The widget returns a string representation of a dict
+            new_selection = {1: "C", 2: "CC"}
+            event = {"new": str(new_selection)}
+
+            callback(event)
+            mock_set_state.assert_called_with([1, 2])
+
+            # Test invalid input (should pass silently)
+            mock_set_state.reset_mock()
+            callback({"new": "invalid json"})
+            mock_set_state.assert_not_called()

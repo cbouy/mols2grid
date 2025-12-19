@@ -1,3 +1,4 @@
+import ast
 import json
 import warnings
 from base64 import b64encode
@@ -198,7 +199,12 @@ class MolGrid:
                 register._update_current_grid(name)
         else:
             self._cached_selection = {}
-            register._init_grid(name)
+            if is_running_within_marimo():
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    register._init_grid(name)
+            else:
+                register._init_grid(name)
 
         # Create widget.
         widget = MolGridWidget(grid_id=name, selection=str(self._cached_selection))
@@ -801,6 +807,36 @@ class MolGrid:
         return self.dataframe.loc[self.dataframe["mols2grid-id"].isin(sel)].drop(
             columns=self._extra_columns
         )
+
+    def get_selection_state(self):
+        """Returns a marimo state object containing the list of selected indices.
+        Only available when running in marimo.
+
+        Returns
+        -------
+        getter
+            A getter function for the selection state.
+            Calling it with no arguments returns the current list of selected IDs.
+        """
+        if not is_running_within_marimo():
+            raise RuntimeError("This method is only available in a marimo notebook.")
+
+        import marimo as mo
+
+        get_state, set_state = mo.state([])
+
+        def _on_change(change):
+            try:
+                sel = ast.literal_eval(change["new"])
+                set_state(list(sel.keys()))
+            except (ValueError, SyntaxError):
+                pass
+
+        if not getattr(self.widget, "_marimo_hooked", False):
+            self.widget.observe(_on_change, names=["selection"])
+            self.widget._marimo_hooked = True
+
+        return get_state
 
     def filter(self, mask):
         """Filters the grid using a mask (boolean array).
