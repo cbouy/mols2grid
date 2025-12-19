@@ -344,6 +344,18 @@ h4 {
 .mols2grid-anywidget .m2g-dropdown.m2g-actions select {
     opacity: 0;
     width: var(--m2g-h);
+    @supports (appearance: base-select) {
+        &, &::picker(select) {
+            appearance: base-select;
+        }
+        &::picker(select) {
+            padding: 0;
+            border: var(--m2g-border);
+            border-radius: var(--m2g-br);
+            font-size: var(--m2g-font-size);
+            font-family: var(--m2g-font-family);
+        }
+    }
 }
 .mols2grid-anywidget .m2g-dropdown.m2g-actions .m2g-icon {
     width: var(--m2g-h);
