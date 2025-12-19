@@ -106,25 +106,25 @@ def test_selection_state_update_logic():
     mg = MolGrid(df, smiles_col="SMILES")
 
     mock_set_state = MagicMock()
-    with patch("marimo.state", return_value=(MagicMock(), mock_set_state)):
+    with patch("marimo.state", return_value=(MagicMock(), mock_set_state)), \
+            patch.object(mg.widget, "observe") as mock_observe:
         # Inspect the observe call to capture the callback
-        with patch.object(mg.widget, "observe") as mock_observe:
-            mg.get_selection_state()
+        mg.get_selection_state()
 
-            # Verify observe was called
-            assert mock_observe.called
-            args, _ = mock_observe.call_args
-            callback = args[0]
+        # Verify observe was called
+        assert mock_observe.called
+        args, _ = mock_observe.call_args
+        callback = args[0]
 
-            # Simulate event with valid selection
-            # The widget returns a string representation of a dict
-            new_selection = {1: "C", 2: "CC"}
-            event = {"new": str(new_selection)}
+        # Simulate event with valid selection
+        # The widget returns a string representation of a dict
+        new_selection = {1: "C", 2: "CC"}
+        event = {"new": str(new_selection)}
 
-            callback(event)
-            mock_set_state.assert_called_with([1, 2])
+        callback(event)
+        mock_set_state.assert_called_with([1, 2])
 
-            # Test invalid input (should pass silently)
-            mock_set_state.reset_mock()
-            callback({"new": "invalid json"})
-            mock_set_state.assert_not_called()
+        # Test invalid input (should pass silently)
+        mock_set_state.reset_mock()
+        callback({"new": "invalid json"})
+        mock_set_state.assert_not_called()
