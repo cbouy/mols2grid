@@ -51,8 +51,8 @@ def create_grid(SOLUBILITY_SDF, mols2grid):
     # Keeping grid creation here prevents MolGrid.from_sdf(...) from being
     # re-run on every slider update, which would reset the widget state.
     grid = mols2grid.MolGrid.from_sdf(SOLUBILITY_SDF, size=(120, 100))
-    get_selection_ids = grid.get_marimo_selection()
     view = grid.display(n_items_per_page=12, selection=True)
+    get_selection_ids = grid.get_marimo_selection()
     return get_selection_ids, grid, view
 
 
@@ -95,7 +95,6 @@ def display_selection(get_selection_ids, mo, mol_to_svg, results):
         freeze_columns_right=["SOL"],
         label="Try selecting molecules from the grid above!!",
     )
-
     table  # noqa: B018
 
 

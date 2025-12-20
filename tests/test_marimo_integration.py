@@ -6,6 +6,7 @@ import pytest
 
 from mols2grid import MolGrid
 from mols2grid.utils import is_running_within_marimo
+from mols2grid.widget import MolGridWidget
 
 
 @pytest.fixture
@@ -34,45 +35,34 @@ def grid_fixture():
 
 
 @pytest.mark.usefixtures("mock_marimo_module")
-def test_init_in_marimo_does_not_display():
-    df = pd.DataFrame({"SMILES": ["C"]})
-
-    # Mock IPython.display.display which is imported as display in molgrid.py
-    # We need to patch it where it is used, i.e., in mols2grid.molgrid
-    with patch("mols2grid.molgrid.display") as mock_display:
-        _ = MolGrid(df, smiles_col="SMILES")
-        mock_display.assert_not_called()
-
-
-@pytest.mark.usefixtures("mock_marimo_module")
 def test_display_in_marimo(grid_fixture):
     _, mg = grid_fixture
 
     # Mock marimo.Html and marimo.vstack
-    with patch("marimo.Html") as mock_html, patch("marimo.vstack") as mock_vstack:
+    with patch("marimo.ui.anywidget") as mock_anywidget:
         result = mg.display()
 
-        # Verify that an iframe is being rendered inside Html
-        mock_html.assert_called_once()
-        args, _ = mock_html.call_args
-        html_content = args[0]
-        assert "<iframe" in html_content
-        assert 'class="mols2grid-iframe"' in html_content
-
-        # Verify vstack was called with [widget, html]
-        mock_vstack.assert_called_once()
-        vstack_args = mock_vstack.call_args[0][0]
-        assert len(vstack_args) == 2
-        assert vstack_args[0] == mg.widget
-        assert vstack_args[1] == mock_html.return_value
+        # Verify that the widget was wrapped with marimo's UI
+        mock_anywidget.assert_called_once()
+        args, _ = mock_anywidget.call_args
+        widget = args[0]
+        assert isinstance(widget, MolGridWidget)
 
         # Ensure the result is the return value of marimo.vstack
-        assert result == mock_vstack.return_value
+        assert result == mock_anywidget.return_value
+
+
+@pytest.mark.usefixtures("mock_marimo_module")
+def test_get_marimo_selection_before_rendering_raises(grid_fixture):
+    _, mg = grid_fixture
+    with pytest.raises(RuntimeError, match="run the `display` method first"):
+        mg.get_marimo_selection()
 
 
 @pytest.mark.usefixtures("mock_marimo_module")
 def test_get_selection_state_inside_marimo(grid_fixture):
     _, mg = grid_fixture
+    mg.render()
 
     # Mock marimo.state
     mock_get_state = MagicMock()
@@ -108,6 +98,7 @@ def test_get_selection_state_outside_marimo(grid_fixture):
 @pytest.mark.usefixtures("mock_marimo_module")
 def test_selection_state_update_logic(grid_fixture):
     _, mg = grid_fixture
+    mg.render()
 
     mock_set_state = MagicMock()
     with (

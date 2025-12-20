@@ -804,6 +804,10 @@ class MolGrid:
         """
         if not is_running_within_marimo():
             raise RuntimeError("This method is only available in a marimo notebook.")
+        if not hasattr(self, "widget"):
+            raise RuntimeError(
+                "Please run the `display` method first to render the underlying widget"
+            )
 
         import marimo as mo
 
@@ -1095,12 +1099,16 @@ class MolGrid:
         -------
         view : IPython.core.display.HTML
         """
-        use_iframe = is_jupyter if use_iframe is None else use_iframe
         obj = self.render(**kwargs, use_iframe=use_iframe)
-
+        # if widget
         if not isinstance(obj, str):
+            if is_running_within_marimo():
+                import marimo as mo
+
+                return mo.ui.anywidget(obj)
             return obj
 
+        use_iframe = is_jupyter if use_iframe is None else use_iframe
         if not use_iframe:
             return HTML(obj)
 
