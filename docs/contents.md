@@ -33,6 +33,8 @@ pip install mols2grid
 
 mols2grid is mainly meant to be used in notebooks (Jupyter notebooks, Jupyter Lab, and Google Colab) but it can also be used as a standalone HTML page opened with your favorite web browser, or embedded in a Streamlit app.
 
+Since v2.2.0, mols2grid is also compatible with [Marimo](https://marimo.io/). An example is available in [`scripts/marimo_example.py`](https://github.com/cbouy/mols2grid/blob/master/scripts/marimo_example.py).
+
 Since Streamlit doesn't seem to support ipywidgets yet, some features aren't functional: retrieving the selection from Python (you can still export it from the GUI) and using Python callbacks.
 
 <img alt="knime logo" align="left" style="padding:6px" src="https://www.knime.com/sites/default/files/favicons/favicon-32x32.png"/>
@@ -84,6 +86,7 @@ Feel free to open a pull request if you'd like your snippets to be added to this
 * [@fredrikw](https://github.com/fredrikw) (contributor)
 * [@JustinChavez](https://github.com/JustinChavez) (contributor)
 * [@hadim](https://github.com/hadim) (conda feedstock maintainer)
+* [@N283T](https://github.com/N283T) (contributor)
 
 # 🎓 Citing
 ---
