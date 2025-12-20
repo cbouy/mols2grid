@@ -1,6 +1,8 @@
 import warnings
 from ast import literal_eval
 
+from mols2grid.utils import is_running_within_marimo
+
 
 class SelectionRegister:
     """Register for grid selections
@@ -21,7 +23,7 @@ class SelectionRegister:
 
     def _init_grid(self, name):
         overwrite = self.SELECTIONS.get(name, False)
-        if overwrite:
+        if overwrite and not is_running_within_marimo():
             warnings.warn(
                 f"Overwriting non-empty {name!r} grid selection: {overwrite!s}",
                 stacklevel=2,

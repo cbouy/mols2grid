@@ -118,7 +118,6 @@ extend-exclude = [
     ".vscode",
     "build",
     "site-packages",
-    "scripts/marimo_example.py",
 ]
 
 [tool.ruff.lint]

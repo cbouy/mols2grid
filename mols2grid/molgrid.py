@@ -199,12 +199,7 @@ class MolGrid:
                 register._update_current_grid(name)
         else:
             self._cached_selection = {}
-            if is_running_within_marimo():
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore")
-                    register._init_grid(name)
-            else:
-                register._init_grid(name)
+            register._init_grid(name)
 
         # Create widget.
         widget = MolGridWidget(grid_id=name, selection=str(self._cached_selection))
@@ -808,7 +803,7 @@ class MolGrid:
             columns=self._extra_columns
         )
 
-    def get_selection_state(self):
+    def get_marimo_selection(self):
         """Returns a marimo state object containing the list of selected indices.
         Only available when running in marimo.
 
