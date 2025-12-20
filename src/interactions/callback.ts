@@ -40,6 +40,12 @@ export function onCallbackButtonClick(
         model.set("callback_kwargs", JSON.stringify(data))
         model.save_changes()
     } else {
+        // TODO:
+        // - in initOnce, create webworker code, instance, and run function (like Gemini)
+        // - possibly assign all the above to a new object
+        // - here, use that run function directly
+        // - the worker should be manually cleaned up on widget destruction
+
         // Call custom js callback.
         const callbackFunction = new Function("data", "RDKit", "$", callback.callbackFn)
         callbackFunction(data, RDKit, $)
