@@ -7,14 +7,6 @@ from mols2grid.molgrid import MolGrid
 from mols2grid.select import get_selection, list_grids
 from mols2grid.utils import is_running_within_streamlit, sdf_to_dataframe
 
-try:
-    from google.colab import output
-except (ImportError, ModuleNotFoundError):
-    pass
-else:
-    output.enable_custom_widget_manager()
-    del output
-
 if is_running_within_streamlit():
     import os
 
