@@ -21,7 +21,7 @@ def test_clear_register():
 
 
 def test_update_current_grid(smiles_records):
-    mg.MolGrid(smiles_records, name="bar")
+    mg.MolGrid(smiles_records, name="bar").display()
     assert register.current_selection == "bar"
 
 

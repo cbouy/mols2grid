@@ -43,7 +43,6 @@ export interface CSSOptions {
 export interface GridConfig {
     listConfig: ListConfig
     smilesCol: string
-    cachedSelection: [number[], string[]]
     wholeCellStyle: boolean
     tooltip: boolean
     tooltipPlacement: Placement | null
@@ -120,8 +119,16 @@ function createGrid(
     )
 
     // Restore checkbox state
-    if (gridConfig.cachedSelection) {
-        molgrid.store.zipSet(...gridConfig.cachedSelection)
+    const selection: object = JSON.parse(model.get("selection"))
+    const cachedSelection: [number[], string[]] = [[], []]
+    if (Object.keys(selection).length) {
+        Object.entries(selection).forEach(x => {
+            cachedSelection[0].push(Number(x[0]))
+            cachedSelection[1].push(x[1])
+        })
+    }
+    if (cachedSelection.length) {
+        molgrid.store.zipSet(...cachedSelection)
         molgrid.listObj.on("updated", (_: List) => {
             $<HTMLInputElement>('.m2g-cell input[checked="false"]', el).each(
                 el => (el.checked = false)

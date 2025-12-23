@@ -120,7 +120,7 @@ class MolGrid:
         default to avoid a systematic error when using ``MolGrid.from_sdf``.
     """
 
-    def __init__(  # noqa: PLR0912
+    def __init__(
         self,
         df,
         smiles_col="SMILES",
@@ -194,17 +194,7 @@ class MolGrid:
         self._grid_id = name
         self._identifier = f"m2g-{uuid4()}"
         self._json_default = "🤷‍♂️"
-        if cache_selection:
-            try:
-                self._cached_selection = register.get_selection(name)
-            except KeyError:
-                self._cached_selection = {}
-                register._init_grid(name)
-            else:
-                register._update_current_grid(name)
-        else:
-            self._cached_selection = {}
-            register._init_grid(name)
+        self.cache_selection = cache_selection
 
     @classmethod
     def from_mols(cls, mols, **kwargs):
@@ -645,11 +635,18 @@ class MolGrid:
             df[col] = df[col].apply(func)
 
         # Add checkboxes.
+        cached_selection = {}
         if selection:
-            if self._cached_selection:
+            try:
+                cached_selection = register.get_selection(self._grid_id)
+            except KeyError:
+                register._init_grid(self._grid_id)
+            else:
+                register._update_current_grid(self._grid_id)
+            if self.cache_selection:
                 df["cached_checkbox"] = False
                 df.loc[
-                    df["mols2grid-id"].isin(self._cached_selection.keys()),
+                    df["mols2grid-id"].isin(cached_selection.keys()),
                     "cached_checkbox",
                 ] = True
                 final_columns += ["cached_checkbox"]
@@ -710,6 +707,7 @@ class MolGrid:
 
         widget = MolGridWidget(
             identifier=self._identifier,
+            selection=json.dumps(cached_selection) if self.cache_selection else "{}",
             options=json.dumps(
                 {
                     "supportSelection": selection,
@@ -730,11 +728,6 @@ class MolGrid:
                             "data": df.to_dict("records"),
                         },
                         "smilesCol": smiles,
-                        "cachedSelection": (
-                            list(zip(*self._cached_selection.items(), strict=True))
-                            if self._cached_selection
-                            else False
-                        ),
                         "wholeCellStyle": whole_cell_style,
                         "tooltip": tooltip,
                         "tooltipPlacement": (

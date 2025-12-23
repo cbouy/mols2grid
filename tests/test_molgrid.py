@@ -1,4 +1,5 @@
 import json
+from ast import literal_eval
 from types import SimpleNamespace
 
 import pytest
@@ -118,7 +119,8 @@ def test_moldrawoptions_as_kwargs(small_df):
 
 
 def test_update_current_grid_on_init(small_df):
-    get_grid(small_df, name="foo")
+    grid = get_grid(small_df, name="foo")
+    grid.display()
     assert register.current_selection == "foo"
     assert register.get_selection("foo") is register.get_selection()
     assert register.get_selection() == {}
@@ -228,7 +230,9 @@ def test_mol_to_img_png():
 
 def test_get_selection(small_df):
     grid = MolGrid(small_df, mol_col="mol", name="grid")
+    grid.display()
     other = MolGrid(small_df, mol_col="mol", name="other")
+    other.display()
     event = SimpleNamespace(new='{0: ""}')
     register.selection_updated("grid", event)
     assert register.current_selection == "grid"
@@ -273,23 +277,32 @@ def test_integration_static(grid_prerendered, kwargs):
 
 def test_cache_selection(small_df):
     grid = get_grid(small_df, name="cache")
+    grid.display()
     event = SimpleNamespace(new='{0: "CCO"}')
     register.selection_updated("cache", event)
     grid = get_grid(small_df, name="cache", cache_selection=True)
-    assert hasattr(grid, "_cached_selection")
-    assert register.get_selection("cache") == grid._cached_selection
+    grid.display()
+    assert register.get_selection("cache") == {
+        int(k): v for k, v in literal_eval(grid.widget.selection).items()
+    }
 
 
 def test_cache_no_init(small_df):
     grid = get_grid(small_df, name="new_cache", cache_selection=True)
-    assert hasattr(grid, "_cached_selection")
-    assert grid._cached_selection == {}
+    grid.display()
+    assert grid.widget.selection == "{}"
     assert "new_cache" in register.list_grids()
 
 
 def test_no_cache_selection(small_df):
-    grid = get_grid(small_df, name="no_cache", cache_selection=False)
-    assert grid._cached_selection == {}
+    grid = get_grid(small_df, name="no_cache")
+    grid.display()
+    event = SimpleNamespace(new='{0: "CCO"}')
+    register.selection_updated("no_cache", event)
+    assert register.get_selection("no_cache")
+    other = get_grid(small_df, name="no_cache", cache_selection=False)
+    other.display()
+    assert other.widget.selection == "{}"
     assert "no_cache" in register.list_grids()
 
 
