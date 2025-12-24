@@ -176,7 +176,7 @@ def test_selection_click(driver: CustomDriver, html_doc):
     driver.wait_for_img_load()
     sel = driver.click_checkbox()
     assert sel == {0: "CCC(C)CC"}
-    register._clear()
+    register.clear()
 
 
 def test_export_csv(driver: CustomDriver, html_doc):
@@ -204,11 +204,11 @@ def test_export_csv(driver: CustomDriver, html_doc):
     )
     assert content == expected
     csv_file.unlink()
-    register._clear()
+    register.clear()
 
 
 def test_selection_with_cache_check_and_uncheck(driver: CustomDriver, df):
-    register._init_grid("cached_sel")
+    register.add_grid("cached_sel")
     event = SimpleNamespace(new='{0: "CCC(C)CC"}')
     register.selection_updated("cached_sel", event)
     grid = get_grid(df, name="cached_sel", cache_selection=True)
@@ -219,7 +219,7 @@ def test_selection_with_cache_check_and_uncheck(driver: CustomDriver, df):
     assert sel == {0: "CCC(C)CC"}
     empty_sel = driver.click_checkbox(is_empty=True)
     assert empty_sel is True
-    register._clear()
+    register.clear()
 
 
 def test_selection_check_uncheck_invert(driver: CustomDriver, html_doc):
@@ -243,7 +243,7 @@ def test_selection_check_uncheck_invert(driver: CustomDriver, html_doc):
     driver.grid_action("invert")
     sel = driver.wait_for_selection(is_empty=False)
     assert len(sel) == 29
-    register._clear()
+    register.clear()
 
 
 @pytest.mark.parametrize("prerender", [True, False])

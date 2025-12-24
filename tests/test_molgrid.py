@@ -238,7 +238,7 @@ def test_get_selection(small_df):
     assert register.current_selection == "grid"
     assert grid.get_selection().equals(small_df.head(1))
     assert other.get_selection().equals(small_df.head(0))  # empty dataframe
-    register._clear()
+    register.clear()
 
 
 def test_save(grid, tmp_path):
