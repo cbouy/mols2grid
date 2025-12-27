@@ -1,8 +1,9 @@
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
 
-from mols2grid import MolGrid, datafiles, sdf_to_dataframe
+from mols2grid import MolGrid, datafiles, read_mols_to_df
 
 
 @pytest.fixture(scope="module")
@@ -22,7 +23,7 @@ def smiles_records():
 
 @pytest.fixture(scope="module")
 def df(sdf_path):
-    return sdf_to_dataframe(sdf_path).head(30)
+    return read_mols_to_df(sdf_path).head(30)
 
 
 @pytest.fixture(scope="module")
@@ -43,3 +44,11 @@ def grid(df):
 @pytest.fixture(scope="module")
 def mols(small_df):  # noqa: FURB118, RUF100
     return small_df["mol"]
+
+
+@pytest.fixture(scope="session", autouse=True)
+def m2g_setenv() -> Iterator[None]:
+    sessionpatch = pytest.MonkeyPatch()
+    sessionpatch.setenv("M2G_DEBUG", "1")
+    yield
+    sessionpatch.undo()

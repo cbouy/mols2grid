@@ -1,0 +1,8 @@
+var name = {{ grid_id | tojson }};
+var listObj = window.__mols2grid__[name]["listObj"];
+if (typeof listObj !== "undefined") {
+    var mask = {{ mask }};
+    listObj.filter(function (item) {
+        return mask[item.values()["mols2grid-id"]];
+    });
+}

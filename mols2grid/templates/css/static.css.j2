@@ -1,4 +1,4 @@
-/**
+/*
  * General styling
  */
 body {
@@ -44,7 +44,7 @@ body.m2g-inside-iframe {
 }
 
 
-/**
+/*
  * Popover
  * - - -
  * Note: this is a bootstrap variable which is not namespaced.
@@ -64,7 +64,7 @@ body.m2g-inside-iframe {
 .popover[x-placement] h3 {
     margin: 0;
 }
-.popover[x-placement] .arrow {
+.popover[x-placement]>.arrow {
     width: 10px;
     height: 10px;
     background: #fff;
@@ -74,23 +74,98 @@ body.m2g-inside-iframe {
     transform-origin: 5px 5px;
     clip-path: polygon(0 0, 100% 0, 100% 100%);
 }
-.popover[x-placement='left'] .arrow {
+.popover[x-placement='left']>.arrow {
     transform: rotate(45deg);
     top: 50%;
     right: -5px;
 }
-.popover[x-placement='right'] .arrow {
+.popover[x-placement='right']>.arrow {
     transform: rotate(-135deg);
     top: 50%;
     left: -5px;
 }
-.popover[x-placement='top'] .arrow {
+.popover[x-placement='top']>.arrow {
     transform: rotate(135deg);
     left: 50%;
     bottom: -5px;
 }
-.popover[x-placement='bottom'] .arrow {
+.popover[x-placement='bottom']>.arrow {
     transform: rotate(-45deg);
     left: 50%;
     top: -5px;
+}
+
+/* Note: #mols2grid is the table element */
+#mols2grid {
+    border-collapse: {{ 'collapse' if gap == 0 else 'separate' }};
+    border-spacing: {{ gap }}px;
+    /* Compensate for gap so table stays aligned with content above */
+    margin: {{ 0 if gap == 0 else -gap }}px;
+}
+#mols2grid, tr, td {
+    border: none;
+}
+#mols2grid tr {
+    page-break-inside: avoid !important;
+}
+
+/* Cell */
+#mols2grid td {
+    border: {{ border }};
+    text-align: {{ textalign }};
+    vertical-align: top;
+    max-width: {{ cell_width }}px;
+    width: {{ cell_width }}px;
+    font-family: {{ fontfamily }};
+    font-size: {{ fontsize }};
+    margin: 0;
+    padding: {{ pad }}px;
+    position: relative;
+}
+
+/* Call focus state */
+#mols2grid td:focus-within,
+#mols2grid td:focus {
+    outline: solid 2px #555;
+    border-color: transparent;
+}
+
+/* ID */
+#mols2grid .data-mols2grid-id {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 5px;
+}
+
+/* Tooltip margin */
+/* Adjusted so it plays well with the extruded outline */
+.popover[x-placement] {
+    margin: 1px 2px 2px 1px;
+}
+
+
+#mols2grid td div img {
+    max-width: {{ image_width }}px;
+    width: {{ image_width }}px;
+    height: auto;
+    padding: 0;
+}
+
+.m2g-copy-blink {
+    animation: m2g-blink 150ms 3;
+}
+@keyframes m2g-blink {
+    0% {
+        opacity: 1;
+    }
+    49% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 0;
+    }
 }

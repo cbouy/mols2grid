@@ -8,24 +8,24 @@ from mols2grid.select import register
 
 @pytest.fixture(autouse=True)
 def clear_register_between_tests():
-    register._clear()
-    register._init_grid("foo")
+    register.clear()
+    register.add_grid("foo")
     yield
-    register._clear()
+    register.clear()
 
 
 def test_clear_register():
-    register._clear()
-    assert not hasattr(register, "current_selection")
+    register.clear()
+    assert register.current_selection is None
     assert register.SELECTIONS == {}
 
 
 def test_update_current_grid(smiles_records):
-    mg.MolGrid(smiles_records, name="bar")
+    mg.MolGrid(smiles_records, name="bar").display()
     assert register.current_selection == "bar"
 
 
-def test_init_grid():
+def test_add_grid():
     assert "foo" in register.SELECTIONS
     assert register.current_selection == "foo"
 
@@ -36,7 +36,7 @@ def test_overwrite_warning():
     with pytest.warns(
         UserWarning, match="Overwriting non-empty 'foo' grid selection: {0: 'C'}"
     ):
-        register._init_grid("foo")
+        register.add_grid("foo")
     assert register.get_selection() == {}
 
 
@@ -52,7 +52,7 @@ def test_update_and_get_selection():
 
 def test_list_grids():
     assert register.list_grids() == ["foo"]
-    register._init_grid("bar")
+    register.add_grid("bar")
     assert register.list_grids() == ["foo", "bar"]
-    register._init_grid("foo")
+    register.add_grid("foo")
     assert register.list_grids() == ["foo", "bar"]

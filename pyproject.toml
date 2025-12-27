@@ -3,16 +3,8 @@ name = "mols2grid"
 description = "Interactive 2D small molecule viewer"
 readme = "README.md"
 requires-python = ">=3.10"
-authors = [
-    { name = "Cédric Bouysset", email = "cedric@bouysset.net" },
-]
-keywords = [
-    "cheminformatics",
-    "chemistry",
-    "jupyter",
-    "science",
-    "widgets",
-]
+authors = [{ name = "Cédric Bouysset", email = "cedric@bouysset.net" }]
+keywords = ["cheminformatics", "chemistry", "jupyter", "science", "widgets"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Framework :: Jupyter",
@@ -27,16 +19,17 @@ classifiers = [
 ]
 dependencies = [
     "anywidget",
+    "ipykernel>=6.0.0",
     "jinja2",
     "numpy",
     "pandas",
     "rdkit",
+    "universal-pathlib>=0.3.7",
 ]
 dynamic = ["version"]
 
 [project.license]
 file = "LICENSE"
-
 
 
 [dependency-groups]
@@ -50,6 +43,7 @@ tests = [
     "selenium~=4.11",
     "marimo>=0.18.4",
 ]
+typing = ["mypy", "rdkit>=2024.09.1", "pandas-stubs"]
 docs = [
     "py3dmol",
     "ipywidgets",
@@ -66,6 +60,7 @@ dev = [
     "poethepoet>=0.33.0",
     { include-group = "build" },
     { include-group = "tests" },
+    { include-group = "typing" },
     { include-group = "docs" },
 ]
 
@@ -85,11 +80,7 @@ path = "mols2grid/_version.py"
 
 [tool.hatch.build]
 only-packages = true
-artifacts = [
-    "mols2grid/templates/*",
-    "mols2grid/static/*",
-    "mols2grid/data/*"
-]
+artifacts = ["mols2grid/templates/*", "mols2grid/static/*", "mols2grid/data/*"]
 
 [tool.hatch.build.hooks.jupyter-builder]
 build-function = "hatch_jupyter_builder.npm_builder"
@@ -106,9 +97,7 @@ default-groups = ["dev"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-markers = [
-    "webdriver: marks tests requiring a webdriver"
-]
+markers = ["webdriver: marks tests requiring a webdriver"]
 
 [tool.ruff]
 extend-exclude = [
@@ -180,6 +169,9 @@ ignore = [
     "COM812",
     "UP037",
 ]
+
+[tool.ruff.lint.isort]
+known-third-party = ["rdkit"]
 
 [tool.isort]
 profile = "black"
