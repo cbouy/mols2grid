@@ -13,17 +13,15 @@ from rdkit import Chem
 from rdkit.Chem import Draw
 
 from mols2grid.callbacks import JS_CALLBACK_ID_VARNAME
+from mols2grid.chem import mol_to_record, mol_to_smiles, remove_coordinates
+from mols2grid.io import read_mols_to_df
 from mols2grid.select import register
 from mols2grid.utils import (
     callback_handler,
     env,
     is_running_within_marimo,
     is_running_within_streamlit,
-    mol_to_record,
-    mol_to_smiles,
-    remove_coordinates,
     requires,
-    sdf_to_dataframe,
     slugify,
     tooltip_formatter,
 )
@@ -227,7 +225,7 @@ class MolGrid:
             Added support for `.sdf.gz` files
         """
         mol_col = kwargs.pop("mol_col", "mol")
-        df = sdf_to_dataframe(sdf_file, mol_col=mol_col)
+        df = read_mols_to_df(sdf_file, mol_col=mol_col)
         return cls(df, mol_col=mol_col, **kwargs)
 
     @property

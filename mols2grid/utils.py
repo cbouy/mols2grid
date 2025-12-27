@@ -1,13 +1,11 @@
-import gzip
 import re
 from ast import literal_eval
-from functools import partial, wraps
-from importlib import resources
+from functools import wraps
+from importlib import import_module, resources
 from importlib.util import find_spec
+from typing import Any
 
-import pandas as pd
 from jinja2 import Environment, FileSystemLoader
-from rdkit import Chem
 
 templates = resources.files("mols2grid").joinpath("templates")
 env = Environment(
@@ -31,6 +29,11 @@ def requires(module):
         return wrapper
 
     return inner
+
+
+def import_object(import_path: str) -> Any:
+    module_name, obj_name = import_path.rsplit(".", 1)
+    return getattr(import_module(module_name), obj_name)
 
 
 def tooltip_formatter(s, subset, fmt, style, transform):
@@ -60,45 +63,6 @@ def tooltip_formatter(s, subset, fmt, style, transform):
         items.append(fmt.format(key=k, value=value))
     items.append("<div class='arrow'></div>")
     return "".join(items)
-
-
-def mol_to_smiles(mol):
-    """Returns a SMILES from an RDKit molecule, or None if not an RDKit mol"""
-    return Chem.MolToSmiles(mol) if mol else None
-
-
-def mol_to_record(mol, mol_col="mol"):
-    """Function to create a dict of data from an RDKit molecule"""
-    return {**mol.GetPropsAsDict(includePrivate=True), mol_col: mol} if mol else {}
-
-
-def sdf_to_dataframe(sdf_path, mol_col="mol"):
-    """Creates a dataframe of molecules from an SDFile. All property fields in
-    the SDFile are made available in the resulting dataframe
-
-    Parameters
-    ----------
-    sdf_path : str, Path
-        Path to the SDFile, ending with either ``.sdf`` or ``.sdf.gz``
-    mol_col : str
-        Name of the column containing the RDKit molecules in the dataframe
-
-    Returns
-    -------
-    df : pandas.DataFrame
-    """
-    read_file = gzip.open if str(sdf_path).endswith(".gz") else partial(open, mode="rb")
-    with read_file(sdf_path) as f:
-        return pd.DataFrame(
-            [mol_to_record(mol, mol_col) for mol in Chem.ForwardSDMolSupplier(f)]
-        )
-
-
-def remove_coordinates(mol):
-    """Removes the existing coordinates from the molecule. The molecule is
-    modified inplace"""
-    mol.RemoveAllConformers()
-    return mol
 
 
 def slugify(string):

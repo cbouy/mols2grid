@@ -9,13 +9,15 @@ from types import SimpleNamespace
 import imagehash
 import pytest
 from rdkit import Chem
-from rdkit.Chem import AllChem
+from rdkit.Chem.rdDistGeom import EmbedMolecule
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
-import mols2grid
+from mols2grid import callbacks
+from mols2grid.io import read_mols_to_df
+from mols2grid.molgrid import MolGrid
 from mols2grid.select import register
 
 from .webdriver_utils import CustomDriver
@@ -40,7 +42,7 @@ skip_no_coordgen = pytest.mark.skipif(
 
 def get_grid(df, **kwargs):
     kwargs.setdefault("mol_col", "mol")
-    return mols2grid.MolGrid(df, **kwargs)
+    return MolGrid(df, **kwargs)
 
 
 def get_doc(grid, kwargs):
@@ -85,13 +87,12 @@ def test_no_subset_all_visible(driver: CustomDriver, grid):
     columns = set(grid.dataframe.columns.drop(["mol", "mols2grid-id"]).to_list())
     cell = driver.find_by_css_selector(".m2g-cell")
     data_el = cell.find_elements(By.CLASS_NAME, "data")
-    classes = [
+    classes = {
         c.replace("data-", "").replace("-display", "")
         for x in data_el
         for c in x.get_attribute("class").split(" ")
         if c.startswith("data-")
-    ]
-    classes = set(classes)
+    }
     assert classes == columns
 
 
@@ -268,8 +269,8 @@ def test_image_size(driver: CustomDriver, df, prerender):
 
 def test_image_use_coords(driver: CustomDriver, df):
     mols = df["mol"][23:24].tolist()
-    AllChem.EmbedMolecule(mols[0], randomSeed=0xF00D)
-    grid = mols2grid.MolGrid.from_mols(
+    EmbedMolecule(mols[0], randomSeed=0xF00D)
+    grid = MolGrid.from_mols(
         mols,
         use_coords=True,
         prerender=True,
@@ -313,7 +314,7 @@ def test_image_use_coords(driver: CustomDriver, df):
 )
 def test_coordgen(driver: CustomDriver, mols, coordGen, prerender, expected):
     useSVG = not prerender
-    grid = mols2grid.MolGrid.from_mols(
+    grid = MolGrid.from_mols(
         mols,
         coordGen=coordGen,
         prerender=prerender,
@@ -361,7 +362,7 @@ def test_removeHs(driver: CustomDriver, df, removeHs, prerender, expected):
     mol = df["mol"][0]
     mol.ClearProp("SMILES")
     mols = [Chem.AddHs(mol)]
-    grid = mols2grid.MolGrid.from_mols(
+    grid = MolGrid.from_mols(
         mols,
         removeHs=removeHs,
         prerender=prerender,
@@ -664,7 +665,7 @@ def test_colname_with_spaces(driver: CustomDriver, df):
     df = df.rename(columns={"SMILES": "Molecule", "_Name": "Molecule name"}).drop(
         columns="mol"
     )
-    grid = mols2grid.MolGrid(df, smiles_col="Molecule")
+    grid = MolGrid(df, smiles_col="Molecule")
     doc = get_doc(
         grid,
         {
@@ -697,8 +698,8 @@ def test_custom_header(driver: CustomDriver, grid):
 
 
 def test_static_template(driver: CustomDriver, sdf_path):
-    df = mols2grid.sdf_to_dataframe(sdf_path)[:15]
-    grid = mols2grid.MolGrid(df, mol_col="mol", prerender=True, size=(160, 120))
+    df = read_mols_to_df(sdf_path)[:15]
+    grid = MolGrid(df, mol_col="mol", prerender=True, size=(160, 120))
     doc = get_doc(
         grid,
         {
@@ -800,7 +801,7 @@ def test_highlight_with_hydrogens(driver: CustomDriver, df):
         m = Chem.AddHs(mol)
         m.ClearProp("SMILES")
         mols.append(m)
-    grid = mols2grid.MolGrid.from_mols(
+    grid = MolGrid.from_mols(
         mols,
         removeHs=False,
         size=(160, 120),
@@ -816,7 +817,7 @@ def test_highlight_with_hydrogens(driver: CustomDriver, df):
 
 
 def test_callbacks_info(driver: CustomDriver, grid):
-    doc = get_doc(grid, {"callback": mols2grid.callbacks.info()})
+    doc = get_doc(grid, {"callback": callbacks.info()})
     driver.get(doc)
     driver.trigger_callback()
     modal = driver.find_by_css_selector("#m2g-modal")
@@ -833,7 +834,7 @@ def test_callbacks_info(driver: CustomDriver, grid):
 
 
 def test_callbacks_3D(driver: CustomDriver, grid):
-    doc = get_doc(grid, {"callback": mols2grid.callbacks.show_3d()})
+    doc = get_doc(grid, {"callback": callbacks.show_3d()})
     driver.get(doc)
     driver.wait_for_img_load()
     driver.trigger_callback(pause=2.0)
@@ -855,7 +856,7 @@ def test_callbacks_3D(driver: CustomDriver, grid):
 
 
 def test_callbacks_external_link(driver: CustomDriver, grid):
-    doc = get_doc(grid, {"callback": mols2grid.callbacks.external_link()})
+    doc = get_doc(grid, {"callback": callbacks.external_link()})
     driver.get(doc)
     driver.wait_for_img_load()
     driver.trigger_callback()
